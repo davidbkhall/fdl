@@ -12,22 +12,47 @@
     "version": {
       "type": "object",
       "properties": {
-        "major": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 1
+        "major": { 
+          "type": "integer" 
         },
-        "minor": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 1
+        "minor": { 
+          "type": "integer" 
         }
+      },
+      "patternProperties": {
+        "^_": {}
       },
       "required": [
         "major",
         "minor"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "major": { "const": 0 },
+            "minor": { "const": 1 }
+          }
+        },
+        {
+          "properties": {
+            "major": { "const": 1 },
+            "minor": { "const": 0 }
+          }
+        },
+        {
+          "properties": {
+            "major": { "const": 1 },
+            "minor": { "const": 1 }
+          }
+        },
+        {
+          "properties": {
+            "major": { "const": 2 },
+            "minor": { "const": 0 }
+          }
+        }
+      ]
     },
     "fdl_creator": {
       "type": "string"
@@ -55,6 +80,9 @@
             "default": 0
           }
         },
+        "patternProperties": {
+          "^_": {}
+        },
         "required": [
           "id",
           "aspect_ratio"
@@ -72,6 +100,49 @@
           },
           "context_creator": {
             "type": "string"
+          },
+          "clip_id": {
+            "type": "object",
+            "properties": {
+              "clip_name": {
+                "type": "string"
+              },
+              "file": {
+                "type": "string"
+              },
+              "sequence": {
+                "type": "object",
+                "properties": {
+                  "value": { "type": "string" },
+                  "idx": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1
+                  },
+                  "min": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "max": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "patternProperties": {
+                  "^_": {}
+                },
+                "required": ["value", "idx", "min", "max"],
+                "additionalProperties": false
+              }
+            },
+            "patternProperties": {
+              "^_": {}
+            },
+            "required": ["clip_name"],
+            "not": {
+              "required": ["file", "sequence"]
+            },
+            "additionalProperties": false
           },
           "canvases": {
             "type": "array",
@@ -134,6 +205,9 @@
                         "$ref": "#/$defs/point_float"
                       }
                     },
+                    "patternProperties": {
+                      "^_": {}
+                    },
                     "required": [
                       "id",
                       "framing_intent_id",
@@ -147,6 +221,9 @@
                   }
                 }
               },
+              "patternProperties": {
+                "^_": {}
+              },
               "required": [
                 "id",
                 "source_canvas_id",
@@ -158,6 +235,9 @@
               "additionalProperties": false
             }
           }
+        },
+        "patternProperties": {
+          "^_": {}
         },
         "additionalProperties": false
       }
@@ -255,12 +335,18 @@
                 "default": "up"
               }
             },
+            "patternProperties": {
+              "^_": {}
+            },
             "required": [
               "even",
               "mode"
             ],
             "additionalProperties": false
           }
+        },
+        "patternProperties": {
+          "^_": {}
         },
         "required": [
           "id",
@@ -272,6 +358,9 @@
         "additionalProperties": false
       }
     }
+  },
+  "patternProperties": {
+    "^_": {}
   },
   "required": [
     "uuid",
@@ -302,6 +391,9 @@
           "exclusiveMinimum": 0
         }
       },
+      "patternProperties": {
+        "^_": {}
+      },
       "required": [
         "width",
         "height"
@@ -319,6 +411,9 @@
           "exclusiveMinimum": 0
         }
       },
+      "patternProperties": {
+        "^_": {}
+      },
       "required": [
         "width",
         "height"
@@ -333,6 +428,9 @@
         "y": {
           "type": "number"
         }
+      },
+      "patternProperties": {
+        "^_": {}
       },
       "required": [
         "x",
