@@ -30,24 +30,6 @@
       "oneOf": [
         {
           "properties": {
-            "major": { "const": 0 },
-            "minor": { "const": 1 }
-          }
-        },
-        {
-          "properties": {
-            "major": { "const": 1 },
-            "minor": { "const": 0 }
-          }
-        },
-        {
-          "properties": {
-            "major": { "const": 1 },
-            "minor": { "const": 1 }
-          }
-        },
-        {
-          "properties": {
             "major": { "const": 2 },
             "minor": { "const": 0 }
           }
