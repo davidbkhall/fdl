@@ -7,7 +7,33 @@ import sys
 
 import jsonschema
 
-SCHEMA_PATH=pathlib.Path(__file__).absolute().parent / 'ascfdl.schema.json'
+
+def get_schema_for_version(fdl):
+    # Setup
+    schema = None
+
+    # Ensure version is present in FDL
+    version = fdl.get("version")
+    if not version:
+        raise ValueError("Missing 'version' in FDL")
+    
+    # Ensure major version is present in FDL
+    major = version.get("major")
+    if major is None:
+        raise ValueError("Missing 'major' in version")
+    
+    # Validate major version
+    if major not in (1, 2):
+        raise ValueError(f"Unsupported major version: {major}. Only versions 1 and 2 are supported")
+
+    # Load schema for major version
+    schema_path=pathlib.Path(__file__).absolute().parent / f'ascfdl.schema.v{major}.json'
+    with open(schema_path) as f:
+        schema = json.load(f)
+
+    # Return schema
+    return schema
+
 
 def validate_id_tree(fdl):
     fi_ids = set()
@@ -78,14 +104,19 @@ def validate_fdl(filename):
     print(f"===== Validating '{filename}' =====")
     errors = 0
     schema = None
-    with open(SCHEMA_PATH) as f:
-        schema = json.load(f)
 
     with open(filename) as f:
         try:
             fdl = json.load(f)
         except json.decoder.JSONDecodeError as e:
             print(f"JSON Decode Error: {e}")
+            errors += 1
+            return errors
+        
+        try:
+            schema = get_schema_for_version(fdl)
+        except ValueError as e:
+            print(f"Value Error: {e}")
             errors += 1
             return errors
 
