@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://theasc.com/society/ascmitc/asc-framing-decision-list.schema.json",
+  "$id": "https://theasc.com/society/ascmitc/asc-fdl-1.1.schema.json",
   "title": "ASC Framing Decision List",
   "description": "ASC Framing Decision List",
   "type": "object",
@@ -14,13 +14,11 @@
       "properties": {
         "major": {
           "type": "integer",
-          "minimum": 1,
-          "maximum": 1
+          "const": 1
         },
         "minor": {
           "type": "integer",
-          "minimum": 0,
-          "maximum": 1
+          "const": 1
         }
       },
       "required": [
