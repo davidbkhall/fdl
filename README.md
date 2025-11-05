@@ -4,7 +4,7 @@ Within this directory you will find many files and folders for the ASC FDL.
 Here is a breakdown of their purpose:
 
 
-**ASCFDL One Sheet**
+**ASC FDL One Sheet**
 This is the first document you should read
 This is a very brief introduction to what the FDL is and the problem it has set out to solve
 
@@ -12,14 +12,14 @@ This is a very brief introduction to what the FDL is and the problem it has set 
 This is a document intended for end users to better understand how the FDL could be used within their workflows. 
 This will also be a great reference for implementers to better understand the intention behind FDL usability
 
-**ASCFDL DataPoints**
+**ASC FDL DataPoints**
 This is a spreadsheet which breaks down each attribute within an FDL
 These are also documented in the specification, but made available within this sheet in case it’s helpful for implementers
 
-**ASCFDL Specification**
+**ASC FDL Specification**
 This is the technical specification for implementers
 
-**ASCFDL ERD**
+**ASC FDL ERD**
 ERD file created to help implementers have quick access to attribute information
 
 **ASC FDL Schema**
