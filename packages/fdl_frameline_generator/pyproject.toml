@@ -27,9 +27,6 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/fdl_frameline_generator"]
 
-[tool.hatch.build.targets.wheel.force-include]
-"src/fdl_frameline_generator/resources" = "fdl_frameline_generator/resources"
-
 [tool.hatch.build.targets.sdist]
 include = [
     "src/fdl_frameline_generator/**/*.py",
