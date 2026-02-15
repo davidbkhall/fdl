@@ -1,0 +1,104 @@
+import pytest
+from fdl.clipid import ClipID, FileSequence
+
+from fdl import read_from_string
+
+
+def test_file_sequence_init():
+    seq = FileSequence(value="A002_C307_0523JT.####.exr", idx="#", min=0, max=100)
+    assert seq.value == "A002_C307_0523JT.####.exr"
+    assert seq.idx == "#"
+    assert seq.min == 0
+    assert seq.max == 100
+
+
+@pytest.mark.parametrize(
+    ("min_", "max_", "expect_fail"),
+    [
+        (0, 100, False),
+        (-1, 100, True),
+        (100, 200, False),
+        (10, -10, True),
+    ],
+)
+def test_file_sequence_min_max_not_negative(min_, max_, expect_fail):
+    if expect_fail:
+        with pytest.raises(ValueError):
+            FileSequence(value="A002_C307_0523JT.####.exr", idx="#", min=min_, max=max_)
+    else:
+        assert FileSequence(value="A002_C307_0523JT.####.exr", idx="#", min=min_, max=max_)
+
+
+@pytest.mark.parametrize(
+    ("clip_name", "file", "sequence"),
+    [
+        ("A002_C307_0523JT", None, None),
+        ("A002_C307_0523JT", "A002_C307_0523JT.mov", None),
+        ("A002_C307_0523JT", None, FileSequence(value="A002_C307_0523JT.####.exr", idx="#", min=0, max=100)),
+    ],
+)
+def test_clip_id_init(clip_name, file, sequence):
+    cid = ClipID(clip_name=clip_name, file=file, sequence=sequence)
+
+    assert cid.clip_name == clip_name
+    assert cid.file == file
+    assert cid.sequence == sequence
+
+
+def test_clip_id_raise_on_two_identifiers():
+    cid1 = ClipID(clip_name="A002_C307_0523JT", file="A002_C307_0523JT.mov")
+    with pytest.raises(ValueError) as err:
+        cid1.sequence = FileSequence(value="A002_C307_0523JT.####.exr", idx="#", min=0, max=100)
+
+    assert "Both file and sequence attributes are provided, " in str(err)
+
+    cid2 = ClipID(clip_name="A002_C307_0523JT", sequence=FileSequence(value="A002_C307_0523JT.####.exr", idx="#", min=0, max=100))
+    with pytest.raises(ValueError) as err:
+        cid2.file = "A002_C307_0523JT.mov"
+
+    assert "Both file and sequence attributes are provided, " in str(err)
+
+
+def test_deserializing_clip_id():
+    result = read_from_string(
+        "{"
+        '"uuid": "4ff5d6b1-aaf2-48fd-a947-2d61e45d676a",'
+        '"version": {"major": 2, "minor": 0},'
+        '"fdl_creator": "ASC FDL Tools",'
+        '"framing_intents": [],'
+        '"contexts": ['
+        "{"
+        '"label": "test_clipid",'
+        '"clip_id": {"clip_name": "ABX_001_110_911", "file": "ABX_001_110_911.mov"},'
+        '"canvases": []'
+        "}"
+        "],"
+        '"canvas_templates": []'
+        "}"
+    )
+    assert isinstance(result.contexts[0].clip_id, ClipID)
+
+
+def test_deserializing_file_sequence():
+    result = read_from_string(
+        "{"
+        '"uuid": "4ff5d6b1-aaf2-48fd-a947-2d61e45d676a",'
+        '"version": {"major": 2, "minor": 0},'
+        '"fdl_creator": "ASC FDL Tools",'
+        '"framing_intents": [],'
+        '"contexts": ['
+        "{"
+        '"label": "test_clipid",'
+        '"clip_id": {'
+        '"clip_name": "ABX_001_110_911", '
+        '"sequence": {"value": "ABX_001_110_911.####.exr", "idx": "#", "min": 0, "max": 100}'
+        "},"
+        '"canvases": []'
+        "}"
+        "],"
+        '"canvas_templates": []'
+        "}"
+    )
+
+    clip_id = result.contexts[0].clip_id
+    assert isinstance(clip_id.sequence, FileSequence)

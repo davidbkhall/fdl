@@ -1,0 +1,123 @@
+{
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "uuid": "a09c93dc-209f-4b1f-bdaa-f688140fbc88",
+  "fdl_creator": "ASC FDL Tools",
+  "framing_intents": [
+    {
+      "label": "",
+      "id": "1",
+      "aspect_ratio": {
+        "width": 16,
+        "height": 9
+      },
+      "protection": 0.1
+    }
+  ],
+  "contexts": [
+    {
+      "label": "ARRI ALEXA Mini LF",
+      "context_creator": "ASC FDL Tools",
+      "canvases": [
+        {
+          "label": "4.5K LF Open Gate",
+          "id": "1",
+          "source_canvas_id": "1",
+          "dimensions": {
+            "width": 4448,
+            "height": 3096
+          },
+          "anamorphic_squeeze": 1,
+          "framing_decisions": [
+            {
+              "label": "",
+              "id": "1-1",
+              "framing_intent_id": "1",
+              "dimensions": {
+                "width": 4004,
+                "height": 2252
+              },
+              "anchor_point": {
+                "x": 222,
+                "y": 422
+              },
+              "protection_dimensions": {
+                "width": 4448,
+                "height": 2502
+              },
+              "protection_anchor_point": {
+                "x": 0,
+                "y": 297
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "VFX Pull - Custom",
+      "context_creator": "ASC FDL Tools",
+      "canvases": [
+        {
+          "label": "VFX Pull - Custom: ARRI ALEXA Mini LF 4.5K LF Open Gate",
+          "id": "qyxjjb63",
+          "source_canvas_id": "1",
+          "dimensions": {
+            "width": 4000,
+            "height": 2250
+          },
+          "anamorphic_squeeze": 1,
+          "framing_decisions": [
+            {
+              "label": "",
+              "id": "qyxjjb63-1",
+              "framing_intent_id": "1",
+              "dimensions": {
+                "width": 4000,
+                "height": 2250
+              },
+              "anchor_point": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ],
+          "effective_dimensions": {
+            "width": 4000,
+            "height": 2250
+          },
+          "effective_anchor_point": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ]
+    }
+  ],
+  "canvas_templates": [
+    {
+      "label": "VFX Pull - Custom",
+      "id": "VX220310",
+      "target_dimensions": {
+        "width": 4000,
+        "height": 2500
+      },
+      "target_anamorphic_squeeze": 1,
+      "fit_source": "framing_decision.dimensions",
+      "fit_method": "width",
+      "alignment_method_vertical": "center",
+      "alignment_method_horizontal": "center",
+      "maximum_dimensions": {
+        "width": 6000,
+        "height": 5000
+      },
+      "pad_to_maximum": false,
+      "round": {
+        "even": "even",
+        "mode": "round"
+      }
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "uuid": "12345678-1234-5678-1234-567812345678",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "fdl_creator": "Python-FDL-Demo",
+  "default_framing_intent": "1",
+  "framing_intents": [
+    {
+      "id": "1",
+      "aspect_ratio": {
+        "width": 1,
+        "height": 1
+      },
+      "label": "Default Framing Intent",
+      "protection": 0.0
+    }
+  ],
+  "contexts": [
+    {
+      "label": "VFX Pull - Custom",
+      "context_creator": "ASC FDL Tools",
+      "canvases": [
+        {
+          "id": "1",
+          "source_canvas_id": "1",
+          "dimensions": {
+            "width": 4320,
+            "height": 3456
+          },
+          "label": "4.5K 5:4",
+          "anamorphic_squeeze": 2,
+          "framing_decisions": [
+            {
+              "id": "1-1",
+              "framing_intent_id": "1",
+              "dimensions": {
+                "width": 3712,
+                "height": 3110
+              },
+              "anchor_point": {
+                "x": 304,
+                "y": 173
+              },
+              "label": "",
+              "protection_dimensions": {
+                "width": 4124,
+                "height": 3456
+              },
+              "protection_anchor_point": {
+                "x": 98,
+                "y": 0
+              }
+            }
+          ]
+        },
+        {
+          "id": "123456781234567812345678123456",
+          "source_canvas_id": "1",
+          "dimensions": {
+            "width": 6000,
+            "height": 5000
+          },
+          "label": "VFX Pull - Custom: RED DSMC2 MONSTRO 8K VV 4.5K 5:4",
+          "effective_dimensions": {
+            "width": 5156,
+            "height": 2160
+          },
+          "effective_anchor_point": {
+            "x": 422.0,
+            "y": 1420.0
+          },
+          "anamorphic_squeeze": 1,
+          "framing_decisions": [
+            {
+              "id": "123456781234567812345678123456-1",
+              "framing_intent_id": "1",
+              "dimensions": {
+                "width": 5156,
+                "height": 2160
+              },
+              "anchor_point": {
+                "x": 422.0,
+                "y": 1420.0
+              },
+              "label": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "canvas_templates": [
+    {
+      "label": "VFX Pull - Custom",
+      "id": "VX220310",
+      "target_dimensions": {
+        "width": 4000,
+        "height": 2160
+      },
+      "target_anamorphic_squeeze": 1,
+      "fit_source": "framing_decision.dimensions",
+      "fit_method": "height",
+      "alignment_method_vertical": "center",
+      "alignment_method_horizontal": "center",
+      "preserve_from_source_canvas": "framing_decision.dimensions",
+      "maximum_dimensions": {
+        "width": 6000,
+        "height": 5000
+      },
+      "pad_to_maximum": true,
+      "round": {
+        "even": "even",
+        "mode": "round"
+      }
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "uuid": "ef5ac7ae-09ce-48e2-b612-f86731b51dbf",
+  "fdl_creator": "ASC FDL Tools",
+  "framing_intents": [
+    {
+      "label": "",
+      "id": "1",
+      "aspect_ratio": {
+        "width": 16,
+        "height": 9
+      },
+      "protection": 0.2
+    }
+  ],
+  "contexts": [
+    {
+      "label": "Sony VENICE 2 8K",
+      "context_creator": "ASC FDL Tools",
+      "canvases": [
+        {
+          "label": "8.6K 3:2",
+          "id": "1",
+          "source_canvas_id": "1",
+          "dimensions": {
+            "width": 8640,
+            "height": 5760
+          },
+          "anamorphic_squeeze": 1,
+          "framing_decisions": [
+            {
+              "label": "",
+              "id": "1-1",
+              "framing_intent_id": "1",
+              "dimensions": {
+                "width": 6912,
+                "height": 3888
+              },
+              "anchor_point": {
+                "x": 864,
+                "y": 936
+              },
+              "protection_dimensions": {
+                "width": 8640,
+                "height": 4860
+              },
+              "protection_anchor_point": {
+                "x": 0,
+                "y": 450
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "VFX Pull - Custom",
+      "context_creator": "ASC FDL Tools",
+      "canvases": [
+        {
+          "label": "VFX Pull - Custom: Sony VENICE 2 8K 8.6K 3:2",
+          "id": "canvas1",
+          "source_canvas_id": "1",
+          "dimensions": {
+            "width": 4800,
+            "height": 3200
+          },
+          "anamorphic_squeeze": 1,
+          "framing_decisions": [
+            {
+              "label": "",
+              "id": "canvas1-1",
+              "framing_intent_id": "1",
+              "dimensions": {
+                "width": 3840,
+                "height": 2160
+              },
+              "anchor_point": {
+                "x": 480,
+                "y": 520
+              },
+              "protection_dimensions": {
+                "width": 4800,
+                "height": 2700
+              },
+              "protection_anchor_point": {
+                "x": 0,
+                "y": 250
+              }
+            }
+          ],
+          "effective_dimensions": {
+            "width": 4800,
+            "height": 3200
+          },
+          "effective_anchor_point": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ]
+    }
+  ],
+  "canvas_templates": [
+    {
+      "label": "VFX Pull - Custom",
+      "id": "VX220310",
+      "target_dimensions": {
+        "width": 3840,
+        "height": 2160
+      },
+      "target_anamorphic_squeeze": 1,
+      "fit_source": "framing_decision.dimensions",
+      "fit_method": "fit_all",
+      "alignment_method_vertical": "center",
+      "alignment_method_horizontal": "center",
+      "preserve_from_source_canvas": "canvas.dimensions",
+      "maximum_dimensions": {
+        "width": 6000,
+        "height": 5000
+      },
+      "pad_to_maximum": false,
+      "round": {
+        "even": "even",
+        "mode": "round"
+      }
+    }
+  ]
+}

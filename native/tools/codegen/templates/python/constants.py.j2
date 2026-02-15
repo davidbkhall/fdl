@@ -1,0 +1,28 @@
+{# Handwritten Jinja2 template — rendered by generate.py to produce the output .py file. #}
+# AUTO-GENERATED from fdl_api.yaml — DO NOT EDIT
+"""FDL Core constants — standalone StrEnum definitions."""
+
+from __future__ import annotations
+
+from enum import Enum
+
+
+class _StrEnum(str, Enum):
+    """str Enum base that formats as the value, not ``ClassName.MEMBER``."""
+
+    __str__ = str.__str__
+
+{% for enum in enums %}
+
+class {{ enum.python_class }}(_StrEnum):
+{% for member in enum.members %}
+    {{ member.name }} = "{{ member.str_value }}"
+{% endfor %}
+{% endfor %}
+
+# ---------------------------------------------------------------------------
+# Floating-point comparison
+# ---------------------------------------------------------------------------
+
+FP_REL_TOL = 1e-9
+FP_ABS_TOL = 1e-6

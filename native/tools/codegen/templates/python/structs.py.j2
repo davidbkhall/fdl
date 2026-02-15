@@ -1,0 +1,21 @@
+{# Handwritten Jinja2 template — rendered by generate.py to produce the output .py file. #}
+# AUTO-GENERATED from fdl_api.yaml — DO NOT EDIT
+"""FDL Core ctypes.Structure definitions."""
+
+from __future__ import annotations
+
+import ctypes
+
+{% for vt in value_types %}
+
+class {{ vt.name }}(ctypes.Structure):
+    _fields_ = [
+{% for field in vt.fields %}
+        ("{{ field.name }}", {{ field.ctypes_type }}),
+{% endfor %}
+    ]
+
+    def __repr__(self) -> str:
+        fields = ", ".join(f"{name}={getattr(self, name)}" for name, _ in self._fields_)
+        return f"{{ vt.name }}({fields})"
+{% endfor %}

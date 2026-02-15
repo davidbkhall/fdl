@@ -1,0 +1,230 @@
+#include "fdl_geometry.h"
+
+#include <algorithm>
+#include <cmath>
+
+// Re-use existing value type operations declared in fdl_core.h
+// fdl_dimensions_normalize_and_scale, fdl_dimensions_is_zero, fdl_dimensions_sub
+// fdl_point_add, fdl_point_clamp, fdl_round_dimensions, fdl_round_point
+// fdl_point_normalize, fdl_point_scale (via normalize_and_scale pattern)
+
+namespace fdl::detail {
+
+static fdl_point_f64_t point_normalize_and_scale(
+    fdl_point_f64_t pt, double squeeze, double scale, double target_squeeze) {
+    fdl_point_f64_t normalized = fdl_point_normalize(pt, squeeze);
+    return fdl_point_scale(normalized, scale, target_squeeze);
+}
+
+static fdl_dimensions_f64_t dims_clamp_to_dims(
+    fdl_dimensions_f64_t dims, fdl_dimensions_f64_t clamp_dims) {
+    return {
+        std::min(dims.width, clamp_dims.width),
+        std::min(dims.height, clamp_dims.height),
+    };
+}
+
+fdl_geometry_t geometry_fill_hierarchy_gaps(
+    fdl_geometry_t geo,
+    fdl_point_f64_t anchor_offset) {
+
+    auto canvas = geo.canvas_dims;
+    auto effective = geo.effective_dims;
+    auto protection = geo.protection_dims;
+    auto framing = geo.framing_dims;
+
+    auto effective_anchor = geo.effective_anchor;
+    auto protection_anchor = geo.protection_anchor;
+    auto framing_anchor = geo.framing_anchor;
+
+    // Determine the reference dimension and anchor for propagation.
+    // Go from outermost to innermost to find the first populated layer.
+    fdl_dimensions_f64_t reference_dims;
+    fdl_point_f64_t reference_anchor;
+
+    if (!fdl_dimensions_is_zero(canvas)) {
+        reference_dims = canvas;
+        reference_anchor = {0.0, 0.0};
+    } else if (!fdl_dimensions_is_zero(effective)) {
+        reference_dims = effective;
+        reference_anchor = effective_anchor;
+    } else if (!fdl_dimensions_is_zero(protection)) {
+        reference_dims = protection;
+        reference_anchor = protection_anchor;
+    } else {
+        // Only framing populated. Protection is NEVER filled from framing.
+        reference_dims = framing;
+        reference_anchor = framing_anchor;
+    }
+
+    // Fill canvas if zero
+    if (fdl_dimensions_is_zero(canvas)) {
+        canvas = reference_dims;
+    }
+
+    // Fill effective if zero
+    if (fdl_dimensions_is_zero(effective)) {
+        effective = reference_dims;
+        effective_anchor = reference_anchor;
+    }
+
+    // Protection is NEVER filled from framing — stays zero if not provided.
+
+    // Subtract anchor_offset and clamp >= 0
+    effective_anchor = fdl_point_sub(effective_anchor, anchor_offset);
+    protection_anchor = fdl_point_sub(protection_anchor, anchor_offset);
+    framing_anchor = fdl_point_sub(framing_anchor, anchor_offset);
+
+    effective_anchor = fdl_point_clamp(effective_anchor, 0.0, 0.0, 1, 0);
+    protection_anchor = fdl_point_clamp(protection_anchor, 0.0, 0.0, 1, 0);
+    framing_anchor = fdl_point_clamp(framing_anchor, 0.0, 0.0, 1, 0);
+
+    return {
+        canvas, effective, protection, framing,
+        effective_anchor, protection_anchor, framing_anchor,
+    };
+}
+
+fdl_geometry_t geometry_normalize_and_scale(
+    fdl_geometry_t geo,
+    double source_squeeze,
+    double scale_factor,
+    double target_squeeze) {
+
+    return {
+        fdl_dimensions_normalize_and_scale(geo.canvas_dims, source_squeeze, scale_factor, target_squeeze),
+        fdl_dimensions_normalize_and_scale(geo.effective_dims, source_squeeze, scale_factor, target_squeeze),
+        fdl_dimensions_normalize_and_scale(geo.protection_dims, source_squeeze, scale_factor, target_squeeze),
+        fdl_dimensions_normalize_and_scale(geo.framing_dims, source_squeeze, scale_factor, target_squeeze),
+        point_normalize_and_scale(geo.effective_anchor, source_squeeze, scale_factor, target_squeeze),
+        point_normalize_and_scale(geo.protection_anchor, source_squeeze, scale_factor, target_squeeze),
+        point_normalize_and_scale(geo.framing_anchor, source_squeeze, scale_factor, target_squeeze),
+    };
+}
+
+fdl_geometry_t geometry_round(
+    fdl_geometry_t geo,
+    fdl_round_strategy_t strategy) {
+
+    return {
+        fdl_round_dimensions(geo.canvas_dims, strategy.even, strategy.mode),
+        fdl_round_dimensions(geo.effective_dims, strategy.even, strategy.mode),
+        fdl_round_dimensions(geo.protection_dims, strategy.even, strategy.mode),
+        fdl_round_dimensions(geo.framing_dims, strategy.even, strategy.mode),
+        fdl_round_point(geo.effective_anchor, strategy.even, strategy.mode),
+        fdl_round_point(geo.protection_anchor, strategy.even, strategy.mode),
+        fdl_round_point(geo.framing_anchor, strategy.even, strategy.mode),
+    };
+}
+
+fdl_geometry_t geometry_apply_offset(
+    fdl_geometry_t geo,
+    fdl_point_f64_t offset,
+    fdl_point_f64_t* theo_eff,
+    fdl_point_f64_t* theo_prot,
+    fdl_point_f64_t* theo_fram) {
+
+    // Calculate theoretical anchor positions (may be negative)
+    *theo_eff = fdl_point_add(geo.effective_anchor, offset);
+    *theo_prot = fdl_point_add(geo.protection_anchor, offset);
+    *theo_fram = fdl_point_add(geo.framing_anchor, offset);
+
+    return {
+        geo.canvas_dims,
+        geo.effective_dims,
+        geo.protection_dims,
+        geo.framing_dims,
+        fdl_point_clamp(*theo_eff, 0.0, 0.0, 1, 0),
+        fdl_point_clamp(*theo_prot, 0.0, 0.0, 1, 0),
+        fdl_point_clamp(*theo_fram, 0.0, 0.0, 1, 0),
+    };
+}
+
+// Internal: Clip a dimension based on its theoretical anchor position.
+static fdl_dimensions_f64_t crop_dim(
+    fdl_dimensions_f64_t dims,
+    fdl_point_f64_t theo_anchor,
+    fdl_point_f64_t clamped_anchor,
+    fdl_dimensions_f64_t canvas_dims) {
+
+    if (fdl_dimensions_is_zero(dims)) {
+        return dims;
+    }
+
+    // Calculate how much is clipped from left/top edge (negative anchor)
+    double clip_left = std::max(0.0, -theo_anchor.x);
+    double clip_top = std::max(0.0, -theo_anchor.y);
+    // Reduce dimensions by clipped amount
+    double visible_w = dims.width - clip_left;
+    double visible_h = dims.height - clip_top;
+    // Ensure doesn't extend beyond canvas right/bottom edge
+    visible_w = std::min(visible_w, canvas_dims.width - clamped_anchor.x);
+    visible_h = std::min(visible_h, canvas_dims.height - clamped_anchor.y);
+
+    return {std::max(0.0, visible_w), std::max(0.0, visible_h)};
+}
+
+fdl_geometry_t geometry_crop(
+    fdl_geometry_t geo,
+    fdl_point_f64_t theo_eff,
+    fdl_point_f64_t theo_prot,
+    fdl_point_f64_t theo_fram) {
+
+    auto canvas_dims = geo.canvas_dims;
+
+    // Clip all dimensions based on their theoretical anchors
+    auto visible_effective = crop_dim(geo.effective_dims, theo_eff, geo.effective_anchor, canvas_dims);
+    auto visible_protection = crop_dim(geo.protection_dims, theo_prot, geo.protection_anchor, canvas_dims);
+    auto visible_framing = crop_dim(geo.framing_dims, theo_fram, geo.framing_anchor, canvas_dims);
+
+    // Enforce hierarchy: each layer <= parent
+    // effective must fit within canvas
+    visible_effective = dims_clamp_to_dims(visible_effective, canvas_dims);
+    // Protection must fit within effective (if protection exists)
+    if (!fdl_dimensions_is_zero(visible_protection)) {
+        visible_protection = dims_clamp_to_dims(visible_protection, visible_effective);
+    }
+    // Framing must fit within protection (or effective if no protection)
+    auto parent_dims = fdl_dimensions_is_zero(visible_protection) ? visible_effective : visible_protection;
+    visible_framing = dims_clamp_to_dims(visible_framing, parent_dims);
+
+    return {
+        canvas_dims,
+        visible_effective,
+        visible_protection,
+        visible_framing,
+        geo.effective_anchor,
+        geo.protection_anchor,
+        geo.framing_anchor,
+    };
+}
+
+int geometry_get_dims_anchor_from_path(
+    const fdl_geometry_t* geo,
+    fdl_geometry_path_t path,
+    fdl_dimensions_f64_t* out_dims,
+    fdl_point_f64_t* out_anchor) {
+
+    switch (path) {
+    case FDL_GEOMETRY_PATH_CANVAS_DIMENSIONS:
+        *out_dims = geo->canvas_dims;
+        *out_anchor = {0.0, 0.0};
+        return 0;
+    case FDL_GEOMETRY_PATH_CANVAS_EFFECTIVE_DIMENSIONS:
+        *out_dims = geo->effective_dims;
+        *out_anchor = geo->effective_anchor;
+        return 0;
+    case FDL_GEOMETRY_PATH_FRAMING_PROTECTION_DIMENSIONS:
+        *out_dims = geo->protection_dims;
+        *out_anchor = geo->protection_anchor;
+        return 0;
+    case FDL_GEOMETRY_PATH_FRAMING_DIMENSIONS:
+        *out_dims = geo->framing_dims;
+        *out_anchor = geo->framing_anchor;
+        return 0;
+    default:
+        return -1;
+    }
+}
+
+} // namespace fdl::detail

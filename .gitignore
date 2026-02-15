@@ -1,0 +1,9 @@
+/fdl/
+.idea
+**/__pycache__/
+**/tests/outputs/
+site/**
+
+# C++ build artifacts
+native/core/build/
+native/core/cmake-build-*/

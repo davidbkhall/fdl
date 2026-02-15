@@ -1,0 +1,119 @@
+{
+  "uuid": "888c15a5-946b-45c4-bb8f-db8abe1c5c32",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "fdl_creator": "Python-FDL-Demo",
+  "default_framing_intent": "1",
+  "framing_intents": [
+    {
+      "id": "1",
+      "aspect_ratio": {
+        "width": 1,
+        "height": 1
+      },
+      "label": "Default Framing Intent",
+      "protection": 0.0
+    }
+  ],
+  "contexts": [
+    {
+      "label": "VFX Pull - Custom",
+      "context_creator": "ASC FDL Tools",
+      "canvases": [
+        {
+          "id": "1",
+          "source_canvas_id": "1",
+          "dimensions": {
+            "width": 6580,
+            "height": 5020
+          },
+          "label": "6500",
+          "anamorphic_squeeze": 1.65,
+          "framing_decisions": [
+            {
+              "id": "1-1",
+              "framing_intent_id": "1",
+              "dimensions": {
+                "width": 6580,
+                "height": 3481
+              },
+              "anchor_point": {
+                "x": 0,
+                "y": 769.5
+              },
+              "label": "",
+              "protection_dimensions": {
+                "width": 6580,
+                "height": 3482
+              },
+              "protection_anchor_point": {
+                "x": 0,
+                "y": 769
+              }
+            }
+          ]
+        },
+        {
+          "id": "8e6b365f52a841e9b09d6254359b9b",
+          "source_canvas_id": "1",
+          "dimensions": {
+            "width": 6000,
+            "height": 5000
+          },
+          "label": "VFX Pull - Custom: ARRI Alexa 65 6500",
+          "effective_dimensions": {
+            "width": 6000,
+            "height": 2160
+          },
+          "effective_anchor_point": {
+            "x": 0.0,
+            "y": 1420.0
+          },
+          "anamorphic_squeeze": 1,
+          "framing_decisions": [
+            {
+              "id": "8e6b365f52a841e9b09d6254359b9b-1",
+              "framing_intent_id": "1",
+              "dimensions": {
+                "width": 6000.0,
+                "height": 2160.0
+              },
+              "anchor_point": {
+                "x": 0.0,
+                "y": 1420.0
+              },
+              "label": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "canvas_templates": [
+    {
+      "id": "VX220310",
+      "target_dimensions": {
+        "width": 4000,
+        "height": 2160
+      },
+      "target_anamorphic_squeeze": 1,
+      "fit_source": "framing_decision.dimensions",
+      "fit_method": "height",
+      "label": "VFX Pull - Custom",
+      "alignment_method_vertical": "center",
+      "alignment_method_horizontal": "center",
+      "preserve_from_source_canvas": "framing_decision.dimensions",
+      "maximum_dimensions": {
+        "width": 6000,
+        "height": 5000
+      },
+      "pad_to_maximum": true,
+      "round": {
+        "even": "even",
+        "mode": "round"
+      }
+    }
+  ]
+}

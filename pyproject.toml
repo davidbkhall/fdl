@@ -1,0 +1,28 @@
+[project]
+name = "fdl-workspace"
+version = "0.0.0"
+requires-python = ">=3.10"
+dependencies = [
+    "fdl",
+    "fdl-imaging",
+    "fdl-frameline-generator",
+    "fdl-viewer",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-xdist>=3.0",
+    "pytest-qt>=4.0",
+    "pytest-cov>=4.0",
+    "mktestdocs>=0.2.0",
+]
+
+[tool.uv.workspace]
+members = ["packages/*", "native/bindings/python"]
+
+[tool.uv.sources]
+fdl = { workspace = true }
+fdl-imaging = { workspace = true }
+fdl-frameline-generator = { workspace = true }
+fdl-viewer = { workspace = true }

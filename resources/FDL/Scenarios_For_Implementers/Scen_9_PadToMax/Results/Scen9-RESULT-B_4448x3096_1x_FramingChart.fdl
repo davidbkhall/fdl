@@ -1,0 +1,127 @@
+{
+  "uuid": "12345678-1234-5678-1234-567812345678",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "fdl_creator": "Python-FDL-Demo",
+  "default_framing_intent": "1",
+  "framing_intents": [
+    {
+      "id": "1",
+      "aspect_ratio": {
+        "width": 1,
+        "height": 1
+      },
+      "label": "Default Framing Intent",
+      "protection": 0.0
+    }
+  ],
+  "contexts": [
+    {
+      "label": "VFX Pull - Custom",
+      "context_creator": "ASC FDL Tools",
+      "canvases": [
+        {
+          "id": "1",
+          "source_canvas_id": "1",
+          "dimensions": {
+            "width": 4448,
+            "height": 3096
+          },
+          "label": "4.5K LF Open Gate",
+          "anamorphic_squeeze": 1,
+          "framing_decisions": [
+            {
+              "id": "1-1",
+              "framing_intent_id": "1",
+              "dimensions": {
+                "width": 4004,
+                "height": 2252
+              },
+              "anchor_point": {
+                "x": 222,
+                "y": 422
+              },
+              "label": "",
+              "protection_dimensions": {
+                "width": 4448,
+                "height": 2502
+              },
+              "protection_anchor_point": {
+                "x": 0,
+                "y": 297
+              }
+            }
+          ]
+        },
+        {
+          "id": "123456781234567812345678123456",
+          "source_canvas_id": "1",
+          "dimensions": {
+            "width": 6000,
+            "height": 5000
+          },
+          "label": "VFX Pull - Custom: ARRI ALEXA Mini LF 4.5K LF Open Gate",
+          "effective_dimensions": {
+            "width": 4266,
+            "height": 2970
+          },
+          "effective_anchor_point": {
+            "x": 868,
+            "y": 1016
+          },
+          "anamorphic_squeeze": 1,
+          "framing_decisions": [
+            {
+              "id": "123456781234567812345678123456-1",
+              "framing_intent_id": "1",
+              "dimensions": {
+                "width": 3840,
+                "height": 2160
+              },
+              "anchor_point": {
+                "x": 1080,
+                "y": 1420
+              },
+              "label": "",
+              "protection_dimensions": {
+                "width": 4266,
+                "height": 2400
+              },
+              "protection_anchor_point": {
+                "x": 868,
+                "y": 1300
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "canvas_templates": [
+    {
+      "id": "VX220310",
+      "target_dimensions": {
+        "width": 3840,
+        "height": 2160
+      },
+      "target_anamorphic_squeeze": 1,
+      "fit_source": "framing_decision.dimensions",
+      "fit_method": "fit_all",
+      "label": "VFX Pull - Custom",
+      "alignment_method_vertical": "center",
+      "alignment_method_horizontal": "center",
+      "preserve_from_source_canvas": "canvas.dimensions",
+      "maximum_dimensions": {
+        "width": 6000,
+        "height": 5000
+      },
+      "pad_to_maximum": true,
+      "round": {
+        "even": "even",
+        "mode": "round"
+      }
+    }
+  ]
+}
