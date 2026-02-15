@@ -11,6 +11,7 @@ dev = [
     "pytest>=7.0",
     "pytest-xdist>=3.0",
     "mktestdocs>=0.2.0",
+    "build>=1.0",
 ]
 
 [project.scripts]
@@ -25,6 +26,7 @@ include = ["fdl_ffi*", "fdl*"]
 
 [tool.setuptools.package-data]
 fdl = ["schema/**/*.json", "schema/**/*.md"]
+fdl_ffi = ["libfdl_core.dylib", "libfdl_core.so", "fdl_core.dll"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
