@@ -25,7 +25,6 @@ build-backend = "setuptools.build_meta"
 include = ["fdl_ffi*", "fdl*"]
 
 [tool.setuptools.package-data]
-fdl = ["schema/**/*.json", "schema/**/*.md"]
 fdl_ffi = ["libfdl_core.dylib", "libfdl_core.so", "fdl_core.dll"]
 
 [tool.pytest.ini_options]

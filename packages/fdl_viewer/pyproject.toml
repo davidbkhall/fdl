@@ -8,7 +8,7 @@ dependencies = [
     "PySide6>=6.5.0",
     "fdl",
     "fdl-imaging",
-    "openimageio",
+    "OpenImageIO>=2.4.0",
     "numpy",
 ]
 
