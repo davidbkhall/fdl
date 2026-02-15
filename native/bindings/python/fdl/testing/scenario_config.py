@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+# SPDX-License-Identifier: Apache-2.0
 """
 Shared scenario configuration for FDL tests (unit tests and UI tests).
 

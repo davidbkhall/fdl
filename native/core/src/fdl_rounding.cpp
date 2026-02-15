@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+// SPDX-License-Identifier: Apache-2.0
 #include "fdl/fdl_core.h"
 #include "fdl_rounding.h"
 

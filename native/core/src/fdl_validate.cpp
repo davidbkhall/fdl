@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+// SPDX-License-Identifier: Apache-2.0
 #include "fdl_validate.h"
 #include "fdl_schema_data.h"
 

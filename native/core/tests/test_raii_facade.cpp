@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+// SPDX-License-Identifier: Apache-2.0
 /**
  * C++ RAII facade tests — mirrors Python fdl_core test_facade.py and
  * test_facade_mutation.py to verify feature parity.

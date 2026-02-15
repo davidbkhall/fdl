@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+# SPDX-License-Identifier: Apache-2.0
 """Generate golden vectors for fdl_compute_framing_from_intent."""
 
 import json

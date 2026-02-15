@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+# SPDX-License-Identifier: Apache-2.0
 """Tests for kwargs construction of fdl_core facade classes.
 
 Each facade class should be constructible with keyword arguments matching

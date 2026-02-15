@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+# SPDX-License-Identifier: Apache-2.0
 set(FDL_CORE_VERSION "0.5.0")
 set(FDL_ABI_VERSION_MAJOR 0)
 set(FDL_ABI_VERSION_MINOR 5)

@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+# SPDX-License-Identifier: Apache-2.0
 """Tests for FDL validation (C core semantic validators).
 
 Ported from tests/test_fdlchecker.py to exercise validation through the

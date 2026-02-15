@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+# SPDX-License-Identifier: Apache-2.0
 """Regenerate all source TIFF images from their paired FDL files.
 
 Uses the fdl_frameline_generator to render frameline visualizations for each

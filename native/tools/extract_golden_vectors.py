@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+# SPDX-License-Identifier: Apache-2.0
 """Extract golden test vectors from the Python FDL implementation.
 
 Generates JSON files that the C++ Catch2 tests load to verify the C++ port

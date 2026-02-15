@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+// SPDX-License-Identifier: Apache-2.0
 #ifndef FDL_DOC_INTERNAL_H
 #define FDL_DOC_INTERNAL_H
 

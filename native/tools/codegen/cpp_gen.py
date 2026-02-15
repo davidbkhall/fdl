@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+# SPDX-License-Identifier: Apache-2.0
 """
 C++ code generator: produces a single-file RAII header (fdl.hpp) from the IDL.
 

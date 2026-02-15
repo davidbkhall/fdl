@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+# SPDX-License-Identifier: Apache-2.0
+# AUTO-GENERATED from fdl_api.yaml — DO NOT EDIT
 """fdl — handle-backed Python facade for libfdl_core."""
 # ruff: noqa: I001
 

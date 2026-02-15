@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+# SPDX-License-Identifier: Apache-2.0
 """
 Parameterized UI Integration tests for Scenarios 1-31.
 
@@ -21,6 +23,7 @@ Each variant runs a single consolidated test that:
 This approach is ~5x faster than running separate tests for each comparison.
 """
 
+import os
 from pathlib import Path
 
 import pytest
@@ -60,6 +63,7 @@ def get_expected_folder() -> Path:
 SCENARIO_PARAMS = [p for p in build_test_params() if not SCENARIO_CONFIGS[p[0]].is_error_test]
 
 
+@pytest.mark.skipif(os.environ.get("CICD") == "1", reason="UI tests require a display; skipped in CI/CD")
 class TestUIScenarios:
     """Parameterized UI workflow tests for Scenarios 1-31 (excluding 21-22 error tests)."""
 

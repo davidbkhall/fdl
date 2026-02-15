@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+# SPDX-License-Identifier: Apache-2.0
 """
 FDL Viewer - A PySide6 application for viewing and transforming Framing Decision List files.
 

@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+# SPDX-License-Identifier: Apache-2.0
 cmake_minimum_required(VERSION 3.20)
 
 include(cmake/FDLVersion.cmake)

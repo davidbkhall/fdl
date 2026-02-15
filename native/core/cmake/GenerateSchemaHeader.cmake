@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+# SPDX-License-Identifier: Apache-2.0
 # GenerateSchemaHeader.cmake
 #
 # Scans FDL_SCHEMA_DIR for v*/ascfdl.schema.json files and generates

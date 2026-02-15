@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+# SPDX-License-Identifier: Apache-2.0
 """
 Visual QC Integration Test for FDL Viewer
 
@@ -30,6 +32,7 @@ Dialog handling:
 - Errors are logged to _errors.txt in the output folder
 """
 
+import os
 import traceback
 from pathlib import Path
 
@@ -222,6 +225,7 @@ TEST_MATRIX = generate_test_matrix()
 TEST_IDS = generate_test_ids(TEST_MATRIX)
 
 
+@pytest.mark.skipif(os.environ.get("CICD") == "1", reason="UI tests require a display; skipped in CI/CD")
 class TestVisualQCMatrix:
     """Visual QC tests for source/template combinations via UI."""
 

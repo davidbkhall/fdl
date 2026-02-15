@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
+# SPDX-License-Identifier: Apache-2.0
 import pytest
 from fdl.errors import FDLValidationError
 from fdl.fdl import FDL

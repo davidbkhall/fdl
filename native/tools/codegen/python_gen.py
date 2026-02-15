@@ -400,7 +400,15 @@ def generate_ffi(idl: IDL, output_dir: Path) -> None:
     # --- _functions.py ---
     tmpl = env.get_template("python/ffi.py.j2")
     fn_contexts = [_build_function_context(fn, idl) for fn in idl.functions]
-    vt_contexts = sorted([{"name": vt.name} for vt in idl.value_types], key=lambda x: x["name"])
+    # Only import struct types that are actually referenced in function signatures
+    all_vt_names = {vt.name for vt in idl.value_types}
+    used_vt_names: set[str] = set()
+    for ctx in fn_contexts:
+        for token in (ctx["argtypes_str"] + " " + ctx["restype_str"]).split():
+            clean = token.strip("(),")
+            if clean in all_vt_names:
+                used_vt_names.add(clean)
+    vt_contexts = sorted([{"name": n} for n in used_vt_names], key=lambda x: x["name"])
     functions_src = tmpl.render(functions=fn_contexts, value_types=vt_contexts)
     (output_dir / "_functions.py").write_text(functions_src)
 
@@ -699,6 +707,9 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
     vt_class_names = sorted(vc["python_class"] for vc in types_vt_contexts)
 
     init_lines = [
+        "# SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers",
+        "# SPDX-License-Identifier: Apache-2.0",
+        "# AUTO-GENERATED from fdl_api.yaml — DO NOT EDIT",
         '"""fdl — handle-backed Python facade for libfdl_core."""',
         "# ruff: noqa: I001",
         "",
