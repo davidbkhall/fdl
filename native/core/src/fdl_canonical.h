@@ -20,7 +20,7 @@ ojson strip_nulls(const ojson& val);
 ojson reorder_object(const ojson& obj, const std::string& type_hint);
 
 // Serialize an ojson node to canonical JSON: strip_nulls + reorder + format.
-// Returns strdup'd C string (caller owns, free with fdl_free / std::free).
+// Returns heap-allocated C string (caller owns, free with fdl_free / std::free).
 // Returns nullptr if node is nullptr.
 char* node_to_canonical_json(const ojson* node, const std::string& type_hint, int indent);
 

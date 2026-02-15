@@ -51,5 +51,12 @@ target_compile_definitions(fdl_core_tests PRIVATE
   VECTORS_DIR="${CMAKE_CURRENT_BINARY_DIR}/vectors"
 )
 
+if(MSVC)
+  target_compile_definitions(fdl_core_tests PRIVATE
+    _CRT_SECURE_NO_WARNINGS
+    NOMINMAX
+  )
+endif()
+
 include(Catch)
 catch_discover_tests(fdl_core_tests)

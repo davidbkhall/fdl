@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
 #include "fdl_template.h"
+#include "fdl_compat.h"
 #include "fdl_doc.h"
 #include "fdl_enum_map.h"
 
@@ -84,7 +85,7 @@ fdl_template_result_t apply_canvas_template(
     fdl_template_result_t result = {};
 
     if (!tmpl || !source_canvas || !source_framing || !new_canvas_id) {
-        result.error = strdup("NULL parameter");
+        result.error = fdl_strdup("NULL parameter");
         return result;
     }
 
@@ -128,7 +129,7 @@ fdl_template_result_t apply_canvas_template(
             msg += field_name;
             msg += " references 'canvas.effective_dimensions' but the source canvas "
                    "does not have effective_dimensions defined.";
-            result.error = strdup(msg.c_str());
+            result.error = fdl_strdup(msg.c_str());
             return false;
         }
         if (path == FDL_GEOMETRY_PATH_FRAMING_PROTECTION_DIMENSIONS &&
@@ -137,7 +138,7 @@ fdl_template_result_t apply_canvas_template(
             msg += field_name;
             msg += " references 'framing_decision.protection_dimensions' but the source "
                    "framing decision does not have protection_dimensions defined.";
-            result.error = strdup(msg.c_str());
+            result.error = fdl_strdup(msg.c_str());
             return false;
         }
         return true;
@@ -240,7 +241,7 @@ fdl_template_result_t apply_canvas_template(
         source_fi_id_s.c_str());
 
     if (!out_doc) {
-        result.error = strdup("Failed to create output document");
+        result.error = fdl_strdup("Failed to create output document");
         return result;
     }
 
@@ -350,9 +351,9 @@ fdl_template_result_t apply_canvas_template(
     result.scale_factor = scale_factor;
     result.scaled_bounding_box = scaled_bounding_box;
     result.content_translation = content_translation;
-    result.context_label = strdup(label_str.c_str());
-    result.canvas_id = strdup(new_canvas_id);
-    result.framing_decision_id = strdup(fd_id.c_str());
+    result.context_label = fdl_strdup(label_str.c_str());
+    result.canvas_id = fdl_strdup(new_canvas_id);
+    result.framing_decision_id = fdl_strdup(fd_id.c_str());
     result.error = nullptr;
 
     return result;

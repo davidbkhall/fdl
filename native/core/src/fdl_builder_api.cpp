@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "fdl/fdl_core.h"
 #include "fdl_builder.h"
+#include "fdl_compat.h"
 #include "fdl_doc.h"
 #include "fdl_enum_map.h"
 
@@ -473,22 +474,22 @@ void fdl_framing_decision_remove_protection(fdl_framing_decision_t* fd) {
 
 const char* fdl_clip_id_validate_json(const char* json_str, size_t json_len) {
     if (!json_str) {
-        return strdup("json_str is NULL");
+        return fdl_strdup("json_str is NULL");
     }
 
     ojson obj;
     try {
         obj = ojson::parse(jsoncons::string_view(json_str, json_len));
     } catch (const std::exception& e) {
-        return strdup((std::string("Invalid JSON: ") + e.what()).c_str());
+        return fdl_strdup((std::string("Invalid JSON: ") + e.what()).c_str());
     }
 
     if (!obj.is_object()) {
-        return strdup("clip_id must be a JSON object");
+        return fdl_strdup("clip_id must be a JSON object");
     }
 
     if (obj.contains("file") && obj.contains("sequence")) {
-        return strdup(
+        return fdl_strdup(
             "Both file and sequence attributes are provided, only one is allowed.");
     }
 
@@ -498,7 +499,7 @@ const char* fdl_clip_id_validate_json(const char* json_str, size_t json_len) {
 const char* fdl_context_set_clip_id_json(
     fdl_context_t* ctx, const char* json_str, size_t json_len) {
     if (!ctx) {
-        return strdup("context handle is NULL");
+        return fdl_strdup("context handle is NULL");
     }
 
     const char* err = fdl_clip_id_validate_json(json_str, json_len);
@@ -508,12 +509,12 @@ const char* fdl_context_set_clip_id_json(
     try {
         obj = ojson::parse(jsoncons::string_view(json_str, json_len));
     } catch (const std::exception& e) {
-        return strdup((std::string("Invalid JSON: ") + e.what()).c_str());
+        return fdl_strdup((std::string("Invalid JSON: ") + e.what()).c_str());
     }
 
     doc_lock lock(ctx->owner);
     auto* n = ctx->node();
-    if (!n) return strdup("context handle is invalid");
+    if (!n) return fdl_strdup("context handle is invalid");
 
     n->insert_or_assign("clip_id", std::move(obj));
     return nullptr;

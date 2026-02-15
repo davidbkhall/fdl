@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "fdl/fdl_core.h"
 #include "fdl_canonical.h"
+#include "fdl_compat.h"
 #include "fdl_doc.h"
 #include "fdl_enum_map.h"
 
@@ -215,7 +216,7 @@ const char* fdl_context_get_clip_id(const fdl_context_t* ctx) {
     if (!n || !n->contains("clip_id")) return nullptr;
     const auto& val = (*n)["clip_id"];
     if (val.is_string()) {
-        return strdup(val.as<std::string>().c_str());
+        return fdl_strdup(val.as<std::string>().c_str());
     }
     if (val.is_object()) {
         return fdl::detail::node_to_canonical_json(&val, "clip_id", 0);
@@ -233,22 +234,22 @@ fdl_clip_id_t fdl_context_get_clip_id_struct(const fdl_context_t* ctx) {
     const auto& cid = (*n)["clip_id"];
 
     if (cid.contains("clip_name") && cid["clip_name"].is_string()) {
-        result.clip_name = strdup(cid["clip_name"].as<std::string>().c_str());
+        result.clip_name = fdl_strdup(cid["clip_name"].as<std::string>().c_str());
     }
 
     if (cid.contains("file") && cid["file"].is_string()) {
         result.has_file = 1;
-        result.file = strdup(cid["file"].as<std::string>().c_str());
+        result.file = fdl_strdup(cid["file"].as<std::string>().c_str());
     }
 
     if (cid.contains("sequence") && cid["sequence"].is_object()) {
         result.has_sequence = 1;
         const auto& seq = cid["sequence"];
         if (seq.contains("value") && seq["value"].is_string()) {
-            result.sequence.value = strdup(seq["value"].as<std::string>().c_str());
+            result.sequence.value = fdl_strdup(seq["value"].as<std::string>().c_str());
         }
         if (seq.contains("idx") && seq["idx"].is_string()) {
-            result.sequence.idx = strdup(seq["idx"].as<std::string>().c_str());
+            result.sequence.idx = fdl_strdup(seq["idx"].as<std::string>().c_str());
         }
         result.sequence.min = seq.contains("min") ? seq["min"].as<int64_t>() : 0;
         result.sequence.max = seq.contains("max") ? seq["max"].as<int64_t>() : 0;

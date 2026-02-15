@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
 #include "fdl_canonical.h"
+#include "fdl_compat.h"
 
 #include <cstring>
 
@@ -176,7 +177,7 @@ char* node_to_canonical_json(const ojson* node, const std::string& type_hint, in
     } else {
         ordered.dump(buffer);
     }
-    return strdup(buffer.c_str());
+    return fdl_strdup(buffer.c_str());
 }
 
 } // namespace fdl::detail

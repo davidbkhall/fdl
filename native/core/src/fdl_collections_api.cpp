@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
 #include "fdl/fdl_core.h"
+#include "fdl_compat.h"
 #include "fdl_doc.h"
 
 #include <cinttypes>
@@ -334,7 +335,7 @@ fdl_resolve_canvas_result_t fdl_context_resolve_canvas_for_dimensions(
     fdl_resolve_canvas_result_t result = {};
 
     if (!ctx || !canvas || !framing) {
-        result.error = strdup("NULL argument to fdl_context_resolve_canvas_for_dimensions");
+        result.error = fdl_strdup("NULL argument to fdl_context_resolve_canvas_for_dimensions");
         return result;
     }
 
@@ -343,7 +344,7 @@ fdl_resolve_canvas_result_t fdl_context_resolve_canvas_for_dimensions(
     // Get canvas dimensions
     auto* cvs_node = canvas->node();
     if (!cvs_node || !cvs_node->contains("dimensions")) {
-        result.error = strdup("Canvas has no dimensions");
+        result.error = fdl_strdup("Canvas has no dimensions");
         return result;
     }
     auto& dims = (*cvs_node)["dimensions"];
@@ -445,7 +446,7 @@ fdl_resolve_canvas_result_t fdl_context_resolve_canvas_for_dimensions(
     snprintf(buf, sizeof(buf),
         "Canvas dimensions (%" PRId64 "x%" PRId64 ") do not match input dimensions (%" PRId64 "x%" PRId64 ")",
         cvs_w, cvs_h, input_w, input_h);
-    result.error = strdup(buf);
+    result.error = fdl_strdup(buf);
     return result;
 }
 

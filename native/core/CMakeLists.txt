@@ -86,6 +86,17 @@ target_link_libraries(fdl_core PRIVATE jsoncons)
 
 target_compile_definitions(fdl_core PRIVATE fdl_core_EXPORTS)
 
+# Platform-specific compiler settings
+if(MSVC)
+  target_compile_definitions(fdl_core PRIVATE
+    _CRT_SECURE_NO_WARNINGS
+    NOMINMAX
+  )
+  target_compile_options(fdl_core PRIVATE /W4 /wd4251)
+else()
+  target_compile_options(fdl_core PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
 # Pass ABI version to source
 target_compile_definitions(fdl_core PRIVATE
   FDL_ABI_VERSION_MAJOR=${FDL_ABI_VERSION_MAJOR}
@@ -93,10 +104,15 @@ target_compile_definitions(fdl_core PRIVATE
   FDL_ABI_VERSION_PATCH=${FDL_ABI_VERSION_PATCH}
 )
 
-# macOS-specific: set install name for dylib
+# Platform-specific rpath for shared library loading
 if(APPLE)
   set_target_properties(fdl_core PROPERTIES
     INSTALL_RPATH "@loader_path"
+    BUILD_WITH_INSTALL_RPATH ON
+  )
+elseif(UNIX)
+  set_target_properties(fdl_core PROPERTIES
+    INSTALL_RPATH "$ORIGIN"
     BUILD_WITH_INSTALL_RPATH ON
   )
 endif()

@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
 #include "fdl/fdl_core.h"
+#include "fdl_compat.h"
 #include "fdl_doc.h"
 
 #include <cstring>
@@ -58,14 +59,14 @@ fdl_parse_result_t fdl_doc_parse_json(const char* json_str, size_t json_len) {
         auto* handle = new (std::nothrow) fdl_doc{std::move(document)};
         if (!handle) {
             auto msg = std::string("Out of memory");
-            result.error = strdup(msg.c_str());
+            result.error = fdl_strdup(msg.c_str());
             return result;
         }
         result.doc = handle;
     } catch (const jsoncons::ser_error& e) {
-        result.error = strdup(e.what());
+        result.error = fdl_strdup(e.what());
     } catch (const std::exception& e) {
-        result.error = strdup(e.what());
+        result.error = fdl_strdup(e.what());
     }
     return result;
 }
@@ -92,7 +93,7 @@ char* fdl_doc_to_json(const fdl_doc_t* doc, int indent) {
     if (!doc) return nullptr;
     doc_lock lock(doc);
     auto json_str = doc->doc.to_canonical_json(indent);
-    return strdup(json_str.c_str());
+    return fdl_strdup(json_str.c_str());
 }
 
 } // extern "C"
