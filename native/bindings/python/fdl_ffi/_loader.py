@@ -42,7 +42,11 @@ def _candidate_paths() -> list[Path]:
 
     # 3. In-tree build locations (relative to this file)
     native_root = pkg_dir.parent.parent.parent  # bindings/python/fdl_ffi -> native/
-    paths.append(native_root / "core" / "build" / _lib_name())
+    build_dir = native_root / "core" / "build"
+    paths.append(build_dir / _lib_name())
+    # MSVC multi-config generators (Visual Studio) place output in a config subdir
+    for config in ("Release", "Debug", "RelWithDebInfo"):
+        paths.append(build_dir / config / _lib_name())
 
     return paths
 
