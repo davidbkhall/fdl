@@ -150,7 +150,8 @@ jobs:
       - name: Run fdl-viewer tests (Linux)
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get install -y xvfb libegl1-mesa libgl1-mesa-dri
+          sudo apt-get update
+          sudo apt-get install -y xvfb libegl1 libgl1-mesa-dri
           xvfb-run uv run pytest packages/fdl_viewer/tests/ -v
 
       - name: Run fdl-viewer tests (macOS/Windows)
