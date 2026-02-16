@@ -19,7 +19,7 @@ fdl_from_intent_result_t fdl_compute_framing_from_intent(
 }
 
 // Helper: compute alignment offset for a single axis
-static double align_offset(double container, double content, uint32_t align, int is_horizontal) {
+static double align_offset(double container, double content, uint32_t align) {
     // CENTER enum value is 1 for both halign and valign
     if (align == 1) return (container - content) / 2.0;
     // RIGHT (halign=2) or BOTTOM (valign=2)
@@ -45,8 +45,8 @@ void fdl_framing_decision_adjust_anchor(
     double fd_w = (*fd_n)["dimensions"]["width"].as<double>();
     double fd_h = (*fd_n)["dimensions"]["height"].as<double>();
 
-    double anchor_x = align_offset(canvas_w, fd_w, h_align, 1);
-    double anchor_y = align_offset(canvas_h, fd_h, v_align, 0);
+    double anchor_x = align_offset(canvas_w, fd_w, h_align);
+    double anchor_y = align_offset(canvas_h, fd_h, v_align);
 
     fd_n->insert_or_assign("anchor_point",
         fdl::detail::make_point_float(anchor_x, anchor_y));
@@ -69,8 +69,8 @@ void fdl_framing_decision_adjust_protection_anchor(
     double prot_w = (*fd_n)["protection_dimensions"]["width"].as<double>();
     double prot_h = (*fd_n)["protection_dimensions"]["height"].as<double>();
 
-    double anchor_x = align_offset(canvas_w, prot_w, h_align, 1);
-    double anchor_y = align_offset(canvas_h, prot_h, v_align, 0);
+    double anchor_x = align_offset(canvas_w, prot_w, h_align);
+    double anchor_y = align_offset(canvas_h, prot_h, v_align);
 
     fd_n->insert_or_assign("protection_anchor_point",
         fdl::detail::make_point_float(anchor_x, anchor_y));

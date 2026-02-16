@@ -356,11 +356,6 @@ static std::string format_json_num(const ojson& v) {
     return s;
 }
 
-// Simple format for doubles where JSON type is not tracked
-static std::string format_num(double v) {
-    return format_json_num(ojson(v));
-}
-
 static void validate_dimension_hierarchy(const ojson& fdl, std::vector<std::string>& errors) {
     try {
         if (!fdl.contains("contexts") || !fdl["contexts"].is_array()) return;

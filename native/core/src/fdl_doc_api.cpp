@@ -56,7 +56,7 @@ fdl_parse_result_t fdl_doc_parse_json(const char* json_str, size_t json_len) {
     fdl_parse_result_t result = {nullptr, nullptr};
     try {
         auto document = fdl::detail::Document::parse(json_str, json_len);
-        auto* handle = new (std::nothrow) fdl_doc{std::move(document)};
+        auto* handle = new (std::nothrow) fdl_doc{std::move(document), {}, {}};
         if (!handle) {
             auto msg = std::string("Out of memory");
             result.error = fdl_strdup(msg.c_str());

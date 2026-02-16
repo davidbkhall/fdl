@@ -59,4 +59,9 @@ if(MSVC)
 endif()
 
 include(Catch)
-catch_discover_tests(fdl_core_tests)
+
+# On Windows, ensure fdl_core.dll is findable when Catch2 runs the test exe
+# for test discovery. DL_PATHS tells catch_discover_tests where to find DLLs.
+catch_discover_tests(fdl_core_tests
+  DL_PATHS $<TARGET_FILE_DIR:fdl_core>
+)

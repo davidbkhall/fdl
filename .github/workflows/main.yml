@@ -54,6 +54,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       CI: true
+      CICD: "1"
 
     steps:
       - name: Checkout code

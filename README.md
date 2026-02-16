@@ -115,15 +115,36 @@ git clone https://github.com/ascmitc/fdl.git
 cd fdl
 ```
 
+### Code Generation
+
+The Python bindings (FFI layer and facade classes) and the C++ RAII header are auto-generated from the IDL schema. Codegen must run before building or testing.
+
+```bash
+# Install codegen dependencies
+uv pip install pyyaml jinja2 --system
+
+# Run all codegen targets (python-ffi, python-facade, cpp-raii)
+python scripts/run_codegen.py
+```
+
+This generates files into `native/bindings/python/fdl_ffi/`, `native/bindings/python/fdl/`, and `native/bindings/cpp/fdl/fdl.hpp`.
+
 ### Build the Native Library
 
 The Python packages depend on `libfdl_core`, which must be compiled before running tests or using the Python bindings.
 
 ```bash
-# Configure
-cmake -S native/core -B native/core/build -DCMAKE_BUILD_TYPE=Release
+# Build and run C++ tests (recommended)
+python scripts/build_native.py --run-tests
 
-# Build
+# Build without tests
+python scripts/build_native.py --no-tests
+```
+
+Or manually with CMake:
+
+```bash
+cmake -S native/core -B native/core/build -DCMAKE_BUILD_TYPE=Release
 cmake --build native/core/build --config Release -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
 ```
 
@@ -140,19 +161,25 @@ This installs the full workspace (`fdl`, `fdl-imaging`, `fdl-frameline-generator
 
 ### Run the Tests
 
-**FDL core (Python bindings):**
+**C++ core tests (113 tests):**
 ```bash
-uv run pytest native/bindings/python/tests/ -v
+python scripts/build_native.py --run-tests
+# or: ctest --test-dir native/core/build --output-on-failure
 ```
 
-**FDL Imaging:**
+**FDL core Python bindings (351 tests):**
 ```bash
-uv run pytest packages/fdl_imaging/tests/ -v
+uv run pytest native/bindings/python/tests/ -v -n auto -p no:pytest-qt
 ```
 
-**FDL Frameline Generator:**
+**FDL Imaging (6 tests):**
 ```bash
-uv run pytest packages/fdl_frameline_generator/tests/ -v
+uv run pytest packages/fdl_imaging/tests/ -v -n auto -p no:pytest-qt
+```
+
+**FDL Frameline Generator (157 tests):**
+```bash
+uv run pytest packages/fdl_frameline_generator/tests/ -v -p no:pytest-qt
 ```
 
 **FDL Viewer:**
@@ -164,25 +191,51 @@ uv run pytest packages/fdl_viewer/tests/ -v
 uv run pytest packages/fdl_viewer/tests/ -v \
     --ignore=packages/fdl_viewer/tests/test_visual_qc_matrix.py \
     --ignore=packages/fdl_viewer/tests/test_visual_qc_edge_cases.py
-
-# Run only a single UI scenario (recommended for quick validation)
-uv run pytest packages/fdl_viewer/tests/ -v \
-    --ignore=packages/fdl_viewer/tests/test_visual_qc_matrix.py \
-    --ignore=packages/fdl_viewer/tests/test_visual_qc_edge_cases.py \
-    -k "not test_scenario_workflow or scen1_B"
 ```
 
 **Run everything (fast subset):**
 ```bash
-uv run pytest native/bindings/python/tests/ packages/fdl_imaging/tests/ packages/fdl_frameline_generator/tests/ -v
+uv run pytest native/bindings/python/tests/ packages/fdl_imaging/tests/ packages/fdl_frameline_generator/tests/ -v -n auto -p no:pytest-qt
 ```
 
-### C++ Core Tests
+### Linting
 
-The native C++ tests use Catch2 and can be built and run separately:
+The project uses [ruff](https://docs.astral.sh/ruff/) for linting and formatting:
 
 ```bash
-cmake -S native/core -B native/core/build -DCMAKE_BUILD_TYPE=Debug -DFDL_BUILD_TESTS=ON
-cmake --build native/core/build --config Debug -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
-ctest --test-dir native/core/build --output-on-failure
+# Check for lint errors
+uvx ruff check .
+
+# Check formatting
+uvx ruff format --check .
+
+# Auto-format
+uvx ruff format .
 ```
+
+-----------------------------------------
+
+## CI/CD
+
+The GitHub Actions workflow (`.github/workflows/main.yml`) runs on every push, pull request, and nightly schedule across macOS, Windows, and Linux.
+
+### Pipeline Overview
+
+```
+lint --> test (macOS, Windows, Linux) --> build_artifacts --> publish_release
+```
+
+| Job | Trigger | Description |
+|-----|---------|-------------|
+| **Lint** | All pushes/PRs | Runs `ruff check` and `ruff format --check` on Ubuntu |
+| **Test** | After lint passes | Codegen, native build + C++ tests, Python tests (all 4 suites) on 3 platforms |
+| **Build Artifacts** | Nightly, manual, or tag push | Builds platform-specific wheels (`fdl`, `fdl-imaging`, `fdl-frameline-generator`, `fdl-viewer`) and standalone FDL Viewer app (PyInstaller) |
+| **Publish Release** | Tag push (`v*`) on main | Creates a GitHub Release and uploads all artifacts |
+
+### Caching
+
+Git LFS objects are cached per-OS to avoid re-downloading large test resources on every run. No build artifacts are cached.
+
+### Test Parallelism
+
+Non-viewer Python test suites run with `pytest-xdist` (`-n auto`) for parallel execution across all available CPU cores. Viewer tests run serially to avoid display conflicts.
