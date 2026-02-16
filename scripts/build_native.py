@@ -50,6 +50,7 @@ def main() -> int:
             str(BUILD_DIR),
             "--config",
             args.build_type,
+            "--parallel",
         ]
     )
     if result.returncode != 0:
