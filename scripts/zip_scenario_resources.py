@@ -127,9 +127,7 @@ def create_zip(output_path: Path, entries: list[tuple[Path, str]]) -> int:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Zip all Scenarios_For_Implementers test resources."
-    )
+    parser = argparse.ArgumentParser(description="Zip all Scenarios_For_Implementers test resources.")
     parser.add_argument(
         "-o",
         "--output",

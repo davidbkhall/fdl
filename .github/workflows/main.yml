@@ -49,7 +49,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [macos-latest, windows-latest, ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
     env:
@@ -137,25 +137,25 @@ jobs:
       - name: Install Python packages
         run: uv sync --extra dev
 
-      # --- Run Python test suites (temporarily disabled while focusing on builds) ---
-      # - name: Run fdl core tests
-      #   run: uv run pytest native/bindings/python/tests/ -v -n auto -p no:pytest-qt
+      # --- Run Python test suites ---
+      - name: Run fdl core tests
+        run: uv run pytest native/bindings/python/tests/ -v -n auto -p no:pytest-qt
 
-      # - name: Run fdl-imaging tests
-      #   run: uv run pytest packages/fdl_imaging/tests/ -v -n auto -p no:pytest-qt
+      - name: Run fdl-imaging tests
+        run: uv run pytest packages/fdl_imaging/tests/ -v -n auto -p no:pytest-qt
 
-      # - name: Run fdl-frameline-generator tests
-      #   run: uv run pytest packages/fdl_frameline_generator/tests/ -v -p no:pytest-qt
+      - name: Run fdl-frameline-generator tests
+        run: uv run pytest packages/fdl_frameline_generator/tests/ -v -p no:pytest-qt
 
-      # - name: Run fdl-viewer tests (Linux)
-      #   if: runner.os == 'Linux'
-      #   env:
-      #     QT_QPA_PLATFORM: offscreen
-      #   run: uv run pytest packages/fdl_viewer/tests/ -v
+      - name: Run fdl-viewer tests (Linux)
+        if: runner.os == 'Linux'
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: uv run pytest packages/fdl_viewer/tests/ -v
 
-      # - name: Run fdl-viewer tests (macOS/Windows)
-      #   if: runner.os != 'Linux'
-      #   run: uv run pytest packages/fdl_viewer/tests/ -v
+      - name: Run fdl-viewer tests (macOS/Windows)
+        if: runner.os != 'Linux'
+        run: uv run pytest packages/fdl_viewer/tests/ -v
 
   # ---------------------------------------------------------------------------
   # Build Artifacts — wheels + FDL Viewer app (nightly + release)
@@ -170,7 +170,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [macos-latest, windows-latest, ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
     env:
