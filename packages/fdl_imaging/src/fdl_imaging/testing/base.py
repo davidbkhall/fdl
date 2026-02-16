@@ -8,7 +8,7 @@ Extends BaseFDLTestCase with image processing and comparison capabilities.
 
 from pathlib import Path
 
-from fdl.testing import BaseFDLTestCase
+from fdl.testing.base import BaseFDLTestCase
 
 from fdl_imaging import process_image_with_fdl_template
 from fdl_imaging.testing.image_comparison import ImageComparison
