@@ -31,7 +31,13 @@ FetchContent_Declare(
 )
 # Disable jsoncons' own tests/examples
 set(JSONCONS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(jsoncons)
+# Use manual populate + EXCLUDE_FROM_ALL to prevent jsoncons install rules
+# from polluting our install tree
+FetchContent_GetProperties(jsoncons)
+if(NOT jsoncons_POPULATED)
+  FetchContent_Populate(jsoncons)
+  add_subdirectory(${jsoncons_SOURCE_DIR} ${jsoncons_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
 
 # Generate schema header from FDL schema files (embeds at compile time)
 set(FDL_SCHEMA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../schema")
@@ -116,6 +122,67 @@ elseif(UNIX)
     BUILD_WITH_INSTALL_RPATH ON
   )
 endif()
+
+# Library version / ABI version
+set_target_properties(fdl_core PROPERTIES
+  VERSION   ${PROJECT_VERSION}
+  SOVERSION ${FDL_ABI_VERSION_MAJOR}
+)
+
+# Header-only C++ RAII facade — depends on fdl_core
+add_library(fdl_hpp INTERFACE)
+target_include_directories(fdl_hpp INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../bindings/cpp>
+  $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(fdl_hpp INTERFACE fdl_core)
+target_compile_features(fdl_hpp INTERFACE cxx_std_17)
+
+# Namespace aliases for add_subdirectory / FetchContent consumers
+add_library(FDL::fdl_core ALIAS fdl_core)
+add_library(FDL::fdl_hpp  ALIAS fdl_hpp)
+
+# Installation
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+install(TARGETS fdl_core fdl_hpp
+  EXPORT FDLTargets
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+install(FILES
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/fdl/fdl_core.h
+  ${CMAKE_CURRENT_BINARY_DIR}/fdl_export.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/../bindings/cpp/fdl/fdl.hpp
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fdl
+)
+
+install(EXPORT FDLTargets
+  FILE        FDLTargets.cmake
+  NAMESPACE   FDL::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FDL
+)
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/FDLConfigVersion.cmake"
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMinorVersion
+)
+
+configure_package_config_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FDLConfig.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/FDLConfig.cmake"
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FDL
+)
+
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/FDLConfig.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/FDLConfigVersion.cmake"
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FDL
+)
 
 # Tests (optional, gated by BUILD_TESTING)
 option(FDL_BUILD_TESTS "Build fdl_core tests" ON)
