@@ -35,9 +35,13 @@ def _cleanup_temp_files():
 
     files = list(Path(tempfile.gettempdir()).glob("*.fdl"))
     files += Path(tempfile.gettempdir()).glob("*.yml")
-    # Remove temp files
+    # Remove temp files (ignore PermissionError on Windows where parallel
+    # workers may still hold a file lock)
     for file in files:
-        file.unlink(missing_ok=True)
+        try:
+            file.unlink(missing_ok=True)
+        except PermissionError:
+            pass
 
 
 @pytest.fixture
