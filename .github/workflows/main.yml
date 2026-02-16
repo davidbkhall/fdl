@@ -356,6 +356,7 @@ jobs:
           name: wheels-${{ runner.os }}-${{ runner.arch }}
           path: dist/*.whl
           if-no-files-found: warn
+          retention-days: 2
 
       - name: Upload FDL Viewer app
         uses: actions/upload-artifact@v4
@@ -365,6 +366,7 @@ jobs:
             dist/*.dmg
             dist/*.zip
           if-no-files-found: warn
+          retention-days: 2
 
   # ---------------------------------------------------------------------------
   # Package Scenario Resources (platform-independent, runs once)
@@ -417,6 +419,7 @@ jobs:
           name: Scenarios_For_Implementers
           path: Scenarios_For_Implementers.zip
           if-no-files-found: error
+          retention-days: 2
 
   # ---------------------------------------------------------------------------
   # Create GitHub Release & Attach Artifacts (tag pushes only)
