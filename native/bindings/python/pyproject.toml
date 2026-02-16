@@ -29,6 +29,7 @@ fdl_ffi = ["libfdl_core.dylib", "libfdl_core.so", "fdl_core.dll"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "-p no:pytest-qt"
 
 [tool.ruff]
 line-length = 140

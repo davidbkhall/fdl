@@ -19,6 +19,9 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/fdl_imaging"]
 
+[tool.pytest.ini_options]
+addopts = "-p no:pytest-qt"
+
 [tool.ruff]
 line-length = 140
 src = ["src", "tests"]

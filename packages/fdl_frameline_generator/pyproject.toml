@@ -38,4 +38,4 @@ select = ["F", "E", "W", "I", "UP", "RUF"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
-addopts = "-v -n auto"
+addopts = "-v -n auto -p no:pytest-qt"
