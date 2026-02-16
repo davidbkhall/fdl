@@ -367,11 +367,63 @@ jobs:
           if-no-files-found: warn
 
   # ---------------------------------------------------------------------------
+  # Package Scenario Resources (platform-independent, runs once)
+  # ---------------------------------------------------------------------------
+  package_scenarios:
+    name: Package Scenario Resources
+    needs: test
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/')
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          lfs: false
+
+      - name: Install Git LFS
+        run: |
+          brew install git-lfs || true
+          git lfs install --skip-smudge
+
+      - name: Cache Git LFS objects
+        uses: actions/cache@v4
+        with:
+          path: .git/lfs/objects
+          key: scenarios-git-lfs-${{ hashFiles('.gitattributes') }}
+          restore-keys: |
+            build-macOS-git-lfs-
+            macOS-git-lfs-
+
+      - name: Fetch LFS objects
+        run: |
+          git lfs fetch --include="resources/**"
+          git lfs checkout
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build scenario resources zip
+        run: python scripts/zip_scenario_resources.py -o Scenarios_For_Implementers.zip
+
+      - name: Upload scenario resources
+        uses: actions/upload-artifact@v4
+        with:
+          name: Scenarios_For_Implementers
+          path: Scenarios_For_Implementers.zip
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
   # Create GitHub Release & Attach Artifacts (tag pushes only)
   # ---------------------------------------------------------------------------
   publish_release:
     name: Create GitHub Release
-    needs: build_artifacts
+    needs: [build_artifacts, package_scenarios]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     permissions:
