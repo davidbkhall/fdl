@@ -11,7 +11,8 @@ import shutil
 from pathlib import Path
 
 from fdl import FDL, CanvasTemplate, write_to_file
-from fdl.testing import SCENARIO_CONFIGS, BaseFDLTestCase
+from fdl.testing.base import BaseFDLTestCase
+from fdl.testing.scenario_config import SCENARIO_CONFIGS
 from PySide6.QtCore import QObject, Signal
 
 
