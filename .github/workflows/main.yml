@@ -104,14 +104,6 @@ jobs:
         run: python scripts/run_codegen.py
 
       # --- Build native library ---
-      - name: Cache CMake build
-        uses: actions/cache@v4
-        with:
-          path: native/core/build
-          key: ${{ runner.os }}-cmake-${{ hashFiles('native/core/**', 'schema/**') }}
-          restore-keys: |
-            ${{ runner.os }}-cmake-
-
       - name: Build native library and run C++ tests
         run: python scripts/build_native.py --run-tests
 
@@ -245,15 +237,6 @@ jobs:
         run: python scripts/run_codegen.py
 
       # --- Build native library ---
-      - name: Cache CMake build
-        uses: actions/cache@v4
-        with:
-          path: native/core/build
-          key: build-${{ runner.os }}-cmake-${{ hashFiles('native/core/**', 'schema/**') }}
-          restore-keys: |
-            build-${{ runner.os }}-cmake-
-            ${{ runner.os }}-cmake-
-
       - name: Build native library
         run: python scripts/build_native.py --no-tests
 
