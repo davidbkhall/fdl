@@ -117,12 +117,18 @@ def build_with_pyinstaller() -> Path:
         else:
             cmd.extend(["--add-data", f"{resources_dir}:resources"])
 
-    # Hidden imports for dependencies not automatically detected
-    hidden_imports = [
-        # FDL workspace packages (editable installs not auto-detected)
+    # Collect workspace packages — editable installs require --collect-all
+    # to force PyInstaller to bundle the actual package files
+    collect_all = [
         "fdl",
         "fdl_ffi",
         "fdl_imaging",
+    ]
+    for pkg in collect_all:
+        cmd.extend(["--collect-all", pkg])
+
+    # Hidden imports for dependencies not automatically detected
+    hidden_imports = [
         # PySide6
         "PySide6.QtCore",
         "PySide6.QtGui",
