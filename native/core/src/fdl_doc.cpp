@@ -33,7 +33,7 @@ std::string Document::to_canonical_json(int indent) const {
     std::string buffer;
     if (indent > 0) {
         jsoncons::json_options options;
-        options.indent_size(indent);
+        options.indent_size(static_cast<uint8_t>(indent));
         ordered.dump_pretty(buffer, options);
     } else {
         ordered.dump(buffer);

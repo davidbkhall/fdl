@@ -172,7 +172,7 @@ char* node_to_canonical_json(const ojson* node, const std::string& type_hint, in
     std::string buffer;
     if (indent > 0) {
         jsoncons::json_options options;
-        options.indent_size(indent);
+        options.indent_size(static_cast<uint8_t>(indent));
         ordered.dump_pretty(buffer, options);
     } else {
         ordered.dump(buffer);
