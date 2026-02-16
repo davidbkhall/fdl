@@ -138,13 +138,13 @@ jobs:
 
       # --- Run Python test suites ---
       - name: Run fdl core tests
-        run: uv run pytest native/bindings/python/tests/ -v
+        run: uv run pytest native/bindings/python/tests/ -v -p no:pytest-qt
 
       - name: Run fdl-imaging tests
-        run: uv run pytest packages/fdl_imaging/tests/ -v
+        run: uv run pytest packages/fdl_imaging/tests/ -v -p no:pytest-qt
 
       - name: Run fdl-frameline-generator tests
-        run: uv run pytest packages/fdl_frameline_generator/tests/ -v
+        run: uv run pytest packages/fdl_frameline_generator/tests/ -v -p no:pytest-qt
 
       - name: Run fdl-viewer tests (Linux)
         if: runner.os == 'Linux'
