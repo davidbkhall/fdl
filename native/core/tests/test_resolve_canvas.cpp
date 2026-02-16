@@ -25,7 +25,7 @@ static fdl_doc_t* build_test_doc(
     auto* ctx = fdl_doc_add_context(doc, "ctx", "tester");
     REQUIRE(ctx != nullptr);
 
-    // Canvas 1 — source canvas (id == source_canvas_id)
+    // Canvas 1 -source canvas (id == source_canvas_id)
     auto* cvs1 = fdl_context_add_canvas(ctx, "cvs1", "Canvas 1920x1080",
                                          "cvs1", 1920, 1080, 1.0);
     REQUIRE(cvs1 != nullptr);
@@ -35,7 +35,7 @@ static fdl_doc_t* build_test_doc(
         1920.0, 1080.0, 0.0, 0.0);
     REQUIRE(fd1 != nullptr);
 
-    // Canvas 2 — derived canvas (source_canvas_id = "cvs1")
+    // Canvas 2 -derived canvas (source_canvas_id = "cvs1")
     auto* cvs2 = fdl_context_add_canvas(ctx, "cvs2", "Canvas 3840x2160",
                                          "cvs1", 3840, 2160, 1.0);
     REQUIRE(cvs2 != nullptr);
@@ -63,7 +63,7 @@ TEST_CASE("resolve_canvas_for_dimensions", "[resolve_canvas]") {
     auto* doc = build_test_doc(&ctx, &cvs1, &fd1, &cvs2, &fd2);
 
     SECTION("exact match") {
-        // Input dims match canvas2's own dimensions (3840x2160) — no resolution needed.
+        // Input dims match canvas2's own dimensions (3840x2160) -no resolution needed.
         fdl_dimensions_f64_t input = {3840.0, 2160.0};
         auto result = fdl_context_resolve_canvas_for_dimensions(ctx, input, cvs2, fd2);
 

@@ -318,7 +318,7 @@ TEST_CASE("Framing intent field accessors", "[accessors][framing_intent]") {
 // Canvas template field accessors
 // -----------------------------------------------------------------------
 
-TEST_CASE("Canvas template field accessors — basic", "[accessors][canvas_template]") {
+TEST_CASE("Canvas template field accessors -basic", "[accessors][canvas_template]") {
     auto* doc = parse_full_fdl();
     auto* ct = fdl_doc_canvas_template_at(doc, 0);
 
@@ -346,7 +346,7 @@ TEST_CASE("Canvas template field accessors — basic", "[accessors][canvas_templ
     fdl_doc_free(doc);
 }
 
-TEST_CASE("Canvas template field accessors — with optional fields", "[accessors][canvas_template]") {
+TEST_CASE("Canvas template field accessors -with optional fields", "[accessors][canvas_template]") {
     auto* doc = parse_full_fdl();
     auto* ct = fdl_doc_canvas_template_at(doc, 1); // CT_UHD
 
@@ -386,7 +386,7 @@ TEST_CASE("Document version accessors", "[accessors][header]") {
     fdl_doc_free(doc);
 }
 
-TEST_CASE("Document version accessors — NULL safety", "[accessors][header][null]") {
+TEST_CASE("Document version accessors -NULL safety", "[accessors][header][null]") {
     REQUIRE(fdl_doc_get_version_major(nullptr) == 0);
     REQUIRE(fdl_doc_get_version_minor(nullptr) == 0);
 }
@@ -442,7 +442,7 @@ TEST_CASE("Context clip_id accessors", "[accessors][context]") {
     auto* doc = parse_full_fdl();
     auto* ctx = fdl_doc_context_at(doc, 0);
 
-    SECTION("Context with clip_id — JSON getter") {
+    SECTION("Context with clip_id -JSON getter") {
         REQUIRE(fdl_context_has_clip_id(ctx) == 1);
         auto* json = fdl_context_get_clip_id(ctx);
         REQUIRE(json != nullptr);
@@ -450,7 +450,7 @@ TEST_CASE("Context clip_id accessors", "[accessors][context]") {
         REQUIRE(json_str.find("A001") != std::string::npos);
     }
 
-    SECTION("Context with clip_id — struct getter (file variant)") {
+    SECTION("Context with clip_id -struct getter (file variant)") {
         auto cid = fdl_context_get_clip_id_struct(ctx);
         REQUIRE(cid.clip_name != nullptr);
         REQUIRE(std::string(cid.clip_name) == "A001");
@@ -533,7 +533,7 @@ TEST_CASE("Framing decision find_by_id (child of canvas)", "[accessors][collecti
 // clip_id setter / remover / validator
 // -----------------------------------------------------------------------
 
-TEST_CASE("set_clip_id_json — file variant", "[accessors][context][clip_id]") {
+TEST_CASE("set_clip_id_json -file variant", "[accessors][context][clip_id]") {
     auto* doc = parse_full_fdl();
     auto* ctx = fdl_doc_context_at(doc, 0);
 
@@ -554,7 +554,7 @@ TEST_CASE("set_clip_id_json — file variant", "[accessors][context][clip_id]") 
     fdl_doc_free(doc);
 }
 
-TEST_CASE("set_clip_id_json — sequence variant", "[accessors][context][clip_id]") {
+TEST_CASE("set_clip_id_json -sequence variant", "[accessors][context][clip_id]") {
     auto* doc = parse_full_fdl();
     auto* ctx = fdl_doc_context_at(doc, 0);
 
@@ -573,7 +573,7 @@ TEST_CASE("set_clip_id_json — sequence variant", "[accessors][context][clip_id
     fdl_doc_free(doc);
 }
 
-TEST_CASE("set_clip_id_json — mutual exclusion rejected", "[accessors][context][clip_id]") {
+TEST_CASE("set_clip_id_json -mutual exclusion rejected", "[accessors][context][clip_id]") {
     auto* doc = parse_full_fdl();
     auto* ctx = fdl_doc_context_at(doc, 0);
 
@@ -603,7 +603,7 @@ TEST_CASE("remove_clip_id", "[accessors][context][clip_id]") {
     fdl_context_remove_clip_id(ctx);
     REQUIRE(fdl_context_has_clip_id(ctx) == 0);
 
-    // Remove again — should be safe
+    // Remove again -should be safe
     fdl_context_remove_clip_id(ctx);
     REQUIRE(fdl_context_has_clip_id(ctx) == 0);
 
