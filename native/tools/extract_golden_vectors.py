@@ -912,7 +912,7 @@ def main():
         (roundtrip_path, roundtrip),
         (validation_path, validation),
     ]:
-        path.write_text(json.dumps(data, indent=2) + "\n")
+        path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
         print(f"Wrote {len(data['vectors'])} vectors to {path}")
 
     # Verify

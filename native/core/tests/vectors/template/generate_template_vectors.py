@@ -315,7 +315,7 @@ vectors.append(make_vector("right_bottom_alignment", tmpl_rb, canvas1, fd1,
 result = {"description": "Canvas template apply() end-to-end golden vectors", "version": "1.0", "vectors": vectors}
 
 output_path = "template_vectors.json"
-with open(output_path, "w") as f:
+with open(output_path, "w", encoding="utf-8") as f:
     json.dump(result, f, indent=2)
 
 print(f"Generated {len(vectors)} vectors to {output_path}")

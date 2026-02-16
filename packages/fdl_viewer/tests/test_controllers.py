@@ -38,7 +38,7 @@ class TestFileController:
     def test_load_fdl_invalid_json(self, qapp, file_controller, tmp_path):
         """Test loading an invalid JSON file."""
         invalid_file = tmp_path / "invalid.fdl"
-        invalid_file.write_text("not valid json")
+        invalid_file.write_text("not valid json", encoding="utf-8")
 
         spy = QSignalSpy(file_controller.error_occurred)
 

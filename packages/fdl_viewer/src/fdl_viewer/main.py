@@ -38,7 +38,7 @@ def setup_exception_handler() -> None:
         log_file = log_dir / f"FDLViewer_crash_{timestamp}.log"
 
         try:
-            with open(log_file, "w") as f:
+            with open(log_file, "w", encoding="utf-8") as f:
                 f.write("FDL Viewer Crash Report\n")
                 f.write(f"Version: {__version__}\n")
                 f.write(f"Timestamp: {datetime.now().isoformat()}\n")

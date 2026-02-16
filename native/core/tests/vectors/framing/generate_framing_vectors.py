@@ -127,7 +127,7 @@ vectors.append(make_vector("high_protection_factor", canvas1, fi_high_prot, rnd_
 result = {"description": "from_framing_intent golden vectors", "version": "1.0", "vectors": vectors}
 
 output_path = "from_intent_vectors.json"
-with open(output_path, "w") as f:
+with open(output_path, "w", encoding="utf-8") as f:
     json.dump(result, f, indent=2)
 
 print(f"Generated {len(vectors)} vectors to {output_path}")

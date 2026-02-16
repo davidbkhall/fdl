@@ -1051,7 +1051,7 @@ def generate_raii(idl: IDL, output_dir: Path) -> None:
         aux_json_wrappers=aux["json_wrappers"],
         aux_version=aux["version"],
     )
-    (output_dir / "fdl.hpp").write_text(header_src)
+    (output_dir / "fdl.hpp").write_text(header_src, encoding="utf-8")
 
     vt_names = [vt["cpp_class"] for vt in value_types]
     ff_names = [ff["cpp_name"] for ff in free_functions]

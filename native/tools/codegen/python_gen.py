@@ -389,13 +389,13 @@ def generate_ffi(idl: IDL, output_dir: Path) -> None:
     # --- _enums.py ---
     tmpl = env.get_template("python/enums.py.j2")
     enums_src = tmpl.render(enums=idl.enums)
-    (output_dir / "_enums.py").write_text(enums_src)
+    (output_dir / "_enums.py").write_text(encoding="utf-8", data=enums_src)
 
     # --- _structs.py ---
     tmpl = env.get_template("python/structs.py.j2")
     struct_contexts = [_build_struct_context(vt, idl) for vt in idl.value_types]
     structs_src = tmpl.render(value_types=struct_contexts)
-    (output_dir / "_structs.py").write_text(structs_src)
+    (output_dir / "_structs.py").write_text(encoding="utf-8", data=structs_src)
 
     # --- _functions.py ---
     tmpl = env.get_template("python/ffi.py.j2")
@@ -410,7 +410,7 @@ def generate_ffi(idl: IDL, output_dir: Path) -> None:
                 used_vt_names.add(clean)
     vt_contexts = sorted([{"name": n} for n in used_vt_names], key=lambda x: x["name"])
     functions_src = tmpl.render(functions=fn_contexts, value_types=vt_contexts)
-    (output_dir / "_functions.py").write_text(functions_src)
+    (output_dir / "_functions.py").write_text(encoding="utf-8", data=functions_src)
 
     print(f"Generated {len(idl.enums)} enums, {len(idl.value_types)} structs, {len(idl.functions)} functions")
     print(f"Output: {output_dir}")
@@ -435,7 +435,7 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
             constants_contexts.append(build_constants_enum_context(enum))
     tmpl = env.get_template("python/constants.py.j2")
     constants_src = tmpl.render(enums=constants_contexts)
-    (output_dir / "constants.py").write_text(constants_src)
+    (output_dir / "constants.py").write_text(encoding="utf-8", data=constants_src)
 
     # --- Build all value type contexts, then split types vs rounding ---
     all_vt_contexts = []
@@ -452,7 +452,7 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
         all_types_enum_imports.update(ctx["enum_imports"])
     tmpl = env.get_template("python/types.py.j2")
     types_src = tmpl.render(value_types=types_vt_contexts, enum_imports=sorted(all_types_enum_imports))
-    (output_dir / "types.py").write_text(types_src)
+    (output_dir / "types.py").write_text(encoding="utf-8", data=types_src)
 
     # --- _converters.py (C struct ↔ Python value type converters) ---
     converter_contexts = []
@@ -479,12 +479,12 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
         rounding_imports=rounding_converter_imports,
         enum_class_imports=sorted(all_converter_enum_imports),
     )
-    (output_dir / "converters.py").write_text(converters_src)
+    (output_dir / "converters.py").write_text(encoding="utf-8", data=converters_src)
 
     # --- _enum_maps.py ---
     tmpl = env.get_template("python/enum_maps.py.j2")
     enum_maps_src = tmpl.render(enums=enum_contexts)
-    (output_dir / "enum_maps.py").write_text(enum_maps_src)
+    (output_dir / "enum_maps.py").write_text(encoding="utf-8", data=enum_maps_src)
 
     # --- Build class contexts ---
     ir_class_by_name = {cls.name: cls for cls in ir.classes}
@@ -502,7 +502,7 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
         error_contexts = [{"name": e.name, "parent": e.parent, "doc": e.doc} for e in aux.errors]
         tmpl = env.get_template("python/errors.py.j2")
         errors_src = tmpl.render(errors=error_contexts)
-        (output_dir / "errors.py").write_text(errors_src)
+        (output_dir / "errors.py").write_text(encoding="utf-8", data=errors_src)
         error_class_names = [e.name for e in aux.errors]
 
     # --- _header.py (from auxiliary_types) ---
@@ -524,7 +524,7 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
             eq_expr=eq_expr,
             repr_format=repr_format,
         )
-        (output_dir / "header.py").write_text(version_src)
+        (output_dir / "header.py").write_text(encoding="utf-8", data=version_src)
         version_class_name = v.class_name
 
     # --- Build dataclass contexts for inlining into class modules ---
@@ -592,7 +592,7 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
             json_wrapper_names.append(jw.class_name)
         tmpl = env.get_template("python/clipid.py.j2")
         jw_src = tmpl.render(wrappers=jw_contexts)
-        (output_dir / "clipid.py").write_text(jw_src)
+        (output_dir / "clipid.py").write_text(encoding="utf-8", data=jw_src)
 
     # --- Free functions (split by module: rounding vs utils) ---
     ff_contexts = [build_free_function_context(ff, idl) for ff in idl.free_functions]
@@ -649,7 +649,7 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
         type_imports=sorted(ff_type_imports),
         enum_imports=sorted(rs_enum_imports),
     )
-    (output_dir / "rounding.py").write_text(rounding_src)
+    (output_dir / "rounding.py").write_text(encoding="utf-8", data=rounding_src)
     rounding_ff_names = sorted(ctx["python_name"] for ctx in rounding_ff_contexts)
     rounding_vt_names = sorted(ctx["python_class"] for ctx in rounding_vt_contexts)
 
@@ -674,7 +674,7 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
         free_functions=utils_ff_contexts,
         utils_type_imports=sorted(utils_extra_types),
     )
-    (output_dir / "utils.py").write_text(utils_src)
+    (output_dir / "utils.py").write_text(encoding="utf-8", data=utils_src)
 
     # --- Per-class facade files ---
     dataclass_name_set = set(dataclass_names)
@@ -696,7 +696,7 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
                 if field["type"] in types_set and field["type"] not in imports["type_imports"]:
                     imports["type_imports"] = sorted(set(imports["type_imports"]) | {field["type"]})
         cls_src = tmpl.render(cls=cls_ctx, imports=imports)
-        (output_dir / f"{module_name}.py").write_text(cls_src)
+        (output_dir / f"{module_name}.py").write_text(encoding="utf-8", data=cls_src)
 
     # --- __init__.py ---
     class_names = sorted(
@@ -771,7 +771,7 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
         init_lines.append(f"from .header import {version_class_name}  # noqa: F401")
 
     init_lines.append("")
-    (output_dir / "__init__.py").write_text("\n".join(init_lines))
+    (output_dir / "__init__.py").write_text(encoding="utf-8", data="\n".join(init_lines))
 
     print(f"Generated {len(class_contexts)} facade classes, {len(enum_contexts)} enum maps, "
           f"{len(constants_contexts)} constants, {len(types_vt_contexts) + len(rounding_vt_contexts)} value types")

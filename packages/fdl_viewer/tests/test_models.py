@@ -172,7 +172,7 @@ class TestRecentFilesModel:
         """Test adding a file to recent files."""
         # Create a real file to add (RecentFilesModel filters non-existent files)
         test_file = tmp_path / "file.fdl"
-        test_file.write_text("{}")
+        test_file.write_text("{}", encoding="utf-8")
 
         model = RecentFilesModel(max_files=5)
         model.clear()
@@ -187,7 +187,7 @@ class TestRecentFilesModel:
         """Test that max files limit is respected."""
         # Create real files
         for i in range(5):
-            (tmp_path / f"file{i}.fdl").write_text("{}")
+            (tmp_path / f"file{i}.fdl").write_text("{}", encoding="utf-8")
 
         model = RecentFilesModel(max_files=3)
         model.clear()
@@ -203,8 +203,8 @@ class TestRecentFilesModel:
         # Create real files
         file1 = tmp_path / "file1.fdl"
         file2 = tmp_path / "file2.fdl"
-        file1.write_text("{}")
-        file2.write_text("{}")
+        file1.write_text("{}", encoding="utf-8")
+        file2.write_text("{}", encoding="utf-8")
 
         model = RecentFilesModel(max_files=5)
         model.clear()
@@ -220,7 +220,7 @@ class TestRecentFilesModel:
     def test_clear(self, qapp, tmp_path):
         """Test clearing recent files."""
         test_file = tmp_path / "file.fdl"
-        test_file.write_text("{}")
+        test_file.write_text("{}", encoding="utf-8")
 
         model = RecentFilesModel(max_files=5)
         model.add_file(str(test_file))

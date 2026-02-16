@@ -27,7 +27,7 @@ def test_read_from_file_validated():
 
 
 def test_read_from_string():
-    raw = SAMPLE_FDL_FILE.read_text()
+    raw = SAMPLE_FDL_FILE.read_text(encoding="utf-8")
     result = read_from_string(raw)
     assert isinstance(result, FDL)
     assert result.as_dict()
@@ -37,14 +37,14 @@ def test_write_to_file(tmp_path):
     my_path = Path(tmp_path, "myfdl.fdl")
     fdl1 = read_from_file(SAMPLE_FDL_FILE)
 
-    my_path.write_text(fdl1.as_json())
+    my_path.write_text(fdl1.as_json(), encoding="utf-8")
     fdl2 = read_from_file(my_path)
 
     assert fdl1.as_dict() == fdl2.as_dict()
 
 
 def test_write_to_string():
-    raw = SAMPLE_FDL_FILE.read_text()
+    raw = SAMPLE_FDL_FILE.read_text(encoding="utf-8")
     result = read_from_string(raw)
 
     json_str = result.as_json()

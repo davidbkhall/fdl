@@ -677,7 +677,7 @@ def _parse_auxiliary_types(raw: dict | None) -> AuxiliaryTypes:
 
 
 def parse_idl(path: Path) -> IDL:
-    with path.open() as f:
+    with path.open(encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
     abi = data["abi_version"]

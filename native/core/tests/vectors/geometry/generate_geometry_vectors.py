@@ -485,7 +485,7 @@ def main():
     }
 
     output_path = "geometry_vectors.json"
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(all_vectors, f, indent=2)
     print(f"Generated {output_path}")
 

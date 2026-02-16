@@ -105,7 +105,7 @@ def load_stylesheet(style_name: str) -> str:
     # Try the standard path first
     path = get_stylesheet_path(style_name)
     if path.exists():
-        content = path.read_text()
+        content = path.read_text(encoding="utf-8")
 
     # For frozen apps, try additional fallback paths
     if not content and getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
@@ -120,7 +120,7 @@ def load_stylesheet(style_name: str) -> str:
         ]
         for fallback in fallback_paths:
             if fallback.exists():
-                content = fallback.read_text()
+                content = fallback.read_text(encoding="utf-8")
                 break
 
     # Replace icon path placeholder with actual path

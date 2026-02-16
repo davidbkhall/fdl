@@ -183,7 +183,7 @@ def generate_test_ids(pairs: list[tuple[int, str, str, Path, Path, str, Path]]) 
 def log_skipped(test_num: int, source_name: str, category: str, reason: str):
     """Log a skipped test to the skipped log file."""
     OUTPUTS_FOLDER.mkdir(parents=True, exist_ok=True)
-    with open(SKIPPED_LOG_PATH, "a") as f:
+    with open(SKIPPED_LOG_PATH, "a", encoding="utf-8") as f:
         f.write(f"{test_num:03d} | {category}/{source_name} | {reason}\n")
 
 
@@ -220,7 +220,7 @@ def log_error(
         Stack trace if available.
     """
     OUTPUTS_FOLDER.mkdir(parents=True, exist_ok=True)
-    with open(ERRORS_LOG_PATH, "a") as f:
+    with open(ERRORS_LOG_PATH, "a", encoding="utf-8") as f:
         f.write("=" * 80 + "\n")
         f.write(f"Test: {test_num:03d} | Category: {category} | Source: {source_name}\n")
         f.write(f"Expected output: {expected_output}\n")

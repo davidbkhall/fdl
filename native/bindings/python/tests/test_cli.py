@@ -20,7 +20,7 @@ def test_validate_nonexistent_file():
 
 def test_validate_malformed_file(tmp_path):
     bad_file = tmp_path / "bad.fdl"
-    bad_file.write_text("{not valid json")
+    bad_file.write_text("{not valid json", encoding="utf-8")
     result = main([str(bad_file)])
     assert result == 1
 

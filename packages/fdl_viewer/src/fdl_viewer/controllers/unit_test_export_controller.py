@@ -71,7 +71,7 @@ class UnitTestExportController(QObject):
 
         exported_scenarios_path = Path(_exported_mod.__file__)
         if exported_scenarios_path.exists():
-            content = exported_scenarios_path.read_text()
+            content = exported_scenarios_path.read_text(encoding="utf-8")
             # Find all scenario numbers in the file
             matches = re.findall(r"(\d+):\s*ScenarioConfig\(", content)
             for match in matches:
@@ -306,7 +306,7 @@ class UnitTestExportController(QObject):
             # File doesn't exist, will be created separately
             return
 
-        content = exported_scenarios_path.read_text()
+        content = exported_scenarios_path.read_text(encoding="utf-8")
 
         # Find the EXPORTED_SCENARIO_CONFIGS dict and insert before the closing brace
         # Pattern: find "EXPORTED_SCENARIO_CONFIGS = {" followed by content and "}"
@@ -332,4 +332,4 @@ class UnitTestExportController(QObject):
                 new_content = f"\n{config_code}\n"
 
             new_file_content = content[: match.start()] + prefix + new_content + suffix + content[match.end() :]
-            exported_scenarios_path.write_text(new_file_content)
+            exported_scenarios_path.write_text(new_file_content, encoding="utf-8")

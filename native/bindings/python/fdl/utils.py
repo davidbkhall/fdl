@@ -328,7 +328,7 @@ def write_to_file(fdl_obj: FDL, file_path: Path | str, validate: bool = True) ->
         Run validation before writing (default True).
     """
     file_path = Path(file_path)
-    file_path.write_text(write_to_string(fdl_obj, validate=validate))
+    file_path.write_text(write_to_string(fdl_obj, validate=validate), encoding="utf-8")
 
 
 def make_rect(x: float, y: float, width: float, height: float) -> Rect:
