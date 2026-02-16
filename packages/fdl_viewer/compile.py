@@ -119,6 +119,10 @@ def build_with_pyinstaller() -> Path:
 
     # Hidden imports for dependencies not automatically detected
     hidden_imports = [
+        # FDL workspace packages (editable installs not auto-detected)
+        "fdl",
+        "fdl_ffi",
+        "fdl_imaging",
         # PySide6
         "PySide6.QtCore",
         "PySide6.QtGui",
