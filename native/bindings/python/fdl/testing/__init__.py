@@ -17,6 +17,7 @@ from fdl.testing.scenario_config import (
     get_scenario_test_id,
     get_variant_by_letter,
 )
+
 __all__ = [
     "SCENARIO_CONFIGS",
     "BaseFDLTestCase",
