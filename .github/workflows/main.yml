@@ -328,23 +328,20 @@ jobs:
       - name: Install PyInstaller
         run: uv pip install pyinstaller --system
 
-      - name: Build FDL Viewer application
+      - name: Build FDL Viewer application (macOS)
+        if: runner.os == 'macOS'
+        run: python packages/fdl_viewer/compile.py --no-sign
+
+      - name: Build FDL Viewer application (Windows)
+        if: runner.os == 'Windows'
         run: python packages/fdl_viewer/compile.py --no-sign --no-dmg
 
       # --- Package FDL Viewer application for upload ---
-      - name: Package FDL Viewer (Linux)
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          cd packages/fdl_viewer/dist
-          tar czf ../../../dist/FDL-Viewer-Linux-x86_64.tar.gz "FDL Viewer"
-
       - name: Package FDL Viewer (macOS)
         if: runner.os == 'macOS'
         shell: bash
         run: |
-          cd packages/fdl_viewer/dist
-          tar czf ../../../dist/FDL-Viewer-macOS.tar.gz "FDL Viewer.app"
+          cp packages/fdl_viewer/dist/*.dmg dist/
 
       - name: Package FDL Viewer (Windows)
         if: runner.os == 'Windows'
@@ -353,11 +350,20 @@ jobs:
           Compress-Archive -Path "packages/fdl_viewer/dist/FDL Viewer" -DestinationPath "dist/FDL-Viewer-Windows-x64.zip"
 
       # --- Upload build artifacts ---
-      - name: Upload build artifacts
+      - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ runner.os }}
-          path: dist/*
+          name: wheels-${{ runner.os }}
+          path: dist/*.whl
+          if-no-files-found: warn
+
+      - name: Upload FDL Viewer app
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ runner.os }}
+          path: |
+            dist/*.dmg
+            dist/*.zip
           if-no-files-found: warn
 
   # ---------------------------------------------------------------------------
