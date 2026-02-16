@@ -326,15 +326,15 @@ jobs:
         run: uv sync --extra dev
 
       - name: Install PyInstaller
-        run: uv pip install pyinstaller --system
+        run: uv pip install pyinstaller
 
       - name: Build FDL Viewer application (macOS)
         if: runner.os == 'macOS'
-        run: python packages/fdl_viewer/compile.py --no-sign
+        run: uv run python packages/fdl_viewer/compile.py --no-sign
 
       - name: Build FDL Viewer application (Windows)
         if: runner.os == 'Windows'
-        run: python packages/fdl_viewer/compile.py --no-sign --no-dmg
+        run: uv run python packages/fdl_viewer/compile.py --no-sign --no-dmg
 
       # --- Package FDL Viewer application for upload ---
       - name: Package FDL Viewer (macOS)
@@ -347,20 +347,20 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Compress-Archive -Path "packages/fdl_viewer/dist/FDL Viewer" -DestinationPath "dist/FDL-Viewer-Windows-x64.zip"
+          Compress-Archive -Path "packages/fdl_viewer/dist/FDL Viewer" -DestinationPath "dist/FDL_Viewer-${{ runner.os }}-${{ runner.arch }}.zip"
 
       # --- Upload build artifacts ---
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ runner.os }}
+          name: wheels-${{ runner.os }}-${{ runner.arch }}
           path: dist/*.whl
           if-no-files-found: warn
 
       - name: Upload FDL Viewer app
         uses: actions/upload-artifact@v4
         with:
-          name: app-${{ runner.os }}
+          name: FDL_Viewer-${{ runner.os }}-${{ runner.arch }}
           path: |
             dist/*.dmg
             dist/*.zip
