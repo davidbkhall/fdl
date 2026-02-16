@@ -45,10 +45,7 @@ def _load_and_bind():
     # ABI version check
     ver = loaded.fdl_abi_version()
     if ver.major != _ABI_MAJOR or ver.minor < _ABI_MINOR_MIN:
-        msg = (
-            f"fdl_core ABI {ver.major}.{ver.minor}.{ver.patch} is incompatible. "
-            f"Expected {_ABI_MAJOR}.>={_ABI_MINOR_MIN}.x"
-        )
+        msg = f"fdl_core ABI {ver.major}.{ver.minor}.{ver.patch} is incompatible. Expected {_ABI_MAJOR}.>={_ABI_MINOR_MIN}.x"
         raise RuntimeError(msg)
 
     return loaded

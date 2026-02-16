@@ -7,6 +7,7 @@ When fdl_ffi bundles a native shared library (libfdl_core.dylib/so/dll),
 the wheel must not be tagged as 'py3-none-any'. This override ensures
 the wheel gets proper platform tags like 'cp312-cp312-macosx_14_0_arm64'.
 """
+
 from setuptools import setup
 from setuptools.dist import Distribution
 

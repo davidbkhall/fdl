@@ -96,8 +96,7 @@ _PY_DEFAULT_TO_CPP: dict[str, str] = {
 }
 
 # Types that should be passed by const ref
-_CONST_REF_TYPES = {"std::string", "fdl_dimensions_i64_t", "fdl_dimensions_f64_t",
-                     "fdl_point_f64_t", "fdl_round_strategy_t"}
+_CONST_REF_TYPES = {"std::string", "fdl_dimensions_i64_t", "fdl_dimensions_f64_t", "fdl_point_f64_t", "fdl_round_strategy_t"}
 
 # All facade class names → Ref class names
 _ALL_CLASSES = {"FDL", "Context", "Canvas", "FramingDecision", "FramingIntent", "CanvasTemplate"}
@@ -225,8 +224,7 @@ def _vt_type_is_wrapper(cpp_type: str) -> bool:
     return cpp_type in _VT_CLASS_MAP.values()
 
 
-def _build_vt_method(method: VTMethod, vt: ValueType, self_class: str,
-                     vt_defined: set[str]) -> dict | None:
+def _build_vt_method(method: VTMethod, vt: ValueType, self_class: str, vt_defined: set[str]) -> dict | None:
     """Build C++ method context for a value type method.
 
     Returns None if the method should be skipped.
@@ -322,8 +320,7 @@ def _build_pure_method_body(method: VTMethod, vt: ValueType, self_class: str) ->
     return ""
 
 
-def _build_out_param_body(method: VTMethod, ret_cpp: str, self_class: str,
-                          c_args: list[str]) -> str:
+def _build_out_param_body(method: VTMethod, ret_cpp: str, self_class: str, c_args: list[str]) -> str:
     """Build body for a method with out params (e.g. clamp_to_dims)."""
     lines = []
     for op in method.out_params:
@@ -344,19 +341,23 @@ def _build_vt_operator(op: VTOperator, vt: ValueType, self_class: str) -> list[d
     """Build C++ operator context(s) for a value type operator. Returns list (may be >1 for scalar_or_point)."""
     if op.op == "__bool__":
         # Delegate to is_zero() which calls the C ABI — keeps logic in one place
-        return [{
-            "kind": "explicit_bool",
-            "body": "return !is_zero();",
-        }]
+        return [
+            {
+                "kind": "explicit_bool",
+                "body": "return !is_zero();",
+            }
+        ]
 
     if op.op == "__iadd__":
         field_names = [f.name for f in vt.fields]
         assigns = " ".join(f"data_.{fn} += other.data_.{fn};" for fn in field_names)
-        return [{
-            "kind": "iadd",
-            "param_decl": f"const {self_class}& other",
-            "body": f"{assigns} return *this;",
-        }]
+        return [
+            {
+                "kind": "iadd",
+                "param_decl": f"const {self_class}& other",
+                "body": f"{assigns} return *this;",
+            }
+        ]
 
     cpp_op = _OP_MAP.get(op.op)
     if not cpp_op:
@@ -386,21 +387,25 @@ def _build_vt_operator(op: VTOperator, vt: ValueType, self_class: str) -> list[d
         ]
 
     if ret_cpp == "bool":
-        return [{
+        return [
+            {
+                "kind": "binary",
+                "op_symbol": cpp_op,
+                "return_type": "bool",
+                "param_decl": f"const {self_class}& other",
+                "body": f"return ::{op.c_function}(data_, other.data_) != 0;",
+            }
+        ]
+
+    return [
+        {
             "kind": "binary",
             "op_symbol": cpp_op,
-            "return_type": "bool",
+            "return_type": ret_cpp,
             "param_decl": f"const {self_class}& other",
-            "body": f"return ::{op.c_function}(data_, other.data_) != 0;",
-        }]
-
-    return [{
-        "kind": "binary",
-        "op_symbol": cpp_op,
-        "return_type": ret_cpp,
-        "param_decl": f"const {self_class}& other",
-        "body": f"return {ret_cpp}(::{op.c_function}(data_, other.data_));",
-    }]
+            "body": f"return {ret_cpp}(::{op.c_function}(data_, other.data_));",
+        }
+    ]
 
 
 def _build_vt_class(vt: ValueType, vt_defined: set[str]) -> dict | None:
@@ -453,8 +458,7 @@ def _build_vt_class(vt: ValueType, vt_defined: set[str]) -> dict | None:
     _CROSS_EQ_FN = {
         "fdl_dimensions_i64_t": "::fdl_dimensions_equal(fdl_dimensions_f64_t{(double)data_.width, (double)data_.height}, other.raw()) != 0",
         "fdl_dimensions_f64_t": (
-            "::fdl_dimensions_equal(data_, fdl_dimensions_f64_t"
-            "{(double)other.raw().width, (double)other.raw().height}) != 0"
+            "::fdl_dimensions_equal(data_, fdl_dimensions_f64_t{(double)other.raw().width, (double)other.raw().height}) != 0"
         ),
     }
     cross_eq_class = None
@@ -551,29 +555,35 @@ def _build_auxiliary_structs(idl: IDL) -> dict:
             # Check if it's another wrapper type (e.g. FileSequence)
             is_nested = f.field_type not in _JW_FIELD_CPP
             if f.nullable:
-                fields.append({
-                    "name": f.name,
-                    "cpp_type": f"std::optional<{cpp_type}>" if not is_nested else f"std::optional<{f.field_type}>",
-                    "nullable": True,
-                    "c_has_flag": f.c_has_flag,
-                    "is_nested": is_nested,
-                    "base_type": cpp_type if not is_nested else f.field_type,
-                })
+                fields.append(
+                    {
+                        "name": f.name,
+                        "cpp_type": f"std::optional<{cpp_type}>" if not is_nested else f"std::optional<{f.field_type}>",
+                        "nullable": True,
+                        "c_has_flag": f.c_has_flag,
+                        "is_nested": is_nested,
+                        "base_type": cpp_type if not is_nested else f.field_type,
+                    }
+                )
             else:
-                fields.append({
-                    "name": f.name,
-                    "cpp_type": cpp_type,
-                    "nullable": False,
-                    "c_has_flag": None,
-                    "is_nested": False,
-                    "base_type": cpp_type,
-                })
-        json_wrappers.append({
-            "class_name": jw.class_name,
-            "c_struct": jw.c_struct,
-            "free_fn": jw.free_fn,
-            "fields": fields,
-        })
+                fields.append(
+                    {
+                        "name": f.name,
+                        "cpp_type": cpp_type,
+                        "nullable": False,
+                        "c_has_flag": None,
+                        "is_nested": False,
+                        "base_type": cpp_type,
+                    }
+                )
+        json_wrappers.append(
+            {
+                "class_name": jw.class_name,
+                "c_struct": jw.c_struct,
+                "free_fn": jw.free_fn,
+                "fields": fields,
+            }
+        )
 
     version = None
     if idl.auxiliary_types.version:
@@ -618,36 +628,34 @@ def _build_prop(prop: dict, handle_field: str) -> dict | None:
     # Determine C++ getter return type and body
     if prop["converter"] == "string":
         cpp_return_type = "std::string"
-        getter_body = (f'const char* p = {prop["getter_fn"]}({handle_field});\n'
-                       f'        return p ? std::string(p) : std::string();')
+        getter_body = f"const char* p = {prop['getter_fn']}({handle_field});\n        return p ? std::string(p) : std::string();"
     elif prop["converter"] == "bool":
         cpp_return_type = "bool"
-        getter_body = f'return {prop["getter_fn"]}({handle_field}) != 0;'
+        getter_body = f"return {prop['getter_fn']}({handle_field}) != 0;"
     elif nullable and prop["has_fn"]:
         base_type = resolve_cpp_type(type_key)
         cpp_return_type = f"std::optional<{base_type}>"
-        getter_body = (f'if (!{prop["has_fn"]}({handle_field})) return std::nullopt;\n'
-                       f'        return {prop["getter_fn"]}({handle_field});')
+        getter_body = f"if (!{prop['has_fn']}({handle_field})) return std::nullopt;\n        return {prop['getter_fn']}({handle_field});"
     else:
         cpp_return_type = resolve_cpp_type(type_key)
-        getter_body = f'return {prop["getter_fn"]}({handle_field});'
+        getter_body = f"return {prop['getter_fn']}({handle_field});"
 
     # Setter
     setter = None
     if prop["setter_fn"]:
         if prop["converter"] == "string":
             setter_type = "const std::string&"
-            setter_body = f'{prop["setter_fn"]}({handle_field}, value.c_str());'
+            setter_body = f"{prop['setter_fn']}({handle_field}, value.c_str());"
         elif prop["converter"] == "bool":
             setter_type = "bool"
-            setter_body = f'{prop["setter_fn"]}({handle_field}, value ? 1 : 0);'
+            setter_body = f"{prop['setter_fn']}({handle_field}, value ? 1 : 0);"
         elif type_key == "double":
             setter_type = "double"
-            setter_body = f'{prop["setter_fn"]}({handle_field}, value);'
+            setter_body = f"{prop['setter_fn']}({handle_field}, value);"
         else:
             base = resolve_cpp_type(type_key)
             setter_type = base
-            setter_body = f'{prop["setter_fn"]}({handle_field}, value);'
+            setter_body = f"{prop['setter_fn']}({handle_field}, value);"
 
         setter = {
             "type": setter_type,
@@ -656,13 +664,13 @@ def _build_prop(prop: dict, handle_field: str) -> dict | None:
 
     has_fn_ctx = None
     if nullable and prop["has_fn"]:
-        has_fn_ctx = {"name": f'has_{prop["name"]}', "body": f'return {prop["has_fn"]}({handle_field}) != 0;'}
+        has_fn_ctx = {"name": f"has_{prop['name']}", "body": f"return {prop['has_fn']}({handle_field}) != 0;"}
 
     # Remover for nullable properties (e.g. remove_effective, remove_protection)
     remover_ctx = None
     if nullable and prop.get("remover_fn"):
-        remover_name = f'remove_{prop["name"]}'
-        remover_ctx = {"name": remover_name, "body": f'{prop["remover_fn"]}({handle_field});'}
+        remover_name = f"remove_{prop['name']}"
+        remover_ctx = {"name": remover_name, "body": f"{prop['remover_fn']}({handle_field});"}
 
     return {
         "name": prop["name"],
@@ -805,8 +813,7 @@ def _build_lifecycle(lc: dict, handle_field: str) -> dict | None:
             cpp_error = dict(error)
             if error.get("result_fields"):
                 cpp_error["result_fields"] = [
-                    {**rf, "wrap_class": _cpp_class_name(rf["wrap_class"])} if rf.get("wrap_class") else rf
-                    for rf in error["result_fields"]
+                    {**rf, "wrap_class": _cpp_class_name(rf["wrap_class"])} if rf.get("wrap_class") else rf for rf in error["result_fields"]
                 ]
             return {
                 "kind": "apply",
@@ -882,15 +889,17 @@ def _build_class(cls_ctx: dict, idl: IDL) -> dict:
 
     collections = []
     for c in cls_ctx["collections"]:
-        collections.append({
-            "name": c["name"],
-            "singular": _singular(c["name"]),
-            "item_class": _cpp_class_name(c["item_class"]),
-            "count_fn": c["count_fn"],
-            "at_fn": c["at_fn"],
-            "find_by_id_fn": c["find_by_id_fn"],
-            "find_by_label_fn": c["find_by_label_fn"],
-        })
+        collections.append(
+            {
+                "name": c["name"],
+                "singular": _singular(c["name"]),
+                "item_class": _cpp_class_name(c["item_class"]),
+                "count_fn": c["count_fn"],
+                "at_fn": c["at_fn"],
+                "find_by_id_fn": c["find_by_id_fn"],
+                "find_by_label_fn": c["find_by_label_fn"],
+            }
+        )
 
     builders = [_build_builder(b, hf) for b in cls_ctx["builders"]]
 
@@ -968,11 +977,13 @@ def generate_raii(idl: IDL, output_dir: Path) -> None:
             cpp_name = u.c_function
             if cpp_name.startswith("fdl_"):
                 cpp_name = cpp_name[4:]
-            c_abi_utils.append({
-                "cpp_name": cpp_name,
-                "c_function": u.c_function,
-                "doc": u.doc,
-            })
+            c_abi_utils.append(
+                {
+                    "cpp_name": cpp_name,
+                    "c_function": u.c_function,
+                    "doc": u.doc,
+                }
+            )
 
     # Auxiliary structs (ClipID, FileSequence, Version)
     aux = _build_auxiliary_structs(idl)
@@ -994,11 +1005,14 @@ def generate_raii(idl: IDL, output_dir: Path) -> None:
                         cpp_type = f.field_type
                     else:
                         cpp_type = _resolve_cpp_type(f.field_type)
-                    fields.append({
-                        "name": f.name, "cpp_type": cpp_type,
-                        "is_move": cpp_type in ("FDL", "std::string"),
-                        "private": f.private,
-                    })
+                    fields.append(
+                        {
+                            "name": f.name,
+                            "cpp_type": cpp_type,
+                            "is_move": cpp_type in ("FDL", "std::string"),
+                            "private": f.private,
+                        }
+                    )
                 accessors = None
                 if dc.accessors:
                     accessors = []
@@ -1012,12 +1026,14 @@ def generate_raii(idl: IDL, output_dir: Path) -> None:
                         else:
                             call_expr = f"{parts[0]}().{singular}_{find_suffix}(_{acc.key_field})"
                         cpp_returns = _cpp_class_name(acc.returns) if acc.returns in _ALL_CLASSES else acc.returns
-                        accessors.append({
-                            "name": acc.name,
-                            "returns": cpp_returns,
-                            "doc": acc.doc,
-                            "call_expr": call_expr,
-                        })
+                        accessors.append(
+                            {
+                                "name": acc.name,
+                                "returns": cpp_returns,
+                                "doc": acc.doc,
+                                "call_expr": call_expr,
+                            }
+                        )
                 template_result = {"class_name": dc.class_name, "fields": fields, "accessors": accessors}
 
     # Extra dataclasses (everything except TemplateResult — defined after ref_classes)
@@ -1056,8 +1072,10 @@ def generate_raii(idl: IDL, output_dir: Path) -> None:
     vt_names = [vt["cpp_class"] for vt in value_types]
     ff_names = [ff["cpp_name"] for ff in free_functions]
     util_names = [u["cpp_name"] for u in c_abi_utils]
-    print(f"Generated C++ RAII header with {1 + len(ref_classes)} classes, "
-          f"{len(value_types)} value types ({', '.join(vt_names)}), "
-          f"{len(free_functions)} free functions ({', '.join(ff_names)}), "
-          f"{len(c_abi_utils)} utility functions ({', '.join(util_names)})")
+    print(
+        f"Generated C++ RAII header with {1 + len(ref_classes)} classes, "
+        f"{len(value_types)} value types ({', '.join(vt_names)}), "
+        f"{len(free_functions)} free functions ({', '.join(ff_names)}), "
+        f"{len(c_abi_utils)} utility functions ({', '.join(util_names)})"
+    )
     print(f"Output: {output_dir / 'fdl.hpp'}")

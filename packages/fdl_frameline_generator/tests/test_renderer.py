@@ -53,13 +53,19 @@ def sample_fdl() -> FDL:
     fdl.add_framing_intent(id="TEST01", label="1.78:1 Test", aspect_ratio=DimensionsInt(width=16, height=9), protection=0.1)
     ctx = fdl.add_context(label="Test Context", context_creator="Test")
     canvas = ctx.add_canvas(
-        id="canvas1", label="Test Canvas", source_canvas_id="canvas1",
-        dimensions=DimensionsInt(width=1920, height=1080), anamorphic_squeeze=1.0,
+        id="canvas1",
+        label="Test Canvas",
+        source_canvas_id="canvas1",
+        dimensions=DimensionsInt(width=1920, height=1080),
+        anamorphic_squeeze=1.0,
     )
     canvas.set_effective(dims=DimensionsInt(width=1800, height=1000), anchor=PointFloat(x=60, y=40))
     fd = canvas.add_framing_decision(
-        id="canvas1-TEST01", label="Test Framing", framing_intent_id="TEST01",
-        dimensions=DimensionsFloat(width=1600, height=900), anchor_point=PointFloat(x=160, y=90),
+        id="canvas1-TEST01",
+        label="Test Framing",
+        framing_intent_id="TEST01",
+        dimensions=DimensionsFloat(width=1600, height=900),
+        anchor_point=PointFloat(x=160, y=90),
     )
     fd.set_protection(dims=DimensionsFloat(width=1700, height=950), anchor=PointFloat(x=110, y=65))
     return fdl
@@ -72,13 +78,19 @@ def anamorphic_fdl() -> FDL:
     fdl.add_framing_intent(id="ANAM01", label="2x Anamorphic", aspect_ratio=DimensionsInt(width=16, height=9), protection=0.088)
     ctx = fdl.add_context(label="Anamorphic Context", context_creator="Test")
     canvas = ctx.add_canvas(
-        id="anam_canvas", label="Open Gate RAW", source_canvas_id="anam_canvas",
-        dimensions=DimensionsInt(width=5184, height=4320), anamorphic_squeeze=2.0,
+        id="anam_canvas",
+        label="Open Gate RAW",
+        source_canvas_id="anam_canvas",
+        dimensions=DimensionsInt(width=5184, height=4320),
+        anamorphic_squeeze=2.0,
     )
     canvas.set_effective(dims=DimensionsInt(width=5184, height=4320), anchor=PointFloat(x=0, y=0))
     fd = canvas.add_framing_decision(
-        id="anam_canvas-ANAM01", label="2x Anamorphic Framing", framing_intent_id="ANAM01",
-        dimensions=DimensionsFloat(width=3072, height=3456), anchor_point=PointFloat(x=1056, y=432),
+        id="anam_canvas-ANAM01",
+        label="2x Anamorphic Framing",
+        framing_intent_id="ANAM01",
+        dimensions=DimensionsFloat(width=3072, height=3456),
+        anchor_point=PointFloat(x=1056, y=432),
     )
     fd.set_protection(dims=DimensionsFloat(width=3840, height=4320), anchor=PointFloat(x=672, y=0))
     return fdl

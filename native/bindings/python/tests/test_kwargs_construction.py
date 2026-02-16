@@ -283,12 +283,16 @@ class TestFramingDecisionKwargs:
 
     def test_equality(self):
         fd1 = FramingDecision(
-            id="FD-SAME", label="A", framing_intent_id="FI-1",
+            id="FD-SAME",
+            label="A",
+            framing_intent_id="FI-1",
             dimensions=DimensionsFloat(width=1.0, height=1.0),
             anchor_point=PointFloat(x=0.0, y=0.0),
         )
         fd2 = FramingDecision(
-            id="FD-SAME", label="B", framing_intent_id="FI-2",
+            id="FD-SAME",
+            label="B",
+            framing_intent_id="FI-2",
             dimensions=DimensionsFloat(width=2.0, height=2.0),
             anchor_point=PointFloat(x=1.0, y=1.0),
         )
@@ -391,7 +395,8 @@ class TestCanvasTemplateKwargs:
 
     def test_equality(self):
         ct1 = CanvasTemplate(
-            id="CT-SAME", label="A",
+            id="CT-SAME",
+            label="A",
             target_dimensions=DimensionsInt(width=1, height=1),
             fit_source=GeometryPath.CANVAS_DIMENSIONS,
             fit_method=FitMethod.FIT_ALL,
@@ -400,7 +405,8 @@ class TestCanvasTemplateKwargs:
             round=RoundStrategy(even=RoundingEven.EVEN, mode=RoundingMode.ROUND),
         )
         ct2 = CanvasTemplate(
-            id="CT-SAME", label="B",
+            id="CT-SAME",
+            label="B",
             target_dimensions=DimensionsInt(width=2, height=2),
             fit_source=GeometryPath.CANVAS_EFFECTIVE_DIMENSIONS,
             fit_method=FitMethod.HEIGHT,
@@ -465,13 +471,15 @@ class TestKwargsVsBuilderParity:
         # Builder path
         doc = FDL.create(uuid="test-uuid")
         fi_builder = doc.add_framing_intent(
-            id="FI-P1", label="Parity",
+            id="FI-P1",
+            label="Parity",
             aspect_ratio=DimensionsInt(width=16, height=9),
             protection=0.088,
         )
         # Kwargs path
         fi_kwargs = FramingIntent(
-            id="FI-P1", label="Parity",
+            id="FI-P1",
+            label="Parity",
             aspect_ratio=DimensionsInt(width=16, height=9),
             protection=0.088,
         )
@@ -482,18 +490,24 @@ class TestKwargsVsBuilderParity:
         doc = FDL.create(uuid="test-uuid")
         ctx = doc.add_context(label="ctx")
         canvas = ctx.add_canvas(
-            id="cnv", label="cnv", source_canvas_id="src",
+            id="cnv",
+            label="cnv",
+            source_canvas_id="src",
             dimensions=DimensionsInt(width=5184, height=4320),
             anamorphic_squeeze=1.0,
         )
         fd_builder = canvas.add_framing_decision(
-            id="FD-P1", label="Parity", framing_intent_id="FI-1",
+            id="FD-P1",
+            label="Parity",
+            framing_intent_id="FI-1",
             dimensions=DimensionsFloat(width=4728.0, height=3456.0),
             anchor_point=PointFloat(x=228.0, y=432.0),
         )
         # Kwargs path
         fd_kwargs = FramingDecision(
-            id="FD-P1", label="Parity", framing_intent_id="FI-1",
+            id="FD-P1",
+            label="Parity",
+            framing_intent_id="FI-1",
             dimensions=DimensionsFloat(width=4728.0, height=3456.0),
             anchor_point=PointFloat(x=228.0, y=432.0),
         )

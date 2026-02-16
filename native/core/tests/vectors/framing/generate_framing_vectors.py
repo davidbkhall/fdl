@@ -119,9 +119,7 @@ rnd_even_down = RoundStrategy(even="even", mode="down")
 vectors.append(make_vector("letterbox_even_down", canvas1, fi_239, rnd_even_down))
 
 # --- High protection factor ---
-fi_high_prot = FramingIntent(
-    id="FI_HIGH_P", label="2.39:1+50%", aspect_ratio=DimensionsInt(width=239, height=100), protection=0.5
-)
+fi_high_prot = FramingIntent(id="FI_HIGH_P", label="2.39:1+50%", aspect_ratio=DimensionsInt(width=239, height=100), protection=0.5)
 vectors.append(make_vector("high_protection_factor", canvas1, fi_high_prot, rnd_even_up))
 
 result = {"description": "from_framing_intent golden vectors", "version": "1.0", "vectors": vectors}

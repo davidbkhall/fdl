@@ -61,9 +61,5 @@ def load_library() -> ctypes.CDLL:
         pass
 
     checked = [str(p) for p in _candidate_paths()]
-    msg = (
-        f"Could not load {_lib_name()}. "
-        f"Set FDL_CORE_LIB_PATH or build the library first.\n"
-        f"Searched: {checked}"
-    )
+    msg = f"Could not load {_lib_name()}. Set FDL_CORE_LIB_PATH or build the library first.\nSearched: {checked}"
     raise OSError(msg)

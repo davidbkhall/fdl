@@ -59,7 +59,9 @@ class FileSequence:
             max=_max,
         )
 
-_CLIPID_MUTEX = ['file', 'sequence']
+
+_CLIPID_MUTEX = ["file", "sequence"]
+
 
 @dataclass
 class ClipID:
@@ -72,18 +74,14 @@ class ClipID:
     def __post_init__(self) -> None:
         _set = [f for f in _CLIPID_MUTEX if getattr(self, f) is not None]
         if len(_set) > 1:
-            raise ValueError(
-                f"Both {_set[0]} and {_set[1]} attributes are provided, only one is allowed."
-            )
+            raise ValueError(f"Both {_set[0]} and {_set[1]} attributes are provided, only one is allowed.")
 
     def __setattr__(self, name: str, value: object) -> None:
         super().__setattr__(name, value)
         if name in _CLIPID_MUTEX:
             _set = [f for f in _CLIPID_MUTEX if getattr(self, f, None) is not None]
             if len(_set) > 1:
-                raise ValueError(
-                    f"Both {_set[0]} and {_set[1]} attributes are provided, only one is allowed."
-                )
+                raise ValueError(f"Both {_set[0]} and {_set[1]} attributes are provided, only one is allowed.")
 
     @classmethod
     def from_dict(cls, data: dict) -> ClipID:

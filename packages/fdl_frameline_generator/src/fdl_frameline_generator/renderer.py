@@ -517,8 +517,14 @@ class FramelineRenderer:
             if i < len(layers) - 1:
                 next_inner = layers[i + 1]
                 doc.draw_frame_region(
-                    layer.x, layer.y, layer.width, layer.height,
-                    next_inner.x, next_inner.y, next_inner.width, next_inner.height,
+                    layer.x,
+                    layer.y,
+                    layer.width,
+                    layer.height,
+                    next_inner.x,
+                    next_inner.y,
+                    next_inner.width,
+                    next_inner.height,
                     layer.color,
                 )
             else:
@@ -556,7 +562,10 @@ class FramelineRenderer:
         for layer in layers:
             if layer.name == "protection":
                 doc.draw_rect_outline(
-                    layer.x, layer.y, layer.width, layer.height,
+                    layer.x,
+                    layer.y,
+                    layer.width,
+                    layer.height,
                     self.config.line_width_protection,
                     layer.color,
                     dash_pattern=DASH_PATTERN_PROTECTION,
@@ -587,7 +596,8 @@ class FramelineRenderer:
                     label_y = center_y + max_radius + 25
                     doc.draw_text(
                         f"Squeeze: {squeeze:.3f}x",
-                        center_x, label_y,
+                        center_x,
+                        label_y,
                         self.config.font_size_anchor,
                         self.config.color_squeeze,
                         anchor="middle",
@@ -610,8 +620,13 @@ class FramelineRenderer:
                     lx = layer.x + layer.width - 15
                     ly = layer.y + layer.height - 10 - self.config.font_size_anchor
                     doc.draw_text(
-                        label, lx, ly, self.config.font_size_anchor,
-                        self.config.color_text, anchor="end", squeeze_comp=squeeze_comp,
+                        label,
+                        lx,
+                        ly,
+                        self.config.font_size_anchor,
+                        self.config.color_text,
+                        anchor="end",
+                        squeeze_comp=squeeze_comp,
                     )
 
         # --- Metadata overlay ---
@@ -629,8 +644,13 @@ class FramelineRenderer:
                 meta_y = 20
                 for line in meta_lines:
                     doc.draw_text(
-                        line, width - 20, meta_y, self.config.font_size_anchor,
-                        self.config.color_text, anchor="end", squeeze_comp=squeeze_comp,
+                        line,
+                        width - 20,
+                        meta_y,
+                        self.config.font_size_anchor,
+                        self.config.color_text,
+                        anchor="end",
+                        squeeze_comp=squeeze_comp,
                     )
                     meta_y += self.config.font_size_anchor + 8
 
@@ -1435,8 +1455,15 @@ class FramelineRenderer:
                     preferred_x, preferred_y, text_width, line_height, layer.name, label_positions, "horizontal", slide_amount
                 )
                 render_text_bold(
-                    buf, label, final_x, final_y, font_size, self.config.color_text,
-                    self.config.font_path, TextAlignment.LEFT, squeeze_comp=squeeze_comp,
+                    buf,
+                    label,
+                    final_x,
+                    final_y,
+                    font_size,
+                    self.config.color_text,
+                    self.config.font_path,
+                    TextAlignment.LEFT,
+                    squeeze_comp=squeeze_comp,
                 )
                 label_positions.append((final_x, final_y, text_width, line_height, layer.name))
 
@@ -1449,8 +1476,15 @@ class FramelineRenderer:
                     preferred_x, preferred_y, text_width, line_height, layer.name, label_positions, "horizontal", slide_amount
                 )
                 render_text_bold(
-                    buf, label, final_x, final_y, font_size, self.config.color_text,
-                    self.config.font_path, TextAlignment.LEFT, squeeze_comp=squeeze_comp,
+                    buf,
+                    label,
+                    final_x,
+                    final_y,
+                    font_size,
+                    self.config.color_text,
+                    self.config.font_path,
+                    TextAlignment.LEFT,
+                    squeeze_comp=squeeze_comp,
                 )
                 label_positions.append((final_x, final_y, text_width, line_height, layer.name))
 
@@ -1463,8 +1497,15 @@ class FramelineRenderer:
                     preferred_x, preferred_y, text_width, line_height, layer.name, label_positions, "horizontal", slide_amount
                 )
                 render_text_bold(
-                    buf, label, final_x, final_y, font_size, self.config.color_text,
-                    self.config.font_path, TextAlignment.LEFT, squeeze_comp=squeeze_comp,
+                    buf,
+                    label,
+                    final_x,
+                    final_y,
+                    font_size,
+                    self.config.color_text,
+                    self.config.font_path,
+                    TextAlignment.LEFT,
+                    squeeze_comp=squeeze_comp,
                 )
                 label_positions.append((final_x, final_y, text_width, line_height, layer.name))
 
@@ -1477,8 +1518,15 @@ class FramelineRenderer:
                     preferred_x, preferred_y, text_width, line_height, layer.name, label_positions, "horizontal", slide_amount
                 )
                 render_text_bold(
-                    buf, label, final_x, final_y, font_size, self.config.color_text,
-                    self.config.font_path, TextAlignment.LEFT, squeeze_comp=squeeze_comp,
+                    buf,
+                    label,
+                    final_x,
+                    final_y,
+                    font_size,
+                    self.config.color_text,
+                    self.config.font_path,
+                    TextAlignment.LEFT,
+                    squeeze_comp=squeeze_comp,
                 )
                 label_positions.append((final_x, final_y, text_width, line_height, layer.name))
 
@@ -1549,8 +1597,15 @@ class FramelineRenderer:
                 preferred_x, preferred_y, text_width, line_height, layer.name, label_positions, "horizontal", slide_amount
             )
             render_text_bold(
-                buf, label, final_x, final_y, font_size, self.config.color_text,
-                self.config.font_path, TextAlignment.LEFT, squeeze_comp=squeeze_comp,
+                buf,
+                label,
+                final_x,
+                final_y,
+                font_size,
+                self.config.color_text,
+                self.config.font_path,
+                TextAlignment.LEFT,
+                squeeze_comp=squeeze_comp,
             )
             label_positions.append((final_x, final_y, text_width, line_height, layer.name))
 

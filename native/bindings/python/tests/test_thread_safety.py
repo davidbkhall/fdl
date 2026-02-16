@@ -160,11 +160,19 @@ class TestConcurrentReads:
                     fd_label = fd.label
                     fd_dims = fd.dimensions
                     with lock:
-                        results.append((
-                            uuid, creator, default_fi,
-                            ctx_label, canvas_label, canvas_id,
-                            fd_label, fd_dims.width, fd_dims.height,
-                        ))
+                        results.append(
+                            (
+                                uuid,
+                                creator,
+                                default_fi,
+                                ctx_label,
+                                canvas_label,
+                                canvas_id,
+                                fd_label,
+                                fd_dims.width,
+                                fd_dims.height,
+                            )
+                        )
             except Exception as e:
                 with lock:
                     errors.append((thread_id, e))
@@ -182,9 +190,14 @@ class TestConcurrentReads:
 
         expected = (
             "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
-            "test-creator", "FI_01",
-            "Source Context", "Source Canvas", "CV_01",
-            "Default FD", 3840.0, 2160.0,
+            "test-creator",
+            "FI_01",
+            "Source Context",
+            "Source Canvas",
+            "CV_01",
+            "Default FD",
+            3840.0,
+            2160.0,
         )
         for r in results:
             assert r == expected, f"Data corruption detected: {r}"
@@ -450,11 +463,16 @@ class TestConcurrentTemplateApply:
                 doc.add_framing_intent("FI_01", "Default", DimensionsInt(width=16, height=9), 0.0)
                 ctx = doc.add_context("Source", "test")
                 canvas = ctx.add_canvas(
-                    "CV_01", "Source Canvas", "CV_01",
-                    DimensionsInt(width=3840, height=2160), 1.0,
+                    "CV_01",
+                    "Source Canvas",
+                    "CV_01",
+                    DimensionsInt(width=3840, height=2160),
+                    1.0,
                 )
                 fd = canvas.add_framing_decision(
-                    "CV_01-FI_01", "Default FD", "FI_01",
+                    "CV_01-FI_01",
+                    "Default FD",
+                    "FI_01",
                     DimensionsFloat(width=3840.0, height=2160.0),
                     PointFloat(x=0.0, y=0.0),
                 )

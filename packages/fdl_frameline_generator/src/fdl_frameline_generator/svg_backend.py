@@ -121,12 +121,7 @@ class SvgDocument:
     ) -> None:
         """Draw the region between an outer and inner rectangle (frame border)."""
         # Use a path with even-odd fill rule to create a hollow rectangle
-        d = (
-            f"M{outer_x},{outer_y} "
-            f"h{outer_w} v{outer_h} h{-outer_w} Z "
-            f"M{inner_x},{inner_y} "
-            f"h{inner_w} v{inner_h} h{-inner_w} Z"
-        )
+        d = f"M{outer_x},{outer_y} h{outer_w} v{outer_h} h{-outer_w} Z M{inner_x},{inner_y} h{inner_w} v{inner_h} h{-inner_w} Z"
         path = ET.Element(
             "path",
             d=d,

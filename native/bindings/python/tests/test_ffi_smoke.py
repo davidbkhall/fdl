@@ -363,9 +363,7 @@ class TestValidation:
             "uuid": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
             "version": {"major": 2, "minor": 0},
             "fdl_creator": "test",
-            "framing_intents": [
-                {"id": "FI_01", "label": "FI", "aspect_ratio": {"width": 16, "height": 9}, "protection": 0.0}
-            ],
+            "framing_intents": [{"id": "FI_01", "label": "FI", "aspect_ratio": {"width": 16, "height": 9}, "protection": 0.0}],
             "contexts": [
                 {
                     "label": "Ctx",
@@ -479,17 +477,21 @@ class TestFindHelpers:
 class TestCanvasTemplateBuilder:
     def test_add_canvas_template(self, lib):
         """Build a canvas template via FFI and verify with accessors."""
-        doc = lib.fdl_doc_create_with_header(
-            b"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", 2, 0, b"test", None
-        )
+        doc = lib.fdl_doc_create_with_header(b"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", 2, 0, b"test", None)
         assert doc is not None
 
         rounding = fdl_round_strategy_t(FDL_ROUNDING_EVEN_EVEN, FDL_ROUNDING_MODE_UP)
         ct = lib.fdl_doc_add_canvas_template(
-            doc, b"CT_HD", b"HD",
-            1920, 1080, 1.0,
-            FDL_GEOMETRY_PATH_FRAMING_DIMENSIONS, FDL_FIT_METHOD_WIDTH,
-            FDL_HALIGN_CENTER, FDL_VALIGN_CENTER,
+            doc,
+            b"CT_HD",
+            b"HD",
+            1920,
+            1080,
+            1.0,
+            FDL_GEOMETRY_PATH_FRAMING_DIMENSIONS,
+            FDL_FIT_METHOD_WIDTH,
+            FDL_HALIGN_CENTER,
+            FDL_VALIGN_CENTER,
             rounding,
         )
         assert ct is not None and ct != 0
@@ -499,9 +501,7 @@ class TestCanvasTemplateBuilder:
         assert lib.fdl_canvas_template_get_label(ct) == b"HD"
 
         # Set optional fields
-        lib.fdl_canvas_template_set_preserve_from_source_canvas(
-            ct, FDL_GEOMETRY_PATH_CANVAS_EFFECTIVE_DIMENSIONS
-        )
+        lib.fdl_canvas_template_set_preserve_from_source_canvas(ct, FDL_GEOMETRY_PATH_CANVAS_EFFECTIVE_DIMENSIONS)
         lib.fdl_canvas_template_set_maximum_dimensions(ct, fdl_dimensions_i64_t(3840, 2160))
         lib.fdl_canvas_template_set_pad_to_maximum(ct, 1)
 

@@ -214,8 +214,11 @@ class TestCompoundSetters:
             ctx = doc.add_context("Source")
             canvas = ctx.add_canvas("CV_01", "Source", "CV_01", DimensionsInt(width=3840, height=2160), 1.0)
             fd = canvas.add_framing_decision(
-                "CV_01-FI_01", "Default FD", "FI_01",
-                DimensionsFloat(width=3840.0, height=2160.0), PointFloat(x=0.0, y=0.0),
+                "CV_01-FI_01",
+                "Default FD",
+                "FI_01",
+                DimensionsFloat(width=3840.0, height=2160.0),
+                PointFloat(x=0.0, y=0.0),
             )
             assert fd.protection_dimensions is None
 
@@ -308,8 +311,11 @@ class TestApplyCanvasTemplate:
             ctx = doc.add_context("Source", "test")
             canvas = ctx.add_canvas("CV_01", "Source Canvas", "CV_01", DimensionsInt(width=3840, height=2160), 1.0)
             fd = canvas.add_framing_decision(
-                "CV_01-FI_01", "Default FD", "FI_01",
-                DimensionsFloat(width=3840.0, height=2160.0), PointFloat(x=0.0, y=0.0),
+                "CV_01-FI_01",
+                "Default FD",
+                "FI_01",
+                DimensionsFloat(width=3840.0, height=2160.0),
+                PointFloat(x=0.0, y=0.0),
             )
             ct = doc.add_canvas_template(
                 id="CT_01",
@@ -355,8 +361,11 @@ class TestModelDumpAfterMutation:
             ctx = doc.add_context("Source", "test")
             canvas = ctx.add_canvas("CV_01", "Source Canvas", "CV_01", DimensionsInt(width=3840, height=2160), 1.0)
             canvas.add_framing_decision(
-                "CV_01-FI_01", "Default FD", "FI_01",
-                DimensionsFloat(width=3840.0, height=2160.0), PointFloat(x=0.0, y=0.0),
+                "CV_01-FI_01",
+                "Default FD",
+                "FI_01",
+                DimensionsFloat(width=3840.0, height=2160.0),
+                PointFloat(x=0.0, y=0.0),
             )
 
             data = doc.as_dict()

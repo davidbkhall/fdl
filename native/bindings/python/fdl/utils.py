@@ -124,7 +124,10 @@ def find_by_label(collection: CollectionWrapper, label: str):
 
 
 def get_dimensions_from_path(
-    canvas: Canvas, framing: FramingDecision, path: str, required: bool = True,
+    canvas: Canvas,
+    framing: FramingDecision,
+    path: str,
+    required: bool = True,
 ) -> DimensionsFloat | None:
     """Get dimensions from a canvas or framing decision using a GeometryPath string.
 
@@ -161,20 +164,21 @@ def get_dimensions_from_path(
     out_dims = fdl_dimensions_f64_t()
     out_anchor = fdl_point_f64_t()
     rc = get_lib().fdl_resolve_geometry_layer(
-        canvas._handle, framing._handle, c_path,
-        ctypes.byref(out_dims), ctypes.byref(out_anchor),
+        canvas._handle,
+        framing._handle,
+        c_path,
+        ctypes.byref(out_dims),
+        ctypes.byref(out_anchor),
     )
     if rc == 1:  # path valid but optional data absent
         if required:
-            raise ValueError(
-                f"Template references '{path}' but the source does not have "
-                f"the referenced data defined."
-            )
+            raise ValueError(f"Template references '{path}' but the source does not have the referenced data defined.")
         return None
     if rc < 0:
         raise ValueError(f"Unsupported source path: {path}")
 
     return DimensionsFloat(width=out_dims.width, height=out_dims.height)
+
 
 def get_anchor_from_path(canvas: Canvas, framing: FramingDecision, path: str) -> PointFloat:
     """Get anchor point from a canvas or framing decision using a GeometryPath string.
@@ -210,8 +214,11 @@ def get_anchor_from_path(canvas: Canvas, framing: FramingDecision, path: str) ->
     out_dims = fdl_dimensions_f64_t()
     out_anchor = fdl_point_f64_t()
     rc = get_lib().fdl_resolve_geometry_layer(
-        canvas._handle, framing._handle, c_path,
-        ctypes.byref(out_dims), ctypes.byref(out_anchor),
+        canvas._handle,
+        framing._handle,
+        c_path,
+        ctypes.byref(out_dims),
+        ctypes.byref(out_anchor),
     )
     if rc == 1:  # absent -> return zeros
         return PointFloat(x=0.0, y=0.0)
@@ -336,4 +343,5 @@ def make_rect(x: float, y: float, width: float, height: float) -> Rect:
     from fdl_ffi import get_lib
 
     from .converters import _rect
+
     return _rect(get_lib().fdl_make_rect(float(x), float(y), float(width), float(height)))

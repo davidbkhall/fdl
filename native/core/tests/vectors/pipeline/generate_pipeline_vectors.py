@@ -40,13 +40,15 @@ def generate_scale_factor():
 
     for label, fit, target, method in cases:
         result = calculate_scale_factor(fit, target, method)
-        vectors.append({
-            "label": label,
-            "fit_norm": ser_dims(fit),
-            "target_norm": ser_dims(target),
-            "fit_method": method,
-            "expected": result,
-        })
+        vectors.append(
+            {
+                "label": label,
+                "fit_norm": ser_dims(fit),
+                "target_norm": ser_dims(target),
+                "fit_method": method,
+                "expected": result,
+            }
+        )
 
     return vectors
 
@@ -67,14 +69,16 @@ def generate_output_size():
 
     for label, canvas, max_s, has, pad in cases:
         result = _output_size_for_axis(canvas, max_s, has, pad)
-        vectors.append({
-            "label": label,
-            "canvas_size": canvas,
-            "max_size": max_s,
-            "has_max": has,
-            "pad_to_max": pad,
-            "expected": result,
-        })
+        vectors.append(
+            {
+                "label": label,
+                "canvas_size": canvas,
+                "max_size": max_s,
+                "has_max": has,
+                "pad_to_max": pad,
+                "expected": result,
+            }
+        )
 
     return vectors
 
@@ -87,91 +91,135 @@ def generate_alignment_shift():
         # FIT regime: output matches canvas, no shift
         {
             "label": "fit_no_shift",
-            "fit_size": 1920.0, "fit_anchor": 0.0,
-            "output_size": 1920.0, "canvas_size": 1920.0,
-            "target_size": 1920.0, "is_center": True,
-            "align_factor": 0.5, "pad_to_max": False,
+            "fit_size": 1920.0,
+            "fit_anchor": 0.0,
+            "output_size": 1920.0,
+            "canvas_size": 1920.0,
+            "target_size": 1920.0,
+            "is_center": True,
+            "align_factor": 0.5,
+            "pad_to_max": False,
         },
         # PAD regime: center alignment
         {
             "label": "pad_center",
-            "fit_size": 1600.0, "fit_anchor": 160.0,
-            "output_size": 3840.0, "canvas_size": 1920.0,
-            "target_size": 1920.0, "is_center": True,
-            "align_factor": 0.5, "pad_to_max": True,
+            "fit_size": 1600.0,
+            "fit_anchor": 160.0,
+            "output_size": 3840.0,
+            "canvas_size": 1920.0,
+            "target_size": 1920.0,
+            "is_center": True,
+            "align_factor": 0.5,
+            "pad_to_max": True,
         },
         # PAD regime: left alignment with gap
         {
             "label": "pad_left_gap",
-            "fit_size": 1600.0, "fit_anchor": 160.0,
-            "output_size": 3840.0, "canvas_size": 1920.0,
-            "target_size": 1920.0, "is_center": False,
-            "align_factor": 0.0, "pad_to_max": True,
+            "fit_size": 1600.0,
+            "fit_anchor": 160.0,
+            "output_size": 3840.0,
+            "canvas_size": 1920.0,
+            "target_size": 1920.0,
+            "is_center": False,
+            "align_factor": 0.0,
+            "pad_to_max": True,
         },
         # PAD regime: right alignment with gap
         {
             "label": "pad_right_gap",
-            "fit_size": 1600.0, "fit_anchor": 160.0,
-            "output_size": 3840.0, "canvas_size": 1920.0,
-            "target_size": 1920.0, "is_center": False,
-            "align_factor": 1.0, "pad_to_max": True,
+            "fit_size": 1600.0,
+            "fit_anchor": 160.0,
+            "output_size": 3840.0,
+            "canvas_size": 1920.0,
+            "target_size": 1920.0,
+            "is_center": False,
+            "align_factor": 1.0,
+            "pad_to_max": True,
         },
         # CROP regime: fit at origin and visible
         {
             "label": "crop_fit_at_origin",
-            "fit_size": 1920.0, "fit_anchor": 0.0,
-            "output_size": 1920.0, "canvas_size": 2400.0,
-            "target_size": 1920.0, "is_center": True,
-            "align_factor": 0.5, "pad_to_max": False,
+            "fit_size": 1920.0,
+            "fit_anchor": 0.0,
+            "output_size": 1920.0,
+            "canvas_size": 2400.0,
+            "target_size": 1920.0,
+            "is_center": True,
+            "align_factor": 0.5,
+            "pad_to_max": False,
         },
         # CROP regime: fit overflows output
         {
             "label": "crop_fit_overflows",
-            "fit_size": 2400.0, "fit_anchor": 0.0,
-            "output_size": 1920.0, "canvas_size": 2400.0,
-            "target_size": 1920.0, "is_center": True,
-            "align_factor": 0.5, "pad_to_max": False,
+            "fit_size": 2400.0,
+            "fit_anchor": 0.0,
+            "output_size": 1920.0,
+            "canvas_size": 2400.0,
+            "target_size": 1920.0,
+            "is_center": True,
+            "align_factor": 0.5,
+            "pad_to_max": False,
         },
         # CROP regime: only bounding box overflows, center
         {
             "label": "crop_bbox_overflow_center",
-            "fit_size": 1600.0, "fit_anchor": 400.0,
-            "output_size": 1920.0, "canvas_size": 2400.0,
-            "target_size": 1920.0, "is_center": True,
-            "align_factor": 0.5, "pad_to_max": False,
+            "fit_size": 1600.0,
+            "fit_anchor": 400.0,
+            "output_size": 1920.0,
+            "canvas_size": 2400.0,
+            "target_size": 1920.0,
+            "is_center": True,
+            "align_factor": 0.5,
+            "pad_to_max": False,
         },
         # CROP regime: only bounding box overflows, right
         {
             "label": "crop_bbox_overflow_right",
-            "fit_size": 1600.0, "fit_anchor": 400.0,
-            "output_size": 1920.0, "canvas_size": 2400.0,
-            "target_size": 1920.0, "is_center": False,
-            "align_factor": 1.0, "pad_to_max": False,
+            "fit_size": 1600.0,
+            "fit_anchor": 400.0,
+            "output_size": 1920.0,
+            "canvas_size": 2400.0,
+            "target_size": 1920.0,
+            "is_center": False,
+            "align_factor": 1.0,
+            "pad_to_max": False,
         },
         # FIT regime: tiny overflow (within threshold 0.01)
         {
             "label": "fit_tiny_overflow",
-            "fit_size": 1920.0, "fit_anchor": 0.0,
-            "output_size": 1920.0, "canvas_size": 1920.005,
-            "target_size": 1920.0, "is_center": True,
-            "align_factor": 0.5, "pad_to_max": False,
+            "fit_size": 1920.0,
+            "fit_anchor": 0.0,
+            "output_size": 1920.0,
+            "canvas_size": 1920.005,
+            "target_size": 1920.0,
+            "is_center": True,
+            "align_factor": 0.5,
+            "pad_to_max": False,
         },
         # PAD: center when no gap (fit >= target)
         {
             "label": "pad_center_no_gap",
-            "fit_size": 1920.0, "fit_anchor": 0.0,
-            "output_size": 3840.0, "canvas_size": 1920.0,
-            "target_size": 1800.0, "is_center": False,
-            "align_factor": 0.5, "pad_to_max": True,
+            "fit_size": 1920.0,
+            "fit_anchor": 0.0,
+            "output_size": 3840.0,
+            "canvas_size": 1920.0,
+            "target_size": 1800.0,
+            "is_center": False,
+            "align_factor": 0.5,
+            "pad_to_max": True,
         },
     ]
 
     for case in cases:
         result = _alignment_shift(
-            case["fit_size"], case["fit_anchor"],
-            case["output_size"], case["canvas_size"],
-            case["target_size"], case["is_center"],
-            case["align_factor"], case["pad_to_max"],
+            case["fit_size"],
+            case["fit_anchor"],
+            case["output_size"],
+            case["canvas_size"],
+            case["target_size"],
+            case["is_center"],
+            case["align_factor"],
+            case["pad_to_max"],
         )
         case["expected"] = result
         vectors.append(case)
@@ -193,13 +241,15 @@ def generate_clamp_to_dims():
 
     for label, d, clamp in cases:
         result_dims, delta = d.clamp_to_dims(clamp)
-        vectors.append({
-            "label": label,
-            "dims": ser_dims(d),
-            "clamp_dims": ser_dims(clamp),
-            "expected_dims": ser_dims(result_dims),
-            "expected_delta": {"x": delta.x, "y": delta.y},
-        })
+        vectors.append(
+            {
+                "label": label,
+                "dims": ser_dims(d),
+                "clamp_dims": ser_dims(clamp),
+                "expected_dims": ser_dims(result_dims),
+                "expected_delta": {"x": delta.x, "y": delta.y},
+            }
+        )
 
     return vectors
 

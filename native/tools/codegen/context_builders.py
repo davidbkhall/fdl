@@ -83,7 +83,7 @@ def build_enum_context(idl_enum: EnumType) -> dict:
     prefix = idl_enum.facade_prefix
     values = []
     for ev in idl_enum.values:
-        member = ev.name[len(prefix):]  # strip prefix to get Python member name
+        member = ev.name[len(prefix) :]  # strip prefix to get Python member name
         values.append({"name": ev.name, "member": member})
 
     python_class = idl_enum.facade_class
@@ -104,7 +104,7 @@ def build_constants_enum_context(idl_enum: EnumType) -> dict:
     str_values = idl_enum.string_values or {}
     members = []
     for ev in idl_enum.values:
-        member_name = ev.name[len(prefix):]
+        member_name = ev.name[len(prefix) :]
         str_value = str_values.get(member_name, member_name.lower())
         members.append({"name": member_name, "str_value": str_value})
 
@@ -128,8 +128,7 @@ def build_vt_method_context(method: VTMethod, vt: ValueType, idl: IDL) -> dict:
     ret_type = method.returns or "None"
     python_return = _resolve_vt_python_type(ret_type, idl, for_self_class=python_class)
     if method.out_params:
-        out_types = [_resolve_vt_python_type(op.param_type, idl, for_self_class=python_class)
-                     for op in method.out_params]
+        out_types = [_resolve_vt_python_type(op.param_type, idl, for_self_class=python_class) for op in method.out_params]
         python_return = f"tuple[{python_return}, {', '.join(out_types)}]"
 
     # Build parameter list
@@ -138,12 +137,14 @@ def build_vt_method_context(method: VTMethod, vt: ValueType, idl: IDL) -> dict:
         py_type = _resolve_vt_python_type(p.param_type, idl, for_self_class=python_class)
         if p.nullable:
             py_type = f"{py_type} | None"
-        params.append({
-            "name": p.name,
-            "python_type": py_type,
-            "nullable": p.nullable,
-            "idl_type": p.param_type,
-        })
+        params.append(
+            {
+                "name": p.name,
+                "python_type": py_type,
+                "nullable": p.nullable,
+                "idl_type": p.param_type,
+            }
+        )
 
     c_struct = vt.name
 
@@ -303,12 +304,14 @@ def build_value_type_context(vt: ValueType, idl: IDL) -> dict:
             default = "None"
             coerce = ""
 
-        fields.append({
-            "name": f.name,
-            "python_type": py_type,
-            "default": default,
-            "coerce": coerce,
-        })
+        fields.append(
+            {
+                "name": f.name,
+                "python_type": py_type,
+                "default": default,
+                "coerce": coerce,
+            }
+        )
 
     field_names = [f["name"] for f in fields]
 
@@ -322,9 +325,7 @@ def build_value_type_context(vt: ValueType, idl: IDL) -> dict:
         eq_parts = []
         for f in fields:
             if f["python_type"] == "float":
-                eq_parts.append(
-                    f"math.isclose(self.{f['name']}, other.{f['name']}, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL)"
-                )
+                eq_parts.append(f"math.isclose(self.{f['name']}, other.{f['name']}, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL)")
             else:
                 eq_parts.append(f"self.{f['name']} == other.{f['name']}")
     else:
@@ -406,11 +407,13 @@ def build_converter_context(vt: ValueType, idl: IDL) -> dict:
             from_c_expr = f"c_struct.{f.name}"
             to_c_expr = f"val.{f.name}"
 
-        fields.append({
-            "name": f.name,
-            "from_c_expr": from_c_expr,
-            "to_c_expr": to_c_expr,
-        })
+        fields.append(
+            {
+                "name": f.name,
+                "from_c_expr": from_c_expr,
+                "to_c_expr": to_c_expr,
+            }
+        )
 
     return {
         "converter": vt.facade_converter,
@@ -457,11 +460,13 @@ def build_builder_method_context(method, idl: IDL, enum_contexts: list[dict]) ->
     for p in method.params:
         python_type = resolve_python_type(p.type_key, nullable=p.nullable)
         default = "None" if p.nullable and p.default is None else p.default
-        params.append({
-            "name": p.name,
-            "python_type": python_type,
-            "default": default,
-        })
+        params.append(
+            {
+                "name": p.name,
+                "python_type": python_type,
+                "default": default,
+            }
+        )
 
         if p.type_key == "string":
             if p.nullable:
@@ -671,23 +676,27 @@ def build_init_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_class_by_
     init_params = []
     for p in init.params:
         if p.type_key == "ignore":
-            init_params.append({
-                "name": p.name,
-                "python_type": "object",
-                "default": "None",
-                "ignore": True,
-            })
+            init_params.append(
+                {
+                    "name": p.name,
+                    "python_type": "object",
+                    "default": "None",
+                    "ignore": True,
+                }
+            )
         else:
             python_type = resolve_python_type(p.type_key, nullable=p.nullable)
             default = p.default
             if p.nullable and default is None:
                 default = "None"
-            init_params.append({
-                "name": p.name,
-                "python_type": python_type,
-                "default": default,
-                "ignore": False,
-            })
+            init_params.append(
+                {
+                    "name": p.name,
+                    "python_type": python_type,
+                    "default": default,
+                    "ignore": False,
+                }
+            )
 
     # Value type zero defaults for compound setter args
     vt_zeros = {
@@ -752,31 +761,35 @@ def build_facade_class_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_c
         enum_from_c = type_key_to_from_c.get(prop.type_key, "")
         enum_to_c = type_key_to_to_c.get(prop.type_key, "")
 
-        properties.append({
-            "name": prop.name,
-            "type_key": prop.type_key,
-            "python_type": python_type,
-            "getter_fn": prop.getter_fn,
-            "setter_fn": prop.setter_fn,
-            "remover_fn": prop.remover_fn,
-            "has_fn": prop.has_fn,
-            "nullable": prop.nullable,
-            "converter": converter,
-            "enum_from_c": enum_from_c,
-            "enum_to_c": enum_to_c,
-        })
+        properties.append(
+            {
+                "name": prop.name,
+                "type_key": prop.type_key,
+                "python_type": python_type,
+                "getter_fn": prop.getter_fn,
+                "setter_fn": prop.setter_fn,
+                "remover_fn": prop.remover_fn,
+                "has_fn": prop.has_fn,
+                "nullable": prop.nullable,
+                "converter": converter,
+                "enum_from_c": enum_from_c,
+                "enum_to_c": enum_to_c,
+            }
+        )
 
     collections = []
     for coll in ir_cls.collections:
-        collections.append({
-            "name": coll.name,
-            "item_class": coll.item_class,
-            "count_fn": coll.count_fn,
-            "at_fn": coll.at_fn,
-            "find_by_id_fn": coll.find_by_id_fn,
-            "find_by_label_fn": coll.find_by_label_fn,
-            "add_fn": coll.add_fn,
-        })
+        collections.append(
+            {
+                "name": coll.name,
+                "item_class": coll.item_class,
+                "count_fn": coll.count_fn,
+                "at_fn": coll.at_fn,
+                "find_by_id_fn": coll.find_by_id_fn,
+                "find_by_label_fn": coll.find_by_label_fn,
+                "add_fn": coll.add_fn,
+            }
+        )
 
     # Find the to_json method if it exists
     to_json_fn = None
@@ -794,10 +807,15 @@ def build_facade_class_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_c
     # Build lifecycle method contexts
     lifecycle = []
     for method in ir_cls.methods:
-        if method.kind in ("static_factory", "class_factory", "alias", "compound_setter", "composite_property",
-                            "instance_getter", "instance_getter_optional") or (
-            method.kind == "instance" and method.name != "to_json" and (method.params or method.error_handling)
-        ):
+        if method.kind in (
+            "static_factory",
+            "class_factory",
+            "alias",
+            "compound_setter",
+            "composite_property",
+            "instance_getter",
+            "instance_getter_optional",
+        ) or (method.kind == "instance" and method.name != "to_json" and (method.params or method.error_handling)):
             ctx = build_lifecycle_method_context(method, idl, enum_contexts)
             lifecycle.append(ctx)
 

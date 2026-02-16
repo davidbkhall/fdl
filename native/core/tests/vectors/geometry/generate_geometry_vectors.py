@@ -56,12 +56,14 @@ def generate_fill_hierarchy_gaps():
     )
     offset = pt(48, 30)
     result = g.fill_hierarchy_gaps(offset)
-    vectors.append({
-        "label": "all_populated",
-        "input": ser_geo(g),
-        "anchor_offset": ser_pt(offset),
-        "expected": ser_geo(result),
-    })
+    vectors.append(
+        {
+            "label": "all_populated",
+            "input": ser_geo(g),
+            "anchor_offset": ser_pt(offset),
+            "expected": ser_geo(result),
+        }
+    )
 
     # Case 2: Only framing populated - canvas and effective filled from framing, protection stays zero
     g = Geometry(
@@ -75,12 +77,14 @@ def generate_fill_hierarchy_gaps():
     )
     offset = pt(0, 0)
     result = g.fill_hierarchy_gaps(offset)
-    vectors.append({
-        "label": "only_framing_populated",
-        "input": ser_geo(g),
-        "anchor_offset": ser_pt(offset),
-        "expected": ser_geo(result),
-    })
+    vectors.append(
+        {
+            "label": "only_framing_populated",
+            "input": ser_geo(g),
+            "anchor_offset": ser_pt(offset),
+            "expected": ser_geo(result),
+        }
+    )
 
     # Case 3: Only effective populated - canvas filled from effective
     g = Geometry(
@@ -94,12 +98,14 @@ def generate_fill_hierarchy_gaps():
     )
     offset = pt(0, 0)
     result = g.fill_hierarchy_gaps(offset)
-    vectors.append({
-        "label": "only_effective_populated",
-        "input": ser_geo(g),
-        "anchor_offset": ser_pt(offset),
-        "expected": ser_geo(result),
-    })
+    vectors.append(
+        {
+            "label": "only_effective_populated",
+            "input": ser_geo(g),
+            "anchor_offset": ser_pt(offset),
+            "expected": ser_geo(result),
+        }
+    )
 
     # Case 4: Only protection populated - canvas and effective filled from protection
     g = Geometry(
@@ -113,12 +119,14 @@ def generate_fill_hierarchy_gaps():
     )
     offset = pt(0, 0)
     result = g.fill_hierarchy_gaps(offset)
-    vectors.append({
-        "label": "only_protection_populated",
-        "input": ser_geo(g),
-        "anchor_offset": ser_pt(offset),
-        "expected": ser_geo(result),
-    })
+    vectors.append(
+        {
+            "label": "only_protection_populated",
+            "input": ser_geo(g),
+            "anchor_offset": ser_pt(offset),
+            "expected": ser_geo(result),
+        }
+    )
 
     # Case 5: Canvas and framing only - effective filled from canvas, protection stays zero
     g = Geometry(
@@ -132,12 +140,14 @@ def generate_fill_hierarchy_gaps():
     )
     offset = pt(0, 0)
     result = g.fill_hierarchy_gaps(offset)
-    vectors.append({
-        "label": "canvas_and_framing_only",
-        "input": ser_geo(g),
-        "anchor_offset": ser_pt(offset),
-        "expected": ser_geo(result),
-    })
+    vectors.append(
+        {
+            "label": "canvas_and_framing_only",
+            "input": ser_geo(g),
+            "anchor_offset": ser_pt(offset),
+            "expected": ser_geo(result),
+        }
+    )
 
     # Case 6: Anchor offset causes clamping
     g = Geometry(
@@ -151,12 +161,14 @@ def generate_fill_hierarchy_gaps():
     )
     offset = pt(200, 300)  # Large offset causing negative anchors
     result = g.fill_hierarchy_gaps(offset)
-    vectors.append({
-        "label": "anchor_offset_clamp",
-        "input": ser_geo(g),
-        "anchor_offset": ser_pt(offset),
-        "expected": ser_geo(result),
-    })
+    vectors.append(
+        {
+            "label": "anchor_offset_clamp",
+            "input": ser_geo(g),
+            "anchor_offset": ser_pt(offset),
+            "expected": ser_geo(result),
+        }
+    )
 
     return vectors
 
@@ -176,14 +188,16 @@ def generate_normalize_and_scale():
         framing_anchor=pt(100, 250),
     )
     result = g.normalize_and_scale(1.0, 0.5, 1.0)
-    vectors.append({
-        "label": "no_squeeze_half_scale",
-        "input": ser_geo(g),
-        "source_squeeze": 1.0,
-        "scale_factor": 0.5,
-        "target_squeeze": 1.0,
-        "expected": ser_geo(result),
-    })
+    vectors.append(
+        {
+            "label": "no_squeeze_half_scale",
+            "input": ser_geo(g),
+            "source_squeeze": 1.0,
+            "scale_factor": 0.5,
+            "target_squeeze": 1.0,
+            "expected": ser_geo(result),
+        }
+    )
 
     # Case 2: With anamorphic squeeze 1.3, scale to 1.0
     g = Geometry(
@@ -196,14 +210,16 @@ def generate_normalize_and_scale():
         framing_anchor=pt(0, 339),
     )
     result = g.normalize_and_scale(1.3, 0.664251207729469, 1.0)
-    vectors.append({
-        "label": "squeeze_1_3_to_1_0",
-        "input": ser_geo(g),
-        "source_squeeze": 1.3,
-        "scale_factor": 0.664251207729469,
-        "target_squeeze": 1.0,
-        "expected": ser_geo(result),
-    })
+    vectors.append(
+        {
+            "label": "squeeze_1_3_to_1_0",
+            "input": ser_geo(g),
+            "source_squeeze": 1.3,
+            "scale_factor": 0.664251207729469,
+            "target_squeeze": 1.0,
+            "expected": ser_geo(result),
+        }
+    )
 
     # Case 3: Scale factor 1.0 (identity with squeeze 2.0 -> 1.0)
     g = Geometry(
@@ -216,14 +232,16 @@ def generate_normalize_and_scale():
         framing_anchor=pt(0, 111),
     )
     result = g.normalize_and_scale(2.0, 1.0, 1.0)
-    vectors.append({
-        "label": "squeeze_2_0_scale_1",
-        "input": ser_geo(g),
-        "source_squeeze": 2.0,
-        "scale_factor": 1.0,
-        "target_squeeze": 1.0,
-        "expected": ser_geo(result),
-    })
+    vectors.append(
+        {
+            "label": "squeeze_2_0_scale_1",
+            "input": ser_geo(g),
+            "source_squeeze": 2.0,
+            "scale_factor": 1.0,
+            "target_squeeze": 1.0,
+            "expected": ser_geo(result),
+        }
+    )
 
     return vectors
 
@@ -244,33 +262,39 @@ def generate_round():
     )
     rs = RoundStrategy(even="even", mode="up")
     result = g.round(rs)
-    vectors.append({
-        "label": "round_even_up",
-        "input": ser_geo(g),
-        "even": "even",
-        "mode": "up",
-        "expected": ser_geo(result),
-    })
+    vectors.append(
+        {
+            "label": "round_even_up",
+            "input": ser_geo(g),
+            "even": "even",
+            "mode": "up",
+            "expected": ser_geo(result),
+        }
+    )
 
     # Case 2: Round with whole/down
     result2 = g.round(RoundStrategy(even="whole", mode="down"))
-    vectors.append({
-        "label": "round_whole_down",
-        "input": ser_geo(g),
-        "even": "whole",
-        "mode": "down",
-        "expected": ser_geo(result2),
-    })
+    vectors.append(
+        {
+            "label": "round_whole_down",
+            "input": ser_geo(g),
+            "even": "whole",
+            "mode": "down",
+            "expected": ser_geo(result2),
+        }
+    )
 
     # Case 3: Round with even/round
     result3 = g.round(RoundStrategy(even="even", mode="round"))
-    vectors.append({
-        "label": "round_even_round",
-        "input": ser_geo(g),
-        "even": "even",
-        "mode": "round",
-        "expected": ser_geo(result3),
-    })
+    vectors.append(
+        {
+            "label": "round_even_round",
+            "input": ser_geo(g),
+            "even": "even",
+            "mode": "round",
+            "expected": ser_geo(result3),
+        }
+    )
 
     return vectors
 
@@ -291,15 +315,17 @@ def generate_apply_offset():
     )
     offset = pt(50, 30)
     geo_result, theo_eff, theo_prot, theo_fram = g.apply_offset(offset)
-    vectors.append({
-        "label": "positive_offset",
-        "input": ser_geo(g),
-        "offset": ser_pt(offset),
-        "expected_geometry": ser_geo(geo_result),
-        "expected_theo_eff": ser_pt(theo_eff),
-        "expected_theo_prot": ser_pt(theo_prot),
-        "expected_theo_fram": ser_pt(theo_fram),
-    })
+    vectors.append(
+        {
+            "label": "positive_offset",
+            "input": ser_geo(g),
+            "offset": ser_pt(offset),
+            "expected_geometry": ser_geo(geo_result),
+            "expected_theo_eff": ser_pt(theo_eff),
+            "expected_theo_prot": ser_pt(theo_prot),
+            "expected_theo_fram": ser_pt(theo_fram),
+        }
+    )
 
     # Case 2: Negative offset causing clamping
     g2 = Geometry(
@@ -313,28 +339,32 @@ def generate_apply_offset():
     )
     offset = pt(-200, -150)
     geo_result2, theo_eff2, theo_prot2, theo_fram2 = g2.apply_offset(offset)
-    vectors.append({
-        "label": "negative_offset_clamp",
-        "input": ser_geo(g2),
-        "offset": ser_pt(offset),
-        "expected_geometry": ser_geo(geo_result2),
-        "expected_theo_eff": ser_pt(theo_eff2),
-        "expected_theo_prot": ser_pt(theo_prot2),
-        "expected_theo_fram": ser_pt(theo_fram2),
-    })
+    vectors.append(
+        {
+            "label": "negative_offset_clamp",
+            "input": ser_geo(g2),
+            "offset": ser_pt(offset),
+            "expected_geometry": ser_geo(geo_result2),
+            "expected_theo_eff": ser_pt(theo_eff2),
+            "expected_theo_prot": ser_pt(theo_prot2),
+            "expected_theo_fram": ser_pt(theo_fram2),
+        }
+    )
 
     # Case 3: Zero offset
     offset_zero = pt(0, 0)
     geo_result3, theo_eff3, theo_prot3, theo_fram3 = g.apply_offset(offset_zero)
-    vectors.append({
-        "label": "zero_offset",
-        "input": ser_geo(g),
-        "offset": ser_pt(offset_zero),
-        "expected_geometry": ser_geo(geo_result3),
-        "expected_theo_eff": ser_pt(theo_eff3),
-        "expected_theo_prot": ser_pt(theo_prot3),
-        "expected_theo_fram": ser_pt(theo_fram3),
-    })
+    vectors.append(
+        {
+            "label": "zero_offset",
+            "input": ser_geo(g),
+            "offset": ser_pt(offset_zero),
+            "expected_geometry": ser_geo(geo_result3),
+            "expected_theo_eff": ser_pt(theo_eff3),
+            "expected_theo_prot": ser_pt(theo_prot3),
+            "expected_theo_fram": ser_pt(theo_fram3),
+        }
+    )
 
     return vectors
 
@@ -357,14 +387,16 @@ def generate_crop():
     theo_prot = pt(110, 65)
     theo_fram = pt(160, 90)
     result = g.crop(theo_eff, theo_prot, theo_fram)
-    vectors.append({
-        "label": "no_crop_needed",
-        "input": ser_geo(g),
-        "theo_eff": ser_pt(theo_eff),
-        "theo_prot": ser_pt(theo_prot),
-        "theo_fram": ser_pt(theo_fram),
-        "expected": ser_geo(result),
-    })
+    vectors.append(
+        {
+            "label": "no_crop_needed",
+            "input": ser_geo(g),
+            "theo_eff": ser_pt(theo_eff),
+            "theo_prot": ser_pt(theo_prot),
+            "theo_fram": ser_pt(theo_fram),
+            "expected": ser_geo(result),
+        }
+    )
 
     # Case 2: Negative theoretical anchors (content shifted left/up)
     g2 = Geometry(
@@ -380,14 +412,16 @@ def generate_crop():
     theo_prot2 = pt(-100, -50)
     theo_fram2 = pt(0, 0)
     result2 = g2.crop(theo_eff2, theo_prot2, theo_fram2)
-    vectors.append({
-        "label": "negative_anchors_crop",
-        "input": ser_geo(g2),
-        "theo_eff": ser_pt(theo_eff2),
-        "theo_prot": ser_pt(theo_prot2),
-        "theo_fram": ser_pt(theo_fram2),
-        "expected": ser_geo(result2),
-    })
+    vectors.append(
+        {
+            "label": "negative_anchors_crop",
+            "input": ser_geo(g2),
+            "theo_eff": ser_pt(theo_eff2),
+            "theo_prot": ser_pt(theo_prot2),
+            "theo_fram": ser_pt(theo_fram2),
+            "expected": ser_geo(result2),
+        }
+    )
 
     # Case 3: No protection (zero dims)
     g3 = Geometry(
@@ -403,14 +437,16 @@ def generate_crop():
     theo_prot3 = pt(0, 0)
     theo_fram3 = pt(0, 0)
     result3 = g3.crop(theo_eff3, theo_prot3, theo_fram3)
-    vectors.append({
-        "label": "no_protection_crop",
-        "input": ser_geo(g3),
-        "theo_eff": ser_pt(theo_eff3),
-        "theo_prot": ser_pt(theo_prot3),
-        "theo_fram": ser_pt(theo_fram3),
-        "expected": ser_geo(result3),
-    })
+    vectors.append(
+        {
+            "label": "no_protection_crop",
+            "input": ser_geo(g3),
+            "theo_eff": ser_pt(theo_eff3),
+            "theo_prot": ser_pt(theo_prot3),
+            "theo_fram": ser_pt(theo_fram3),
+            "expected": ser_geo(result3),
+        }
+    )
 
     # Case 4: Right-edge crop (content extends past canvas right edge)
     g4 = Geometry(
@@ -426,14 +462,16 @@ def generate_crop():
     theo_prot4 = pt(0, 0)
     theo_fram4 = pt(200, 90)
     result4 = g4.crop(theo_eff4, theo_prot4, theo_fram4)
-    vectors.append({
-        "label": "right_edge_crop",
-        "input": ser_geo(g4),
-        "theo_eff": ser_pt(theo_eff4),
-        "theo_prot": ser_pt(theo_prot4),
-        "theo_fram": ser_pt(theo_fram4),
-        "expected": ser_geo(result4),
-    })
+    vectors.append(
+        {
+            "label": "right_edge_crop",
+            "input": ser_geo(g4),
+            "theo_eff": ser_pt(theo_eff4),
+            "theo_prot": ser_pt(theo_prot4),
+            "theo_fram": ser_pt(theo_fram4),
+            "expected": ser_geo(result4),
+        }
+    )
 
     return vectors
 
@@ -461,13 +499,15 @@ def generate_get_dims_anchor():
 
     for path_str, label in paths:
         d, a = g.get_dimensions_and_anchors_from_path(path_str)
-        vectors.append({
-            "label": f"path_{label}",
-            "input": ser_geo(g),
-            "path": path_str,
-            "expected_dims": ser_dims(d),
-            "expected_anchor": ser_pt(a) if a else {"x": 0.0, "y": 0.0},
-        })
+        vectors.append(
+            {
+                "label": f"path_{label}",
+                "input": ser_geo(g),
+                "path": path_str,
+                "expected_dims": ser_dims(d),
+                "expected_anchor": ser_pt(a) if a else {"x": 0.0, "y": 0.0},
+            }
+        )
 
     return vectors
 

@@ -27,8 +27,10 @@ def main() -> int:
     # Configure
     cmake_args = [
         "cmake",
-        "-S", str(SOURCE_DIR),
-        "-B", str(BUILD_DIR),
+        "-S",
+        str(SOURCE_DIR),
+        "-B",
+        str(BUILD_DIR),
         f"-DCMAKE_BUILD_TYPE={args.build_type}",
     ]
     if args.no_tests:
@@ -41,19 +43,31 @@ def main() -> int:
 
     # Build
     print("=== CMake build ===")
-    result = subprocess.run([
-        "cmake", "--build", str(BUILD_DIR), "--config", args.build_type,
-    ])
+    result = subprocess.run(
+        [
+            "cmake",
+            "--build",
+            str(BUILD_DIR),
+            "--config",
+            args.build_type,
+        ]
+    )
     if result.returncode != 0:
         return result.returncode
 
     # Optionally run C++ tests
     if args.run_tests:
         print("=== CTest ===")
-        result = subprocess.run([
-            "ctest", "--test-dir", str(BUILD_DIR),
-            "--output-on-failure", "-C", args.build_type,
-        ])
+        result = subprocess.run(
+            [
+                "ctest",
+                "--test-dir",
+                str(BUILD_DIR),
+                "--output-on-failure",
+                "-C",
+                args.build_type,
+            ]
+        )
         if result.returncode != 0:
             return result.returncode
 

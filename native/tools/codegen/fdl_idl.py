@@ -403,23 +403,19 @@ def _parse_value_type(name: str, raw: dict) -> ValueType:
 
     methods = []
     for m in raw.get("methods", []):
-        params = [
-            VTMethodParam(name=p["name"], param_type=p["type"], nullable=p.get("nullable", False))
-            for p in m.get("params", [])
-        ]
-        out_params = [
-            VTOutParam(name=p["name"], param_type=p["type"])
-            for p in m.get("out_params", [])
-        ]
-        methods.append(VTMethod(
-            name=m["name"],
-            c_function=m.get("c_function"),
-            pure=m.get("pure", False),
-            kind=m.get("kind", "instance"),
-            params=params,
-            returns=m.get("returns"),
-            out_params=out_params,
-        ))
+        params = [VTMethodParam(name=p["name"], param_type=p["type"], nullable=p.get("nullable", False)) for p in m.get("params", [])]
+        out_params = [VTOutParam(name=p["name"], param_type=p["type"]) for p in m.get("out_params", [])]
+        methods.append(
+            VTMethod(
+                name=m["name"],
+                c_function=m.get("c_function"),
+                pure=m.get("pure", False),
+                kind=m.get("kind", "instance"),
+                params=params,
+                returns=m.get("returns"),
+                out_params=out_params,
+            )
+        )
 
     operators = [
         VTOperator(
@@ -618,24 +614,15 @@ def _parse_object_model(raw: dict | None) -> ObjectModel:
 def _parse_auxiliary_types(raw: dict | None) -> AuxiliaryTypes:
     if not raw:
         return AuxiliaryTypes()
-    errors = [
-        ErrorDef(name=e["name"], parent=e["parent"], doc=e.get("doc", ""))
-        for e in raw.get("errors", [])
-    ]
+    errors = [ErrorDef(name=e["name"], parent=e["parent"], doc=e.get("doc", "")) for e in raw.get("errors", [])]
     version = None
     if "version" in raw:
         v = raw["version"]
-        slots = [
-            VersionSlot(name=s["name"], slot_type=s["type"], default=str(s["default"]))
-            for s in v.get("slots", [])
-        ]
+        slots = [VersionSlot(name=s["name"], slot_type=s["type"], default=str(s["default"])) for s in v.get("slots", [])]
         version = VersionDef(class_name=v["class_name"], doc=v.get("doc", ""), slots=slots)
     dataclasses_list = []
     for dc_name, dc_raw in raw.get("dataclasses", {}).items():
-        fields = [
-            DataclassField(name=f["name"], field_type=f["type"], private=f.get("private", False))
-            for f in dc_raw.get("fields", [])
-        ]
+        fields = [DataclassField(name=f["name"], field_type=f["type"], private=f.get("private", False)) for f in dc_raw.get("fields", [])]
         accessors = None
         if "accessors" in dc_raw:
             accessors = [
@@ -649,9 +636,14 @@ def _parse_auxiliary_types(raw: dict | None) -> AuxiliaryTypes:
                 )
                 for a in dc_raw["accessors"]
             ]
-        dataclasses_list.append(DataclassDef(
-            class_name=dc_name, doc=dc_raw.get("doc", ""), fields=fields, accessors=accessors,
-        ))
+        dataclasses_list.append(
+            DataclassDef(
+                class_name=dc_name,
+                doc=dc_raw.get("doc", ""),
+                fields=fields,
+                accessors=accessors,
+            )
+        )
     json_wrappers_list = []
     for jw_name, jw_raw in raw.get("json_wrappers", {}).items():
         jw_fields = [
@@ -665,14 +657,16 @@ def _parse_auxiliary_types(raw: dict | None) -> AuxiliaryTypes:
             )
             for f in jw_raw.get("fields", [])
         ]
-        json_wrappers_list.append(JsonWrapperDef(
-            class_name=jw_name,
-            doc=jw_raw.get("doc", ""),
-            fields=jw_fields,
-            c_struct=jw_raw.get("c_struct"),
-            free_fn=jw_raw.get("free_fn"),
-            mutual_exclusion=jw_raw.get("mutual_exclusion"),
-        ))
+        json_wrappers_list.append(
+            JsonWrapperDef(
+                class_name=jw_name,
+                doc=jw_raw.get("doc", ""),
+                fields=jw_fields,
+                c_struct=jw_raw.get("c_struct"),
+                free_fn=jw_raw.get("free_fn"),
+                mutual_exclusion=jw_raw.get("mutual_exclusion"),
+            )
+        )
     return AuxiliaryTypes(errors=errors, version=version, dataclasses=dataclasses_list, json_wrappers=json_wrappers_list)
 
 
@@ -693,30 +687,31 @@ def parse_idl(path: Path) -> IDL:
     # Parse free functions
     free_functions = []
     for ff_raw in data.get("free_functions", []):
-        params = [
-            FreeFunctionParam(name=p["name"], param_type=p["type"])
-            for p in ff_raw.get("params", [])
-        ]
-        free_functions.append(FreeFunctionDef(
-            name=ff_raw["name"],
-            python_name=ff_raw["python_name"],
-            c_function=ff_raw["c_function"],
-            doc=ff_raw.get("doc", ""),
-            params=params,
-            returns=ff_raw.get("returns", "None"),
-            module=ff_raw.get("module", "rounding"),
-        ))
+        params = [FreeFunctionParam(name=p["name"], param_type=p["type"]) for p in ff_raw.get("params", [])]
+        free_functions.append(
+            FreeFunctionDef(
+                name=ff_raw["name"],
+                python_name=ff_raw["python_name"],
+                c_function=ff_raw["c_function"],
+                doc=ff_raw.get("doc", ""),
+                params=params,
+                returns=ff_raw.get("returns", "None"),
+                module=ff_raw.get("module", "rounding"),
+            )
+        )
 
     # Parse utilities
     utilities = []
     for u_raw in data.get("utilities", []):
-        utilities.append(UtilityDef(
-            name=u_raw["name"],
-            kind=u_raw.get("kind", "c_abi"),
-            doc=u_raw.get("doc", ""),
-            c_function=u_raw.get("c_function"),
-            extract=u_raw.get("extract"),
-        ))
+        utilities.append(
+            UtilityDef(
+                name=u_raw["name"],
+                kind=u_raw.get("kind", "c_abi"),
+                doc=u_raw.get("doc", ""),
+                c_function=u_raw.get("c_function"),
+                extract=u_raw.get("extract"),
+            )
+        )
 
     return IDL(
         abi_version=abi_version,

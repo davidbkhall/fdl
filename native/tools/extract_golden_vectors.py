@@ -41,12 +41,32 @@ DEFAULT_OUTPUT = Path(__file__).resolve().parent.parent / "core" / "tests" / "ve
 def generate_rounding_vectors() -> dict:
     """Generate rounding vectors for all combinations of value x mode x even."""
     test_values = [
-        0.0, 1.0, 1.5, 2.0, 2.5, 3.0,
-        19.0, 19.456, 19.5, 20.5,
-        79.0, 79.456, 79.5, 80.5,
-        -3.5, -19.0, -19.456, -19.5, -20.5,
-        0.1, 0.9, 1.1, 1.9,
-        100.0, 100.5, 101.5,
+        0.0,
+        1.0,
+        1.5,
+        2.0,
+        2.5,
+        3.0,
+        19.0,
+        19.456,
+        19.5,
+        20.5,
+        79.0,
+        79.456,
+        79.5,
+        80.5,
+        -3.5,
+        -19.0,
+        -19.456,
+        -19.5,
+        -20.5,
+        0.1,
+        0.9,
+        1.1,
+        1.9,
+        100.0,
+        100.5,
+        101.5,
     ]
 
     modes = [
@@ -64,11 +84,13 @@ def generate_rounding_vectors() -> dict:
         for mode_enum, mode_name in modes:
             for even_enum, even_name in evens:
                 result = fdl_round(value, even_enum, mode_enum)
-                vectors.append({
-                    "input": {"value": value},
-                    "params": {"mode": mode_name, "even": even_name},
-                    "expected": result,
-                })
+                vectors.append(
+                    {
+                        "input": {"value": value},
+                        "params": {"mode": mode_name, "even": even_name},
+                        "expected": result,
+                    }
+                )
 
     return {
         "description": "fdl_round() golden vectors — all combos of value x mode x even",
@@ -106,12 +128,14 @@ def generate_dimensions_vectors() -> dict:
             d = Dimensions[float]()
             d.width, d.height = w, h
             result = d.normalize(squeeze)
-            vectors.append({
-                "op": "normalize",
-                "input": {"width": w, "height": h},
-                "params": {"squeeze": squeeze},
-                "expected": _dims_dict(result),
-            })
+            vectors.append(
+                {
+                    "op": "normalize",
+                    "input": {"width": w, "height": h},
+                    "params": {"squeeze": squeeze},
+                    "expected": _dims_dict(result),
+                }
+            )
 
     # scale
     for w, h in test_dims:
@@ -119,12 +143,14 @@ def generate_dimensions_vectors() -> dict:
             d = Dimensions[float]()
             d.width, d.height = w, h
             result = d.scale(sf, tsq)
-            vectors.append({
-                "op": "scale",
-                "input": {"width": w, "height": h},
-                "params": {"scale_factor": sf, "target_squeeze": tsq},
-                "expected": _dims_dict(result),
-            })
+            vectors.append(
+                {
+                    "op": "scale",
+                    "input": {"width": w, "height": h},
+                    "params": {"scale_factor": sf, "target_squeeze": tsq},
+                    "expected": _dims_dict(result),
+                }
+            )
 
     # normalize_and_scale
     for w, h in [(4096.0, 2160.0), (1920.0, 1080.0)]:
@@ -132,12 +158,14 @@ def generate_dimensions_vectors() -> dict:
             d = Dimensions[float]()
             d.width, d.height = w, h
             result = d.normalize_and_scale(isq, sf, tsq)
-            vectors.append({
-                "op": "normalize_and_scale",
-                "input": {"width": w, "height": h},
-                "params": {"input_squeeze": isq, "scale_factor": sf, "target_squeeze": tsq},
-                "expected": _dims_dict(result),
-            })
+            vectors.append(
+                {
+                    "op": "normalize_and_scale",
+                    "input": {"width": w, "height": h},
+                    "params": {"input_squeeze": isq, "scale_factor": sf, "target_squeeze": tsq},
+                    "expected": _dims_dict(result),
+                }
+            )
 
     # sub
     pairs = [
@@ -151,27 +179,31 @@ def generate_dimensions_vectors() -> dict:
         b = Dimensions[float]()
         b.width, b.height = bw, bh
         result = a - b
-        vectors.append({
-            "op": "sub",
-            "input": {"a": {"width": aw, "height": ah}, "b": {"width": bw, "height": bh}},
-            "expected": _dims_dict(result),
-        })
+        vectors.append(
+            {
+                "op": "sub",
+                "input": {"a": {"width": aw, "height": ah}, "b": {"width": bw, "height": bh}},
+                "expected": _dims_dict(result),
+            }
+        )
 
     # is_zero
     for w, h in [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (1.0, 1.0)]:
         d = Dimensions[float]()
         d.width, d.height = w, h
-        vectors.append({
-            "op": "is_zero",
-            "input": {"width": w, "height": h},
-            "expected": d.is_zero(),
-        })
+        vectors.append(
+            {
+                "op": "is_zero",
+                "input": {"width": w, "height": h},
+                "expected": d.is_zero(),
+            }
+        )
 
     # equal
     eq_pairs = [
         ((4096.0, 2160.0), (4096.0, 2160.0), True),
-        ((4096.0, 2160.0), (4096.0 + 1e-7, 2160.0), True),   # within abs_tol
-        ((4096.0, 2160.0), (4096.001, 2160.0), False),        # outside abs_tol
+        ((4096.0, 2160.0), (4096.0 + 1e-7, 2160.0), True),  # within abs_tol
+        ((4096.0, 2160.0), (4096.001, 2160.0), False),  # outside abs_tol
         ((0.0, 0.0), (0.0, 0.0), True),
         ((1920.0, 1080.0), (1920.0, 1080.5), False),
     ]
@@ -182,11 +214,13 @@ def generate_dimensions_vectors() -> dict:
         b.width, b.height = bw, bh
         actual = a == b
         assert actual == expected, f"Dims equal mismatch: ({aw},{ah}) vs ({bw},{bh}): got {actual}, expected {expected}"
-        vectors.append({
-            "op": "equal",
-            "input": {"a": {"width": aw, "height": ah}, "b": {"width": bw, "height": bh}},
-            "expected": expected,
-        })
+        vectors.append(
+            {
+                "op": "equal",
+                "input": {"a": {"width": aw, "height": ah}, "b": {"width": bw, "height": bh}},
+                "expected": expected,
+            }
+        )
 
     return {
         "description": "Dimensions math golden vectors",
@@ -222,12 +256,14 @@ def generate_point_vectors() -> dict:
             p = Point[float]()
             p.x, p.y = x, y
             result = p.normalize(squeeze)
-            vectors.append({
-                "op": "normalize",
-                "input": {"x": x, "y": y},
-                "params": {"squeeze": squeeze},
-                "expected": _point_dict(result),
-            })
+            vectors.append(
+                {
+                    "op": "normalize",
+                    "input": {"x": x, "y": y},
+                    "params": {"squeeze": squeeze},
+                    "expected": _point_dict(result),
+                }
+            )
 
     # scale
     for x, y in test_points:
@@ -235,12 +271,14 @@ def generate_point_vectors() -> dict:
             p = Point[float]()
             p.x, p.y = x, y
             result = p.scale(sf, tsq)
-            vectors.append({
-                "op": "scale",
-                "input": {"x": x, "y": y},
-                "params": {"scale_factor": sf, "target_squeeze": tsq},
-                "expected": _point_dict(result),
-            })
+            vectors.append(
+                {
+                    "op": "scale",
+                    "input": {"x": x, "y": y},
+                    "params": {"scale_factor": sf, "target_squeeze": tsq},
+                    "expected": _point_dict(result),
+                }
+            )
 
     # add
     add_pairs = [
@@ -254,11 +292,13 @@ def generate_point_vectors() -> dict:
         b = Point[float]()
         b.x, b.y = bx, by
         result = a + b
-        vectors.append({
-            "op": "add",
-            "input": {"a": {"x": ax, "y": ay}, "b": {"x": bx, "y": by}},
-            "expected": _point_dict(result),
-        })
+        vectors.append(
+            {
+                "op": "add",
+                "input": {"a": {"x": ax, "y": ay}, "b": {"x": bx, "y": by}},
+                "expected": _point_dict(result),
+            }
+        )
 
     # sub
     for (ax, ay), (bx, by) in add_pairs:
@@ -267,11 +307,13 @@ def generate_point_vectors() -> dict:
         b = Point[float]()
         b.x, b.y = bx, by
         result = a - b
-        vectors.append({
-            "op": "sub",
-            "input": {"a": {"x": ax, "y": ay}, "b": {"x": bx, "y": by}},
-            "expected": _point_dict(result),
-        })
+        vectors.append(
+            {
+                "op": "sub",
+                "input": {"a": {"x": ax, "y": ay}, "b": {"x": bx, "y": by}},
+                "expected": _point_dict(result),
+            }
+        )
 
     # mul_scalar
     for x, y in test_points:
@@ -279,12 +321,14 @@ def generate_point_vectors() -> dict:
             p = Point[float]()
             p.x, p.y = x, y
             result = p * scalar
-            vectors.append({
-                "op": "mul_scalar",
-                "input": {"x": x, "y": y},
-                "params": {"scalar": scalar},
-                "expected": _point_dict(result),
-            })
+            vectors.append(
+                {
+                    "op": "mul_scalar",
+                    "input": {"x": x, "y": y},
+                    "params": {"scalar": scalar},
+                    "expected": _point_dict(result),
+                }
+            )
 
     # clamp
     clamp_cases = [
@@ -299,17 +343,19 @@ def generate_point_vectors() -> dict:
         p = Point[float]()
         p.x, p.y = x, y
         result = p.clamp(min_val, max_val)
-        vectors.append({
-            "op": "clamp",
-            "input": {"x": x, "y": y},
-            "params": {
-                "min_val": min_val if min_val is not None else 0.0,
-                "max_val": max_val if max_val is not None else 0.0,
-                "has_min": min_val is not None,
-                "has_max": max_val is not None,
-            },
-            "expected": _point_dict(result),
-        })
+        vectors.append(
+            {
+                "op": "clamp",
+                "input": {"x": x, "y": y},
+                "params": {
+                    "min_val": min_val if min_val is not None else 0.0,
+                    "max_val": max_val if max_val is not None else 0.0,
+                    "has_min": min_val is not None,
+                    "has_max": max_val is not None,
+                },
+                "expected": _point_dict(result),
+            }
+        )
 
     # equal
     eq_cases = [
@@ -325,11 +371,13 @@ def generate_point_vectors() -> dict:
         b.x, b.y = bx, by
         actual = a == b
         assert actual == expected, f"Point equal mismatch: ({ax},{ay}) vs ({bx},{by})"
-        vectors.append({
-            "op": "equal",
-            "input": {"a": {"x": ax, "y": ay}, "b": {"x": bx, "y": by}},
-            "expected": expected,
-        })
+        vectors.append(
+            {
+                "op": "equal",
+                "input": {"a": {"x": ax, "y": ay}, "b": {"x": bx, "y": by}},
+                "expected": expected,
+            }
+        )
 
     return {
         "description": "Point math golden vectors",
@@ -375,11 +423,13 @@ def generate_roundtrip_vectors() -> dict:
     )
     canonical = json.loads(fdl.as_json(indent=2, exclude_none=True))
     scrambled = _scramble_keys(canonical)
-    vectors.append({
-        "label": "minimal_fdl",
-        "input": scrambled,
-        "expected": canonical,
-    })
+    vectors.append(
+        {
+            "label": "minimal_fdl",
+            "input": scrambled,
+            "expected": canonical,
+        }
+    )
 
     # 2. FDL with framing intents
     fdl = FDL(
@@ -387,24 +437,30 @@ def generate_roundtrip_vectors() -> dict:
         fdl_creator="test-roundtrip",
         default_framing_intent="FI_239",
     )
-    fdl.framing_intents.append(FramingIntent(
-        label="2.39:1",
-        id="FI_239",
-        aspect_ratio=DimensionsInt(width=239, height=100),
-        protection=0.1,
-    ))
-    fdl.framing_intents.append(FramingIntent(
-        label="1.78:1",
-        id="FI_178",
-        aspect_ratio=DimensionsInt(width=16, height=9),
-    ))
+    fdl.framing_intents.append(
+        FramingIntent(
+            label="2.39:1",
+            id="FI_239",
+            aspect_ratio=DimensionsInt(width=239, height=100),
+            protection=0.1,
+        )
+    )
+    fdl.framing_intents.append(
+        FramingIntent(
+            label="1.78:1",
+            id="FI_178",
+            aspect_ratio=DimensionsInt(width=16, height=9),
+        )
+    )
     canonical = json.loads(fdl.as_json(indent=2, exclude_none=True))
     scrambled = _scramble_keys(canonical)
-    vectors.append({
-        "label": "fdl_with_framing_intents",
-        "input": scrambled,
-        "expected": canonical,
-    })
+    vectors.append(
+        {
+            "label": "fdl_with_framing_intents",
+            "input": scrambled,
+            "expected": canonical,
+        }
+    )
 
     # 3. FDL with context + canvas + framing decisions (no protection)
     fdl = FDL(
@@ -440,11 +496,13 @@ def generate_roundtrip_vectors() -> dict:
 
     canonical = json.loads(fdl.as_json(indent=2, exclude_none=True))
     scrambled = _scramble_keys(canonical)
-    vectors.append({
-        "label": "fdl_with_context_canvas_fd",
-        "input": scrambled,
-        "expected": canonical,
-    })
+    vectors.append(
+        {
+            "label": "fdl_with_context_canvas_fd",
+            "input": scrambled,
+            "expected": canonical,
+        }
+    )
 
     # 4. FDL with effective dimensions + anchor points
     fdl = FDL(
@@ -485,11 +543,13 @@ def generate_roundtrip_vectors() -> dict:
 
     canonical = json.loads(fdl.as_json(indent=2, exclude_none=True))
     scrambled = _scramble_keys(canonical)
-    vectors.append({
-        "label": "fdl_with_effective_dims_and_protection",
-        "input": scrambled,
-        "expected": canonical,
-    })
+    vectors.append(
+        {
+            "label": "fdl_with_effective_dims_and_protection",
+            "input": scrambled,
+            "expected": canonical,
+        }
+    )
 
     # 5. FDL with anamorphic squeeze
     fdl = FDL(
@@ -525,28 +585,34 @@ def generate_roundtrip_vectors() -> dict:
 
     canonical = json.loads(fdl.as_json(indent=2, exclude_none=True))
     scrambled = _scramble_keys(canonical)
-    vectors.append({
-        "label": "fdl_with_anamorphic_squeeze",
-        "input": scrambled,
-        "expected": canonical,
-    })
+    vectors.append(
+        {
+            "label": "fdl_with_anamorphic_squeeze",
+            "input": scrambled,
+            "expected": canonical,
+        }
+    )
 
     # 6. Identity roundtrip — already canonical input
     fdl = FDL(
         uuid="00000000-0000-0000-0000-000000000006",
         fdl_creator="test-identity",
     )
-    fdl.framing_intents.append(FramingIntent(
-        label="1.85:1",
-        id="FI_185",
-        aspect_ratio=DimensionsInt(width=185, height=100),
-    ))
+    fdl.framing_intents.append(
+        FramingIntent(
+            label="1.85:1",
+            id="FI_185",
+            aspect_ratio=DimensionsInt(width=185, height=100),
+        )
+    )
     canonical = json.loads(fdl.as_json(indent=2, exclude_none=True))
-    vectors.append({
-        "label": "identity_roundtrip",
-        "input": canonical,  # already canonical
-        "expected": canonical,
-    })
+    vectors.append(
+        {
+            "label": "identity_roundtrip",
+            "input": canonical,  # already canonical
+            "expected": canonical,
+        }
+    )
 
     # 7. FDL with null default_framing_intent (should be stripped)
     raw = {
@@ -560,14 +626,17 @@ def generate_roundtrip_vectors() -> dict:
     }
     # Expected: null stripped
     expected = {k: v for k, v in raw.items() if v is not None}
-    vectors.append({
-        "label": "null_default_framing_intent_stripped",
-        "input": raw,
-        "expected": expected,
-    })
+    vectors.append(
+        {
+            "label": "null_default_framing_intent_stripped",
+            "input": raw,
+            "expected": expected,
+        }
+    )
 
     # 8. FDL with context containing clip_id
     from fdl.clipid import ClipID
+
     fdl = FDL(
         uuid="00000000-0000-0000-0000-000000000008",
         fdl_creator="test-clip-id",
@@ -587,11 +656,13 @@ def generate_roundtrip_vectors() -> dict:
 
     canonical = json.loads(fdl.as_json(indent=2, exclude_none=True))
     scrambled = _scramble_keys(canonical)
-    vectors.append({
-        "label": "fdl_with_clip_id",
-        "input": scrambled,
-        "expected": canonical,
-    })
+    vectors.append(
+        {
+            "label": "fdl_with_clip_id",
+            "input": scrambled,
+            "expected": canonical,
+        }
+    )
 
     return {
         "description": "FDL document roundtrip golden vectors — parse and re-serialize canonically",
@@ -611,9 +682,7 @@ def _make_minimal_fdl(uuid_suffix: str = "0001", **overrides) -> dict:
         "uuid": f"00000000-0000-0000-0000-{uuid_suffix:>012s}",
         "version": {"major": 2, "minor": 0},
         "fdl_creator": "test-validation",
-        "framing_intents": [
-            {"label": "2.39:1", "id": "FI_239", "aspect_ratio": {"width": 239, "height": 100}, "protection": 0.0}
-        ],
+        "framing_intents": [{"label": "2.39:1", "id": "FI_239", "aspect_ratio": {"width": 239, "height": 100}, "protection": 0.0}],
         "contexts": [
             {
                 "label": "Camera A",
@@ -662,12 +731,14 @@ def generate_validation_vectors() -> dict:
     fdl = _make_minimal_fdl("val001")
     error_count, error_msgs = validate_fdl(fdl)
     assert error_count == 0, f"Expected 0 errors for valid FDL, got {error_count}: {error_msgs}"
-    vectors.append({
-        "label": "valid_minimal",
-        "input": fdl,
-        "expected_error_count": 0,
-        "expected_errors": [],
-    })
+    vectors.append(
+        {
+            "label": "valid_minimal",
+            "input": fdl,
+            "expected_error_count": 0,
+            "expected_errors": [],
+        }
+    )
 
     # 2. Valid FDL with effective dimensions (must be >= framing decision dims)
     fdl = _make_minimal_fdl("val002")
@@ -675,12 +746,14 @@ def generate_validation_vectors() -> dict:
     fdl["contexts"][0]["canvases"][0]["effective_anchor_point"] = {"x": 0.0, "y": 30.0}
     error_count, error_msgs = validate_fdl(fdl)
     assert error_count == 0, f"Expected 0 errors, got {error_count}: {error_msgs}"
-    vectors.append({
-        "label": "valid_with_effective_dims",
-        "input": fdl,
-        "expected_error_count": 0,
-        "expected_errors": [],
-    })
+    vectors.append(
+        {
+            "label": "valid_with_effective_dims",
+            "input": fdl,
+            "expected_error_count": 0,
+            "expected_errors": [],
+        }
+    )
 
     # 3. Valid FDL with protection
     fdl = _make_minimal_fdl("val003")
@@ -688,128 +761,150 @@ def generate_validation_vectors() -> dict:
     fdl["contexts"][0]["canvases"][0]["framing_decisions"][0]["protection_anchor_point"] = {"x": 0.0, "y": 223.0}
     error_count, error_msgs = validate_fdl(fdl)
     assert error_count == 0, f"Expected 0 errors, got {error_count}: {error_msgs}"
-    vectors.append({
-        "label": "valid_with_protection",
-        "input": fdl,
-        "expected_error_count": 0,
-        "expected_errors": [],
-    })
+    vectors.append(
+        {
+            "label": "valid_with_protection",
+            "input": fdl,
+            "expected_error_count": 0,
+            "expected_errors": [],
+        }
+    )
 
     # --- Invalid FDLs (errors) ---
 
     # 4. Duplicate framing intent ID
     fdl = _make_minimal_fdl("inv001")
-    fdl["framing_intents"].append(
-        {"label": "Duplicate", "id": "FI_239", "aspect_ratio": {"width": 239, "height": 100}, "protection": 0.0}
-    )
+    fdl["framing_intents"].append({"label": "Duplicate", "id": "FI_239", "aspect_ratio": {"width": 239, "height": 100}, "protection": 0.0})
     error_count, error_msgs = validate_fdl(fdl)
     assert error_count == 1
-    vectors.append({
-        "label": "duplicate_framing_intent_id",
-        "input": fdl,
-        "expected_error_count": error_count,
-        "expected_errors": error_msgs,
-    })
+    vectors.append(
+        {
+            "label": "duplicate_framing_intent_id",
+            "input": fdl,
+            "expected_error_count": error_count,
+            "expected_errors": error_msgs,
+        }
+    )
 
     # 5. Default framing intent not in list
     fdl = _make_minimal_fdl("inv002")
     fdl["default_framing_intent"] = "NONEXISTENT"
     error_count, error_msgs = validate_fdl(fdl)
     assert error_count == 1
-    vectors.append({
-        "label": "default_fi_not_in_list",
-        "input": fdl,
-        "expected_error_count": error_count,
-        "expected_errors": error_msgs,
-    })
+    vectors.append(
+        {
+            "label": "default_fi_not_in_list",
+            "input": fdl,
+            "expected_error_count": error_count,
+            "expected_errors": error_msgs,
+        }
+    )
 
     # 6. Duplicate canvas ID
     fdl = _make_minimal_fdl("inv003")
-    fdl["contexts"].append({
-        "label": "Camera B",
-        "canvases": [{
-            "label": "Duplicate",
-            "id": "CVS_OCF",
-            "source_canvas_id": "CVS_OCF",
-            "dimensions": {"width": 3840, "height": 2160},
-            "anamorphic_squeeze": 1.0,
-            "framing_decisions": [{
-                "label": "2.39:1",
-                "id": "CVS_OCF-FI_239",
-                "framing_intent_id": "FI_239",
-                "dimensions": {"width": 3840.0, "height": 1607.0},
-                "anchor_point": {"x": 0.0, "y": 276.5},
-            }],
-        }],
-    })
+    fdl["contexts"].append(
+        {
+            "label": "Camera B",
+            "canvases": [
+                {
+                    "label": "Duplicate",
+                    "id": "CVS_OCF",
+                    "source_canvas_id": "CVS_OCF",
+                    "dimensions": {"width": 3840, "height": 2160},
+                    "anamorphic_squeeze": 1.0,
+                    "framing_decisions": [
+                        {
+                            "label": "2.39:1",
+                            "id": "CVS_OCF-FI_239",
+                            "framing_intent_id": "FI_239",
+                            "dimensions": {"width": 3840.0, "height": 1607.0},
+                            "anchor_point": {"x": 0.0, "y": 276.5},
+                        }
+                    ],
+                }
+            ],
+        }
+    )
     error_count, error_msgs = validate_fdl(fdl)
     assert error_count >= 1
-    vectors.append({
-        "label": "duplicate_canvas_id",
-        "input": fdl,
-        "expected_error_count": error_count,
-        "expected_errors": error_msgs,
-    })
+    vectors.append(
+        {
+            "label": "duplicate_canvas_id",
+            "input": fdl,
+            "expected_error_count": error_count,
+            "expected_errors": error_msgs,
+        }
+    )
 
     # 7. FD ID doesn't match expected format
     fdl = _make_minimal_fdl("inv004")
     fdl["contexts"][0]["canvases"][0]["framing_decisions"][0]["id"] = "WRONG_ID"
     error_count, error_msgs = validate_fdl(fdl)
     assert error_count >= 1
-    vectors.append({
-        "label": "fd_id_mismatch",
-        "input": fdl,
-        "expected_error_count": error_count,
-        "expected_errors": error_msgs,
-    })
+    vectors.append(
+        {
+            "label": "fd_id_mismatch",
+            "input": fdl,
+            "expected_error_count": error_count,
+            "expected_errors": error_msgs,
+        }
+    )
 
     # 8. Source canvas ID not in canvases
     fdl = _make_minimal_fdl("inv005")
     fdl["contexts"][0]["canvases"][0]["source_canvas_id"] = "NONEXISTENT"
     error_count, error_msgs = validate_fdl(fdl)
     assert error_count >= 1
-    vectors.append({
-        "label": "source_canvas_not_found",
-        "input": fdl,
-        "expected_error_count": error_count,
-        "expected_errors": error_msgs,
-    })
+    vectors.append(
+        {
+            "label": "source_canvas_not_found",
+            "input": fdl,
+            "expected_error_count": error_count,
+            "expected_errors": error_msgs,
+        }
+    )
 
     # 9. Dimension hierarchy violation — FD dims exceed canvas dims
     fdl = _make_minimal_fdl("inv006")
     fdl["contexts"][0]["canvases"][0]["framing_decisions"][0]["dimensions"] = {"width": 5000.0, "height": 3000.0}
     error_count, error_msgs = validate_fdl(fdl)
     assert error_count >= 1
-    vectors.append({
-        "label": "dim_hierarchy_fd_exceeds_canvas",
-        "input": fdl,
-        "expected_error_count": error_count,
-        "expected_errors": error_msgs,
-    })
+    vectors.append(
+        {
+            "label": "dim_hierarchy_fd_exceeds_canvas",
+            "input": fdl,
+            "expected_error_count": error_count,
+            "expected_errors": error_msgs,
+        }
+    )
 
     # 10. Negative anchor point
     fdl = _make_minimal_fdl("inv007")
     fdl["contexts"][0]["canvases"][0]["framing_decisions"][0]["anchor_point"] = {"x": -10.0, "y": 223.0}
     error_count, error_msgs = validate_fdl(fdl)
     assert error_count >= 1
-    vectors.append({
-        "label": "negative_anchor_point",
-        "input": fdl,
-        "expected_error_count": error_count,
-        "expected_errors": error_msgs,
-    })
+    vectors.append(
+        {
+            "label": "negative_anchor_point",
+            "input": fdl,
+            "expected_error_count": error_count,
+            "expected_errors": error_msgs,
+        }
+    )
 
     # 11. Anchor exceeds canvas dimensions
     fdl = _make_minimal_fdl("inv008")
     fdl["contexts"][0]["canvases"][0]["framing_decisions"][0]["anchor_point"] = {"x": 5000.0, "y": 223.0}
     error_count, error_msgs = validate_fdl(fdl)
     assert error_count >= 1
-    vectors.append({
-        "label": "anchor_exceeds_canvas",
-        "input": fdl,
-        "expected_error_count": error_count,
-        "expected_errors": error_msgs,
-    })
+    vectors.append(
+        {
+            "label": "anchor_exceeds_canvas",
+            "input": fdl,
+            "expected_error_count": error_count,
+            "expected_errors": error_msgs,
+        }
+    )
 
     # 12. Negative effective anchor point
     fdl = _make_minimal_fdl("inv009")
@@ -817,24 +912,28 @@ def generate_validation_vectors() -> dict:
     fdl["contexts"][0]["canvases"][0]["effective_anchor_point"] = {"x": -5.0, "y": 30.0}
     error_count, error_msgs = validate_fdl(fdl)
     assert error_count >= 1
-    vectors.append({
-        "label": "negative_effective_anchor",
-        "input": fdl,
-        "expected_error_count": error_count,
-        "expected_errors": error_msgs,
-    })
+    vectors.append(
+        {
+            "label": "negative_effective_anchor",
+            "input": fdl,
+            "expected_error_count": error_count,
+            "expected_errors": error_msgs,
+        }
+    )
 
     # 13. Framing intent ID referenced but not in list
     fdl = _make_minimal_fdl("inv010")
     fdl["contexts"][0]["canvases"][0]["framing_decisions"][0]["framing_intent_id"] = "MISSING_FI"
     error_count, error_msgs = validate_fdl(fdl)
     assert error_count >= 1
-    vectors.append({
-        "label": "fd_references_missing_fi",
-        "input": fdl,
-        "expected_error_count": error_count,
-        "expected_errors": error_msgs,
-    })
+    vectors.append(
+        {
+            "label": "fd_references_missing_fi",
+            "input": fdl,
+            "expected_error_count": error_count,
+            "expected_errors": error_msgs,
+        }
+    )
 
     return {
         "description": "FDL semantic validation golden vectors",

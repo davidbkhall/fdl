@@ -115,10 +115,12 @@ def _build_struct_context(vt: ValueType, idl: IDL) -> dict:
     fields = []
     for f in vt.fields:
         is_caller_frees = f.ownership is not None and "caller_frees" in f.ownership
-        fields.append({
-            "name": f.name,
-            "ctypes_type": _resolve_field_ctypes_type(f.c_type, idl, caller_frees=is_caller_frees),
-        })
+        fields.append(
+            {
+                "name": f.name,
+                "ctypes_type": _resolve_field_ctypes_type(f.c_type, idl, caller_frees=is_caller_frees),
+            }
+        )
     return {"name": vt.name, "fields": fields}
 
 
@@ -326,27 +328,17 @@ def _compute_per_class_imports(
             enum_map_imports.append(f"{ec['map_name']}_TO_C")
 
     # Version / ClipID / JSON checks
-    needs_version = any(
-        lc.get("kind") == "composite_property" and lc.get("returns") == "Version"
-        for lc in cls_ctx.get("lifecycle", [])
-    )
+    needs_version = any(lc.get("kind") == "composite_property" and lc.get("returns") == "Version" for lc in cls_ctx.get("lifecycle", []))
     needs_clip_id = "clip_id" in getter_converters
     needs_json = bool(cls_ctx.get("to_json_fn")) or needs_clip_id or "json_value" in getter_converters
 
     # Dataclass imports
-    dataclass_imports = sorted({
-        lc["returns"]
-        for lc in cls_ctx.get("lifecycle", [])
-        if lc.get("returns") in dataclass_name_set
-    })
+    dataclass_imports = sorted({lc["returns"] for lc in cls_ctx.get("lifecycle", []) if lc.get("returns") in dataclass_name_set})
 
     type_check_enums = sorted(type_check_enum_classes - runtime_enum_classes)
     runtime_enums = sorted(runtime_enum_classes)
 
-    type_check_classes = [
-        {"module": _class_to_module(name), "cls": name}
-        for name in sorted(type_check_class_names)
-    ]
+    type_check_classes = [{"module": _class_to_module(name), "cls": name} for name in sorted(type_check_class_names)]
 
     return {
         "base_imports": sorted(base_imports),
@@ -466,12 +458,8 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
             generated_converter_names.add(vt.facade_converter)
 
     # Split converter type imports: _types vs _rounding
-    types_converter_imports = sorted(
-        ctx["python_class"] for ctx in converter_contexts if ctx["python_class"] != "RoundStrategy"
-    )
-    rounding_converter_imports = sorted(
-        ctx["python_class"] for ctx in converter_contexts if ctx["python_class"] == "RoundStrategy"
-    )
+    types_converter_imports = sorted(ctx["python_class"] for ctx in converter_contexts if ctx["python_class"] != "RoundStrategy")
+    rounding_converter_imports = sorted(ctx["python_class"] for ctx in converter_contexts if ctx["python_class"] == "RoundStrategy")
     tmpl = env.get_template("python/converters.py.j2")
     converters_src = tmpl.render(
         value_types=converter_contexts,
@@ -545,14 +533,16 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
                     else:
                         on_expr = f"self.{parts[0]}.{parts[1]}"
                     lookup_fn = f"find_{acc.lookup}"
-                    accessors.append({
-                        "name": acc.name,
-                        "returns": acc.returns,
-                        "doc": acc.doc,
-                        "lookup_fn": lookup_fn,
-                        "on_expr": on_expr,
-                        "key_field": acc.key_field,
-                    })
+                    accessors.append(
+                        {
+                            "name": acc.name,
+                            "returns": acc.returns,
+                            "doc": acc.doc,
+                            "lookup_fn": lookup_fn,
+                            "on_expr": on_expr,
+                            "key_field": acc.key_field,
+                        }
+                    )
             dc_by_name[dc.class_name] = {
                 "class_name": dc.class_name,
                 "doc": dc.doc,
@@ -570,25 +560,29 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
             fields = []
             for f in jw.fields:
                 is_nested = f.field_type in jw_class_names
-                fields.append({
-                    "name": f.name,
-                    "python_type": f.field_type,
-                    "nullable": f.nullable,
-                    "max_length": f.max_length,
-                    "min_value": f.min_value,
-                    "c_has_flag": f.c_has_flag,
-                    "nested_class": f.field_type if is_nested else None,
-                    "is_string": f.field_type == "str" and not f.c_has_flag,
-                    "is_int": f.field_type == "int" and not f.c_has_flag,
-                })
-            jw_contexts.append({
-                "class_name": jw.class_name,
-                "doc": jw.doc,
-                "fields": fields,
-                "c_struct": jw.c_struct,
-                "free_fn": jw.free_fn,
-                "mutual_exclusion": jw.mutual_exclusion,
-            })
+                fields.append(
+                    {
+                        "name": f.name,
+                        "python_type": f.field_type,
+                        "nullable": f.nullable,
+                        "max_length": f.max_length,
+                        "min_value": f.min_value,
+                        "c_has_flag": f.c_has_flag,
+                        "nested_class": f.field_type if is_nested else None,
+                        "is_string": f.field_type == "str" and not f.c_has_flag,
+                        "is_int": f.field_type == "int" and not f.c_has_flag,
+                    }
+                )
+            jw_contexts.append(
+                {
+                    "class_name": jw.class_name,
+                    "doc": jw.doc,
+                    "fields": fields,
+                    "c_struct": jw.c_struct,
+                    "free_fn": jw.free_fn,
+                    "mutual_exclusion": jw.mutual_exclusion,
+                }
+            )
             json_wrapper_names.append(jw.class_name)
         tmpl = env.get_template("python/clipid.py.j2")
         jw_src = tmpl.render(wrappers=jw_contexts)
@@ -682,7 +676,11 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
     tmpl = env.get_template("python/class.py.j2")
     for cls_ctx in class_contexts:
         imports = _compute_per_class_imports(
-            cls_ctx, enum_contexts, generated_converter_names, all_class_names, dataclass_name_set,
+            cls_ctx,
+            enum_contexts,
+            generated_converter_names,
+            all_class_names,
+            dataclass_name_set,
         )
         module_name = _class_to_module(cls_ctx["name"])
         # Attach inline dataclass contexts for classes that need them
@@ -773,6 +771,8 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
     init_lines.append("")
     (output_dir / "__init__.py").write_text(encoding="utf-8", data="\n".join(init_lines))
 
-    print(f"Generated {len(class_contexts)} facade classes, {len(enum_contexts)} enum maps, "
-          f"{len(constants_contexts)} constants, {len(types_vt_contexts) + len(rounding_vt_contexts)} value types")
+    print(
+        f"Generated {len(class_contexts)} facade classes, {len(enum_contexts)} enum maps, "
+        f"{len(constants_contexts)} constants, {len(types_vt_contexts) + len(rounding_vt_contexts)} value types"
+    )
     print(f"Output: {output_dir}")

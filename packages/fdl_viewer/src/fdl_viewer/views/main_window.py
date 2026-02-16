@@ -951,7 +951,5 @@ class MainWindow(QMainWindow):
         QMessageBox.information(
             self,
             "Export Complete",
-            f"Unit test scenario {scenario_number} exported successfully.\n\n"
-            f"The scenario has been exported.\n\n"
-            f"Run 'pytest -v' to verify.",
+            f"Unit test scenario {scenario_number} exported successfully.\n\nThe scenario has been exported.\n\nRun 'pytest -v' to verify.",
         )

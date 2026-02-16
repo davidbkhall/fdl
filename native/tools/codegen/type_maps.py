@@ -67,6 +67,7 @@ PYTHON_CONVERTERS: dict[str, str] = {
     "clip_id": "clip_id",
 }
 
+
 def resolve_python_type(type_key: str, *, nullable: bool = False) -> str:
     """Resolve an IDL type key to a Python type annotation string."""
     base = PYTHON_TYPES.get(type_key, type_key)
