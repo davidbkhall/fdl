@@ -65,7 +65,10 @@ def test_frameline_regression(fdl_path: Path, expected_image_path: Path) -> None
         output_path = Path(tmpdir) / f"output{expected_image_path.suffix}"
         renderer.render_from_fdl(fdl_path=fdl_path, output_path=output_path)
 
+        # Allow a small number of failed pixels for cross-platform differences
+        # in OIIO text rendering and anti-aliasing (e.g. Linux vs macOS).
         _image_comparator.compare_images(
             expected_path=expected_image_path,
             actual_path=output_path,
+            allowed_failed_pixels=100,
         )
