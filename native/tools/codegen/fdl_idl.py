@@ -26,6 +26,7 @@ from .ir import (
     IRMethodParam,
     IRProperty,
     IRResultField,
+    parse_default,
 )
 
 # -----------------------------------------------------------------------
@@ -788,7 +789,7 @@ def build_ir(idl: IDL) -> IR:
                             name=p.name,
                             type_key=p.param_type,
                             nullable=p.nullable,
-                            default=p.default,
+                            default=parse_default(p.default) if p.default is not None else None,
                             expand=p.expand,
                             source_class=p.source_class,
                             global_fallback=p.global_fallback,
@@ -845,7 +846,7 @@ def build_ir(idl: IDL) -> IR:
                         name=p.name,
                         type_key=p.param_type,
                         nullable=p.nullable,
-                        default=p.default,
+                        default=parse_default(p.default) if p.default is not None else None,
                     )
                     for p in cls.init.params
                 ],

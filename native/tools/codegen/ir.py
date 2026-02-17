@@ -11,7 +11,73 @@ and collections backed by count/at/find patterns.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
+
+
+# -----------------------------------------------------------------------
+# DefaultDescriptor — structured representation of default values
+# -----------------------------------------------------------------------
+
+
+@dataclass
+class DefaultDescriptor:
+    """Language-neutral representation of a parameter default value.
+
+    Replaces raw Python-syntax strings (e.g. ``"FitMethod.WIDTH"``) with
+    a structured form that each language adapter can render independently.
+    """
+
+    kind: str  # "none", "literal", "enum_member", "constructor"
+    value: str | None = None  # For "literal": the raw value (e.g. "2", "0.0", "False")
+    enum_class: str | None = None  # For "enum_member": e.g. "FitMethod"
+    member: str | None = None  # For "enum_member": e.g. "WIDTH"
+    constructor_class: str | None = None  # For "constructor": e.g. "DimensionsFloat"
+    constructor_kwargs: dict[str, str] | None = None  # For "constructor": e.g. {"width": "0.0"}
+
+
+_ENUM_MEMBER_RE = re.compile(r"^([A-Z][A-Za-z]+)\.([A-Z_]+)$")
+_CONSTRUCTOR_RE = re.compile(r"^([A-Z][A-Za-z]+)\((.*)\)$", re.DOTALL)
+_KWARG_RE = re.compile(r"(\w+)=([\w.]+)")
+
+
+def parse_default(raw: str) -> DefaultDescriptor:
+    """Parse a raw default value string into a DefaultDescriptor."""
+    if raw == "None":
+        return DefaultDescriptor(kind="none")
+
+    m = _ENUM_MEMBER_RE.match(raw)
+    if m:
+        return DefaultDescriptor(kind="enum_member", enum_class=m.group(1), member=m.group(2))
+
+    m = _CONSTRUCTOR_RE.match(raw)
+    if m:
+        cls_name, args_str = m.group(1), m.group(2).strip()
+        kwargs = dict(_KWARG_RE.findall(args_str)) if args_str else None
+        return DefaultDescriptor(kind="constructor", constructor_class=cls_name, constructor_kwargs=kwargs)
+
+    return DefaultDescriptor(kind="literal", value=raw)
+
+
+def render_default_python(desc: DefaultDescriptor) -> str:
+    """Render a DefaultDescriptor to a Python expression string."""
+    if desc.kind == "none":
+        return "None"
+    if desc.kind == "literal":
+        return desc.value or ""
+    if desc.kind == "enum_member":
+        return f"{desc.enum_class}.{desc.member}"
+    if desc.kind == "constructor":
+        if desc.constructor_kwargs:
+            args = ", ".join(f"{k}={v}" for k, v in desc.constructor_kwargs.items())
+            return f"{desc.constructor_class}({args})"
+        return f"{desc.constructor_class}()"
+    return ""
+
+
+# -----------------------------------------------------------------------
+# IR dataclasses
+# -----------------------------------------------------------------------
 
 
 @dataclass
@@ -51,7 +117,7 @@ class IRMethodParam:
     name: str
     type_key: str  # Language-neutral key resolved by type_maps
     nullable: bool = False
-    default: str | None = None  # Default value expression (e.g. "None")
+    default: DefaultDescriptor | None = None  # Structured default value
     expand: bool = False  # Expand value type fields as separate C args
     source_class: str | None = None  # For handle params: which facade class
     global_fallback: str | None = None  # For nullable params: fallback function name
@@ -107,7 +173,7 @@ class IRInitParam:
     name: str
     type_key: str  # Language-neutral key resolved by type_maps
     nullable: bool = False
-    default: str | None = None
+    default: DefaultDescriptor | None = None  # Structured default value
 
 
 @dataclass

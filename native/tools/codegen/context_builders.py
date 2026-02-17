@@ -11,6 +11,7 @@ any specific target language — type resolution is delegated to type_maps.
 from __future__ import annotations
 
 from .fdl_idl import IDL, EnumType, FreeFunctionDef, ValueType, VTMethod, VTOperator
+from .ir import render_default_python
 from .type_maps import PYTHON_CONVERTERS, PYTHON_TYPES, resolve_python_type
 
 # Semantic error class → Python exception class
@@ -464,7 +465,7 @@ def build_builder_method_context(method, idl: IDL, enum_contexts: list[dict]) ->
 
     for p in method.params:
         python_type = resolve_python_type(p.type_key, nullable=p.nullable)
-        default = "None" if p.nullable and p.default is None else p.default
+        default = "None" if p.nullable and p.default is None else (render_default_python(p.default) if p.default else None)
         params.append(
             {
                 "name": p.name,
@@ -570,7 +571,7 @@ def build_lifecycle_method_context(method, idl: IDL, enum_contexts: list[dict]) 
             python_type = "str"
         else:
             python_type = resolve_python_type(p.type_key, nullable=p.nullable)
-        default = "None" if p.nullable and p.default is None else p.default
+        default = "None" if p.nullable and p.default is None else (render_default_python(p.default) if p.default else None)
         param_ctx = {
             "name": p.name,
             "type_key": p.type_key,
@@ -691,7 +692,7 @@ def build_init_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_class_by_
             )
         else:
             python_type = resolve_python_type(p.type_key, nullable=p.nullable)
-            default = p.default
+            default = render_default_python(p.default) if p.default else None
             if p.nullable and default is None:
                 default = "None"
             init_params.append(
