@@ -8,6 +8,8 @@
 
 #include <algorithm>
 
+#include "fdl_constants.h"
+
 namespace fdl::detail {
 
 double calculate_scale_factor(
@@ -62,7 +64,7 @@ double alignment_shift(
     // PAD / CROP (unified)
     // Step 1: where the target region sits in the output.
     bool center_target = pad_to_max || is_center;
-    double target_offset = center_target ? (output_size - target_size) * 0.5 : 0.0;
+    double target_offset = center_target ? (output_size - target_size) * fdl::constants::kAlignCenter : 0.0;
 
     // Step 2: where the fit sits within the target.
     double gap = target_size - fit_size;

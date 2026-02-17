@@ -5,6 +5,7 @@
  * @brief C ABI wrappers for geometry operations.
  */
 #include "fdl/fdl_core.h"
+#include "fdl_constants.h"
 #include "fdl_geometry.h"
 
 extern "C" {
@@ -59,7 +60,7 @@ int fdl_resolve_geometry_layer(
     }
     case FDL_GEOMETRY_PATH_CANVAS_EFFECTIVE_DIMENSIONS: {
         if (!fdl_canvas_has_effective_dimensions(canvas)) {
-            return 1;
+            return fdl::constants::kGeometryNotFound;
         }
         auto d = fdl_canvas_get_effective_dimensions(canvas);
         *out_dims = {static_cast<double>(d.width), static_cast<double>(d.height)};
@@ -68,7 +69,7 @@ int fdl_resolve_geometry_layer(
     }
     case FDL_GEOMETRY_PATH_FRAMING_PROTECTION_DIMENSIONS: {
         if (!fdl_framing_decision_has_protection(framing)) {
-            return 1;
+            return fdl::constants::kGeometryNotFound;
         }
         *out_dims = fdl_framing_decision_get_protection_dimensions(framing);
         *out_anchor = fdl_framing_decision_get_protection_anchor_point(framing);
@@ -80,7 +81,7 @@ int fdl_resolve_geometry_layer(
         return 0;
     }
     default:
-        return -1;
+        return fdl::constants::kGeometryInvalidPath;
     }
 }
 
@@ -104,7 +105,7 @@ int fdl_canvas_get_effective_rect(const fdl_canvas_t* canvas, fdl_rect_t* out_re
     auto dims = fdl_canvas_get_effective_dimensions(canvas);
     auto pt = fdl_canvas_get_effective_anchor_point(canvas);
     *out_rect = fdl_make_rect(pt.x, pt.y, static_cast<double>(dims.width), static_cast<double>(dims.height));
-    return 1;
+    return FDL_TRUE;
 }
 
 fdl_rect_t fdl_framing_decision_get_rect(const fdl_framing_decision_t* fd) {
@@ -120,7 +121,7 @@ int fdl_framing_decision_get_protection_rect(const fdl_framing_decision_t* fd, f
     auto dims = fdl_framing_decision_get_protection_dimensions(fd);
     auto pt = fdl_framing_decision_get_protection_anchor_point(fd);
     *out_rect = fdl_make_rect(pt.x, pt.y, dims.width, dims.height);
-    return 1;
+    return FDL_TRUE;
 }
 
 } // extern "C"

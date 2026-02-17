@@ -13,6 +13,7 @@
  * 4. Center both framing and protection anchors within the full canvas.
  */
 #include "fdl_framing.h"
+#include "fdl_constants.h"
 
 /** @brief Forward declaration for rounding function from fdl_core. */
 extern "C" {
@@ -31,7 +32,7 @@ fdl_from_intent_result_t compute_framing_from_intent(
     fdl_round_strategy_t rounding) {
 
     fdl_from_intent_result_t result = {};
-    result.has_protection = 0;
+    result.has_protection = FDL_FALSE;
 
     // Compare aspect ratios
     double intent_aspect = static_cast<double>(aspect_ratio.width) / static_cast<double>(aspect_ratio.height);
@@ -52,7 +53,7 @@ fdl_from_intent_result_t compute_framing_from_intent(
     fdl_dimensions_f64_t prot_dims = {0.0, 0.0};
     if (protection > 0) {
         prot_dims = fdl_round_dimensions({width, height}, rounding.even, rounding.mode);
-        result.has_protection = 1;
+        result.has_protection = FDL_TRUE;
         result.protection_dimensions = prot_dims;
     }
 
@@ -63,18 +64,22 @@ fdl_from_intent_result_t compute_framing_from_intent(
     }
 
     // Apply protection factor and round
-    fdl_dimensions_f64_t dims = {width * (1.0 - protection), height * (1.0 - protection)};
+    fdl_dimensions_f64_t dims = {
+        width * (fdl::constants::kProtectionBase - protection),
+        height * (fdl::constants::kProtectionBase - protection)};
     result.dimensions = fdl_round_dimensions(dims, rounding.even, rounding.mode);
 
     // Center framing decision anchor within canvas
     // (always relative to full canvas dims, not effective)
-    result.anchor_point.x = (canvas_dims.width - result.dimensions.width) / 2.0;
-    result.anchor_point.y = (canvas_dims.height - result.dimensions.height) / 2.0;
+    result.anchor_point.x = (canvas_dims.width - result.dimensions.width) / fdl::constants::kCenterDivisor;
+    result.anchor_point.y = (canvas_dims.height - result.dimensions.height) / fdl::constants::kCenterDivisor;
 
     // Center protection anchor within canvas (if applicable)
     if (result.has_protection) {
-        result.protection_anchor_point.x = (canvas_dims.width - result.protection_dimensions.width) / 2.0;
-        result.protection_anchor_point.y = (canvas_dims.height - result.protection_dimensions.height) / 2.0;
+        result.protection_anchor_point.x =
+            (canvas_dims.width - result.protection_dimensions.width) / fdl::constants::kCenterDivisor;
+        result.protection_anchor_point.y =
+            (canvas_dims.height - result.protection_dimensions.height) / fdl::constants::kCenterDivisor;
     }
 
     return result;

@@ -6,6 +6,7 @@
  */
 #include "fdl/fdl_core.h"
 #include "fdl_builder.h"
+#include "fdl_constants.h"
 #include "fdl_doc.h"
 #include "fdl_framing.h"
 
@@ -31,11 +32,11 @@ fdl_from_intent_result_t fdl_compute_framing_from_intent(
  */
 static double align_offset(double container, double content, uint32_t align) {
     // CENTER enum value is 1 for both halign and valign
-    if (align == 1) {
-        return (container - content) / 2.0;
+    if (align == FDL_HALIGN_CENTER) {
+        return (container - content) / fdl::constants::kCenterDivisor;
     }
     // RIGHT (halign=2) or BOTTOM (valign=2)
-    if (align == 2) {
+    if (align == FDL_HALIGN_RIGHT) {
         return container - content;
     }
     // LEFT (halign=0) or TOP (valign=0)
@@ -120,7 +121,8 @@ void fdl_framing_decision_populate_from_intent(
     }
 
     // Get squeeze
-    double squeeze = canvas_n->contains("anamorphic_squeeze") ? (*canvas_n)["anamorphic_squeeze"].as<double>() : 1.0;
+    double squeeze = canvas_n->contains("anamorphic_squeeze") ? (*canvas_n)["anamorphic_squeeze"].as<double>()
+                                                              : fdl::constants::kIdentitySqueeze;
 
     // Get aspect ratio from intent
     fdl_dimensions_i64_t aspect_ratio = {

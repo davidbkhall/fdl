@@ -16,9 +16,9 @@
 // bankers_round() implementation in fdl_rounding.h.
 
 int64_t fdl_round(double value, fdl_rounding_even_t even, fdl_rounding_mode_t mode) {
-    int64_t sign = 1;
+    int64_t sign = fdl::constants::kPositiveSign;
     if (value < 0.0) {
-        sign = -1;
+        sign = fdl::constants::kNegativeSign;
         value = std::abs(value);
     }
 
@@ -34,13 +34,13 @@ int64_t fdl_round(double value, fdl_rounding_even_t even, fdl_rounding_mode_t mo
 
     if (even == FDL_ROUNDING_EVEN_EVEN) {
         if (mode == FDL_ROUNDING_MODE_UP) {
-            v = (v % 2 == 0) ? v : v + 1;
+            v = (v % fdl::constants::kEvenDivisor == 0) ? v : v + fdl::constants::kEvenRoundingAdjustment;
         } else if (mode == FDL_ROUNDING_MODE_DOWN) {
-            v = (v % 2 == 0) ? v : v - 1;
+            v = (v % fdl::constants::kEvenDivisor == 0) ? v : v - fdl::constants::kEvenRoundingAdjustment;
         } else {
-            if (v % 2 != 0) {
-                int64_t up = v + 1;
-                int64_t down = v - 1;
+            if (v % fdl::constants::kEvenDivisor != 0) {
+                int64_t up = v + fdl::constants::kEvenRoundingAdjustment;
+                int64_t down = v - fdl::constants::kEvenRoundingAdjustment;
                 v = (std::abs(static_cast<double>(up) - value) <= std::abs(static_cast<double>(down) - value)) ? up
                                                                                                                : down;
             }

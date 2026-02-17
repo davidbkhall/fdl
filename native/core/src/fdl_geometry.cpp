@@ -17,6 +17,8 @@
  */
 #include "fdl_geometry.h"
 
+#include "fdl_constants.h"
+
 #include <algorithm>
 #include <cmath>
 
@@ -98,9 +100,9 @@ fdl_geometry_t geometry_fill_hierarchy_gaps(fdl_geometry_t geo, fdl_point_f64_t 
     protection_anchor = fdl_point_sub(protection_anchor, anchor_offset);
     framing_anchor = fdl_point_sub(framing_anchor, anchor_offset);
 
-    effective_anchor = fdl_point_clamp(effective_anchor, 0.0, 0.0, 1, 0);
-    protection_anchor = fdl_point_clamp(protection_anchor, 0.0, 0.0, 1, 0);
-    framing_anchor = fdl_point_clamp(framing_anchor, 0.0, 0.0, 1, 0);
+    effective_anchor = fdl_point_clamp(effective_anchor, 0.0, 0.0, FDL_TRUE, FDL_FALSE);
+    protection_anchor = fdl_point_clamp(protection_anchor, 0.0, 0.0, FDL_TRUE, FDL_FALSE);
+    framing_anchor = fdl_point_clamp(framing_anchor, 0.0, 0.0, FDL_TRUE, FDL_FALSE);
 
     return {
         canvas,
@@ -157,9 +159,9 @@ fdl_geometry_t geometry_apply_offset(
         geo.effective_dims,
         geo.protection_dims,
         geo.framing_dims,
-        fdl_point_clamp(*theo_eff, 0.0, 0.0, 1, 0),
-        fdl_point_clamp(*theo_prot, 0.0, 0.0, 1, 0),
-        fdl_point_clamp(*theo_fram, 0.0, 0.0, 1, 0),
+        fdl_point_clamp(*theo_eff, 0.0, 0.0, FDL_TRUE, FDL_FALSE),
+        fdl_point_clamp(*theo_prot, 0.0, 0.0, FDL_TRUE, FDL_FALSE),
+        fdl_point_clamp(*theo_fram, 0.0, 0.0, FDL_TRUE, FDL_FALSE),
     };
 }
 
@@ -251,7 +253,7 @@ int geometry_get_dims_anchor_from_path(
         *out_anchor = geo->framing_anchor;
         return 0;
     default:
-        return -1;
+        return fdl::constants::kGeometryInvalidPath;
     }
 }
 

@@ -70,7 +70,7 @@ public:
      * @param indent  Spaces per indent level (default 2, 0 for compact).
      * @return Formatted JSON string.
      */
-    std::string to_canonical_json(int indent = 2) const;
+    std::string to_canonical_json(int indent = constants::kDefaultJsonIndent) const;
 
 private:
     ojson data_;

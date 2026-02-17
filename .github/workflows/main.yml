@@ -71,7 +71,7 @@ jobs:
       - name: Run clang-tidy
         run: |
           find native/core/src -type f -name '*.cpp' \
-            -exec clang-tidy -p native/core/build --warnings-as-errors='' {} +
+            -exec clang-tidy -p native/core/build {} +
 
   # ---------------------------------------------------------------------------
   # Tests — gate for all downstream jobs

@@ -17,6 +17,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "fdl_constants.h"
+
 struct fdl_doc;
 
 /** @name Handle types — index-based paths into the document ojson tree */
@@ -77,7 +79,7 @@ struct fdl_framing_decision {
  * @return Packed key.
  */
 inline uint64_t pack_key(uint32_t a, uint32_t b) {
-    return (static_cast<uint64_t>(a) << 32) | b;
+    return (static_cast<uint64_t>(a) << fdl::constants::kPackKey2Shift) | b;
 }
 
 /**
@@ -88,7 +90,8 @@ inline uint64_t pack_key(uint32_t a, uint32_t b) {
  * @return Packed key.
  */
 inline uint64_t pack_key3(uint32_t a, uint32_t b, uint32_t c) {
-    return (static_cast<uint64_t>(a) << 40) | (static_cast<uint64_t>(b) << 20) | c;
+    return (static_cast<uint64_t>(a) << fdl::constants::kPackKey3HighShift) |
+           (static_cast<uint64_t>(b) << fdl::constants::kPackKey3MidShift) | c;
 }
 
 /** @} */

@@ -65,19 +65,19 @@ fdl_dimensions_f64_t fdl_dimensions_sub(fdl_dimensions_f64_t a, fdl_dimensions_f
 }
 
 int fdl_dimensions_equal(fdl_dimensions_f64_t a, fdl_dimensions_f64_t b) {
-    return fp_close(a.width, b.width) && fp_close(a.height, b.height) ? 1 : 0;
+    return fp_close(a.width, b.width) && fp_close(a.height, b.height) ? FDL_TRUE : FDL_FALSE;
 }
 
 int fdl_dimensions_f64_gt(fdl_dimensions_f64_t a, fdl_dimensions_f64_t b) {
-    return (a.width > b.width || a.height > b.height) ? 1 : 0;
+    return (a.width > b.width || a.height > b.height) ? FDL_TRUE : FDL_FALSE;
 }
 
 int fdl_dimensions_f64_lt(fdl_dimensions_f64_t a, fdl_dimensions_f64_t b) {
-    return (a.width < b.width || a.height < b.height) ? 1 : 0;
+    return (a.width < b.width || a.height < b.height) ? FDL_TRUE : FDL_FALSE;
 }
 
 int fdl_dimensions_is_zero(fdl_dimensions_f64_t dims) {
-    return (dims.width == 0.0 && dims.height == 0.0) ? 1 : 0;
+    return (dims.width == 0.0 && dims.height == 0.0) ? FDL_TRUE : FDL_FALSE;
 }
 
 // ---------------------------------------------------------------------------
@@ -85,7 +85,7 @@ int fdl_dimensions_is_zero(fdl_dimensions_f64_t dims) {
 // ---------------------------------------------------------------------------
 
 int fdl_dimensions_i64_is_zero(fdl_dimensions_i64_t dims) {
-    return (dims.width == 0 && dims.height == 0) ? 1 : 0;
+    return (dims.width == 0 && dims.height == 0) ? FDL_TRUE : FDL_FALSE;
 }
 
 fdl_dimensions_f64_t fdl_dimensions_i64_normalize(fdl_dimensions_i64_t dims, double squeeze) {
@@ -97,11 +97,11 @@ fdl_dimensions_i64_t fdl_dimensions_f64_to_i64(fdl_dimensions_f64_t dims) {
 }
 
 int fdl_dimensions_i64_gt(fdl_dimensions_i64_t a, fdl_dimensions_i64_t b) {
-    return (a.width > b.width || a.height > b.height) ? 1 : 0;
+    return (a.width > b.width || a.height > b.height) ? FDL_TRUE : FDL_FALSE;
 }
 
 int fdl_dimensions_i64_lt(fdl_dimensions_i64_t a, fdl_dimensions_i64_t b) {
-    return (a.width < b.width || a.height < b.height) ? 1 : 0;
+    return (a.width < b.width || a.height < b.height) ? FDL_TRUE : FDL_FALSE;
 }
 
 // ---------------------------------------------------------------------------
@@ -143,7 +143,7 @@ fdl_point_f64_t fdl_point_clamp(fdl_point_f64_t point, double min_val, double ma
 }
 
 int fdl_point_is_zero(fdl_point_f64_t point) {
-    return (point.x == 0.0 && point.y == 0.0) ? 1 : 0;
+    return (point.x == 0.0 && point.y == 0.0) ? FDL_TRUE : FDL_FALSE;
 }
 
 fdl_point_f64_t fdl_point_normalize_and_scale(
@@ -153,11 +153,11 @@ fdl_point_f64_t fdl_point_normalize_and_scale(
 }
 
 int fdl_point_equal(fdl_point_f64_t a, fdl_point_f64_t b) {
-    return fp_close(a.x, b.x) && fp_close(a.y, b.y) ? 1 : 0;
+    return fp_close(a.x, b.x) && fp_close(a.y, b.y) ? FDL_TRUE : FDL_FALSE;
 }
 
 int fdl_point_f64_lt(fdl_point_f64_t a, fdl_point_f64_t b) {
-    return (a.x < b.x || a.y < b.y) ? 1 : 0;
+    return (a.x < b.x || a.y < b.y) ? FDL_TRUE : FDL_FALSE;
 }
 
 // ---------------------------------------------------------------------------

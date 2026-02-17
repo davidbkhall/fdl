@@ -6,6 +6,7 @@
  */
 #include "fdl/fdl_core.h"
 #include "fdl_compat.h"
+#include "fdl_constants.h"
 #include "fdl_doc.h"
 
 #include <cstring>
@@ -38,7 +39,8 @@ struct DocStringBufKeyHash {
      * @return Combined hash value.
      */
     size_t operator()(const DocStringBufKey& k) const {
-        return std::hash<uintptr_t>{}(k.doc_addr) ^ (std::hash<std::string>{}(k.field) << 1);
+        return std::hash<uintptr_t>{}(k.doc_addr) ^
+               (std::hash<std::string>{}(k.field) << fdl::constants::kHashCombineShift);
     }
 };
 

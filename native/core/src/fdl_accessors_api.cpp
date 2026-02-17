@@ -7,6 +7,7 @@
 #include "fdl/fdl_core.h"
 #include "fdl_canonical.h"
 #include "fdl_compat.h"
+#include "fdl_constants.h"
 #include "fdl_doc.h"
 #include "fdl_enum_map.h"
 
@@ -47,7 +48,8 @@ struct StringBufKeyHash {
      * @return Combined hash value.
      */
     size_t operator()(const StringBufKey& k) const {
-        return std::hash<uintptr_t>{}(k.node_addr) ^ (std::hash<std::string>{}(k.field) << 1);
+        return std::hash<uintptr_t>{}(k.node_addr) ^
+               (std::hash<std::string>{}(k.field) << fdl::constants::kHashCombineShift);
     }
 };
 
@@ -240,7 +242,7 @@ int fdl_canvas_has_effective_dimensions(const fdl_canvas_t* canvas) {
     if (!n) {
         return 0;
     }
-    return n->contains("effective_dimensions") ? 1 : 0;
+    return n->contains("effective_dimensions") ? FDL_TRUE : FDL_FALSE;
 }
 
 fdl_dimensions_i64_t fdl_canvas_get_effective_dimensions(const fdl_canvas_t* canvas) {
@@ -269,14 +271,14 @@ fdl_point_f64_t fdl_canvas_get_effective_anchor_point(const fdl_canvas_t* canvas
 
 double fdl_canvas_get_anamorphic_squeeze(const fdl_canvas_t* canvas) {
     if (!canvas) {
-        return 1.0;
+        return fdl::constants::kIdentitySqueeze;
     }
     doc_lock lock(canvas->owner);
     auto* n = canvas->node();
     if (!n) {
-        return 1.0;
+        return fdl::constants::kIdentitySqueeze;
     }
-    return get_double(n, "anamorphic_squeeze", 1.0);
+    return get_double(n, "anamorphic_squeeze", fdl::constants::kIdentitySqueeze);
 }
 
 int fdl_canvas_has_photosite_dimensions(const fdl_canvas_t* canvas) {
@@ -288,7 +290,7 @@ int fdl_canvas_has_photosite_dimensions(const fdl_canvas_t* canvas) {
     if (!n) {
         return 0;
     }
-    return n->contains("photosite_dimensions") ? 1 : 0;
+    return n->contains("photosite_dimensions") ? FDL_TRUE : FDL_FALSE;
 }
 
 fdl_dimensions_i64_t fdl_canvas_get_photosite_dimensions(const fdl_canvas_t* canvas) {
@@ -312,7 +314,7 @@ int fdl_canvas_has_physical_dimensions(const fdl_canvas_t* canvas) {
     if (!n) {
         return 0;
     }
-    return n->contains("physical_dimensions") ? 1 : 0;
+    return n->contains("physical_dimensions") ? FDL_TRUE : FDL_FALSE;
 }
 
 fdl_dimensions_f64_t fdl_canvas_get_physical_dimensions(const fdl_canvas_t* canvas) {
@@ -336,7 +338,7 @@ int fdl_context_has_clip_id(const fdl_context_t* ctx) {
     if (!n) {
         return 0;
     }
-    return n->contains("clip_id") ? 1 : 0;
+    return n->contains("clip_id") ? FDL_TRUE : FDL_FALSE;
 }
 
 const char* fdl_context_get_clip_id(const fdl_context_t* ctx) {
@@ -376,12 +378,12 @@ fdl_clip_id_t fdl_context_get_clip_id_struct(const fdl_context_t* ctx) {
     }
 
     if (cid.contains("file") && cid["file"].is_string()) {
-        result.has_file = 1;
+        result.has_file = FDL_TRUE;
         result.file = fdl_strdup(cid["file"].as<std::string>().c_str());
     }
 
     if (cid.contains("sequence") && cid["sequence"].is_object()) {
-        result.has_sequence = 1;
+        result.has_sequence = FDL_TRUE;
         const auto& seq = cid["sequence"];
         if (seq.contains("value") && seq["value"].is_string()) {
             result.sequence.value = fdl_strdup(seq["value"].as<std::string>().c_str());
@@ -482,7 +484,7 @@ int fdl_framing_decision_has_protection(const fdl_framing_decision_t* fd) {
     if (!n) {
         return 0;
     }
-    return n->contains("protection_dimensions") ? 1 : 0;
+    return n->contains("protection_dimensions") ? FDL_TRUE : FDL_FALSE;
 }
 
 fdl_dimensions_f64_t fdl_framing_decision_get_protection_dimensions(const fdl_framing_decision_t* fd) {
@@ -603,14 +605,14 @@ fdl_dimensions_i64_t fdl_canvas_template_get_target_dimensions(const fdl_canvas_
 
 double fdl_canvas_template_get_target_anamorphic_squeeze(const fdl_canvas_template_t* ct) {
     if (!ct) {
-        return 1.0;
+        return fdl::constants::kIdentitySqueeze;
     }
     doc_lock lock(ct->owner);
     auto* n = ct->node();
     if (!n) {
-        return 1.0;
+        return fdl::constants::kIdentitySqueeze;
     }
-    return get_double(n, "target_anamorphic_squeeze", 1.0);
+    return get_double(n, "target_anamorphic_squeeze", fdl::constants::kIdentitySqueeze);
 }
 
 fdl_geometry_path_t fdl_canvas_template_get_fit_source(const fdl_canvas_template_t* ct) {
@@ -670,7 +672,7 @@ int fdl_canvas_template_has_preserve_from_source_canvas(const fdl_canvas_templat
     if (!n) {
         return 0;
     }
-    return n->contains("preserve_from_source_canvas") ? 1 : 0;
+    return n->contains("preserve_from_source_canvas") ? FDL_TRUE : FDL_FALSE;
 }
 
 fdl_geometry_path_t fdl_canvas_template_get_preserve_from_source_canvas(const fdl_canvas_template_t* ct) {
@@ -694,7 +696,7 @@ int fdl_canvas_template_has_maximum_dimensions(const fdl_canvas_template_t* ct) 
     if (!n) {
         return 0;
     }
-    return n->contains("maximum_dimensions") ? 1 : 0;
+    return n->contains("maximum_dimensions") ? FDL_TRUE : FDL_FALSE;
 }
 
 fdl_dimensions_i64_t fdl_canvas_template_get_maximum_dimensions(const fdl_canvas_template_t* ct) {
@@ -718,7 +720,7 @@ int fdl_canvas_template_get_pad_to_maximum(const fdl_canvas_template_t* ct) {
     if (!n || !n->contains("pad_to_maximum")) {
         return 0;
     }
-    return (*n)["pad_to_maximum"].as<bool>() ? 1 : 0;
+    return (*n)["pad_to_maximum"].as<bool>() ? FDL_TRUE : FDL_FALSE;
 }
 
 fdl_round_strategy_t fdl_canvas_template_get_round(const fdl_canvas_template_t* ct) {

@@ -6,6 +6,7 @@
  */
 #include "fdl/fdl_core.h"
 #include "fdl_compat.h"
+#include "fdl_constants.h"
 #include "fdl_doc.h"
 
 #include <cinttypes>
@@ -444,7 +445,7 @@ fdl_resolve_canvas_result_t fdl_context_resolve_canvas_for_dimensions(
     if (cvs_w == input_w && cvs_h == input_h) {
         result.canvas = canvas;
         result.framing_decision = framing;
-        result.was_resolved = 0;
+        result.was_resolved = FDL_FALSE;
         return result;
     }
 
@@ -516,7 +517,7 @@ fdl_resolve_canvas_result_t fdl_context_resolve_canvas_for_dimensions(
 
                                 result.canvas = matched_cvs;
                                 result.framing_decision = matched_fd;
-                                result.was_resolved = 1;
+                                result.was_resolved = FDL_TRUE;
                                 return result;
                             }
                         }
@@ -527,7 +528,7 @@ fdl_resolve_canvas_result_t fdl_context_resolve_canvas_for_dimensions(
     }
 
     // No match found
-    char buf[256];
+    char buf[fdl::constants::kErrorBufferSize];
     snprintf(
         buf,
         sizeof(buf),

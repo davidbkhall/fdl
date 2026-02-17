@@ -13,6 +13,8 @@
 #include <cmath>
 #include <cstdint>
 
+#include "fdl_constants.h"
+
 namespace fdl::detail {
 
 /**
@@ -28,14 +30,14 @@ inline int64_t bankers_round(double value) {
     double rounded = std::round(value);
     // Check if we're exactly at the halfway point
     double remainder = value - std::floor(value);
-    if (std::abs(remainder - 0.5) < 1e-15) {
+    if (std::abs(remainder - constants::kHalfway) < constants::kFpHalfwayTolerance) {
         // Halfway case: round to even
         auto r = static_cast<int64_t>(rounded);
-        if (r % 2 != 0) {
+        if (r % constants::kEvenDivisor != 0) {
             // rounded is odd, go the other way
-            rounded = std::floor(value + 0.5);
-            if (static_cast<int64_t>(rounded) % 2 != 0) {
-                rounded = std::ceil(value - 0.5);
+            rounded = std::floor(value + constants::kHalfway);
+            if (static_cast<int64_t>(rounded) % constants::kEvenDivisor != 0) {
+                rounded = std::ceil(value - constants::kHalfway);
             }
         }
     }

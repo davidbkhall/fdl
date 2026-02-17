@@ -43,7 +43,7 @@ Checks: >
   misc-*,
   -misc-non-private-member-variables-in-classes,
 
-WarningsAsErrors: ''
+WarningsAsErrors: 'readability-magic-numbers,cppcoreguidelines-avoid-magic-numbers'
 
 HeaderFilterRegex: 'native/core/(include|src)/.*\.h$'
 

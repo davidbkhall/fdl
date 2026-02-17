@@ -18,6 +18,7 @@
  */
 #include "fdl_template.h"
 #include "fdl_compat.h"
+#include "fdl_constants.h"
 #include "fdl_doc.h"
 #include "fdl_enum_map.h"
 
@@ -38,12 +39,12 @@
  */
 static double alignment_factor_h(fdl_halign_t align) {
     if (align == FDL_HALIGN_LEFT) {
-        return 0.0;
+        return fdl::constants::kAlignStart;
     }
     if (align == FDL_HALIGN_RIGHT) {
-        return 1.0;
+        return fdl::constants::kAlignEnd;
     }
-    return 0.5;
+    return fdl::constants::kAlignCenter;
 }
 
 /**
@@ -56,9 +57,9 @@ static double alignment_factor_v(fdl_valign_t align) {
         return 0.0;
     }
     if (align == FDL_VALIGN_BOTTOM) {
-        return 1.0;
+        return fdl::constants::kAlignEnd;
     }
-    return 0.5;
+    return fdl::constants::kAlignCenter;
 }
 
 /**
@@ -146,7 +147,7 @@ fdl_template_result_t apply_canvas_template(
     // --- Read template fields ---
     double input_squeeze = fdl_canvas_get_anamorphic_squeeze(source_canvas);
     if (input_squeeze == 0.0) {
-        input_squeeze = 1.0;
+        input_squeeze = fdl::constants::kIdentitySqueeze;
     }
 
     double target_squeeze = fdl_canvas_template_get_target_anamorphic_squeeze(tmpl);
@@ -247,10 +248,10 @@ fdl_template_result_t apply_canvas_template(
     fdl_dimensions_f64_t scaled_bounding_box = geometry.canvas_dims;
 
     // --- Phases 6-8: Output canvas size and content translation ---
-    double out_w =
-        fdl_output_size_for_axis(geometry.canvas_dims.width, max_w, has_max_dims ? 1 : 0, pad_to_max ? 1 : 0);
-    double out_h =
-        fdl_output_size_for_axis(geometry.canvas_dims.height, max_h, has_max_dims ? 1 : 0, pad_to_max ? 1 : 0);
+    double out_w = fdl_output_size_for_axis(
+        geometry.canvas_dims.width, max_w, has_max_dims ? FDL_TRUE : FDL_FALSE, pad_to_max ? FDL_TRUE : FDL_FALSE);
+    double out_h = fdl_output_size_for_axis(
+        geometry.canvas_dims.height, max_h, has_max_dims ? FDL_TRUE : FDL_FALSE, pad_to_max ? FDL_TRUE : FDL_FALSE);
 
     bool is_center_h = (h_align == FDL_HALIGN_CENTER);
     bool is_center_v = (v_align == FDL_VALIGN_CENTER);
@@ -263,18 +264,18 @@ fdl_template_result_t apply_canvas_template(
         out_w,
         geometry.canvas_dims.width,
         target_dims.width,
-        is_center_h ? 1 : 0,
+        is_center_h ? FDL_TRUE : FDL_FALSE,
         af_h,
-        pad_to_max ? 1 : 0);
+        pad_to_max ? FDL_TRUE : FDL_FALSE);
     double shift_y = fdl_alignment_shift(
         scaled_fit.height,
         scaled_fit_anchor.y,
         out_h,
         geometry.canvas_dims.height,
         target_dims.height,
-        is_center_v ? 1 : 0,
+        is_center_v ? FDL_TRUE : FDL_FALSE,
         af_v,
-        pad_to_max ? 1 : 0);
+        pad_to_max ? FDL_TRUE : FDL_FALSE);
 
     fdl_point_f64_t content_translation = {shift_x, shift_y};
     geometry.canvas_dims = {out_w, out_h};
@@ -308,7 +309,7 @@ fdl_template_result_t apply_canvas_template(
     // Build new FDL document
     fdl_doc_t* out_doc = fdl_doc_create_with_header(
         "00000000-0000-0000-0000-000000000000", // placeholder UUID
-        2,
+        fdl::constants::kDefaultVersionMajor,
         0,
         context_creator ? context_creator : "",
         source_fi_id_s.c_str());
@@ -319,7 +320,13 @@ fdl_template_result_t apply_canvas_template(
     }
 
     // Add default framing intent (using source's framing_intent_id)
-    fdl_doc_add_framing_intent(out_doc, source_fi_id_s.c_str(), "Default", 1, 1, 0.0);
+    fdl_doc_add_framing_intent(
+        out_doc,
+        source_fi_id_s.c_str(),
+        "Default",
+        fdl::constants::kDefaultAspectRatio,
+        fdl::constants::kDefaultAspectRatio,
+        0.0);
 
     // Add context with source canvas and new canvas
     auto* out_ctx = fdl_doc_add_context(out_doc, label_str.c_str(), context_creator);
@@ -436,7 +443,7 @@ fdl_template_result_t apply_canvas_template(
         fdl_canvas_template_set_maximum_dimensions(out_ct, max_dims_i);
     }
     if (pad_to_max) {
-        fdl_canvas_template_set_pad_to_maximum(out_ct, 1);
+        fdl_canvas_template_set_pad_to_maximum(out_ct, FDL_TRUE);
     }
 
     // Populate result

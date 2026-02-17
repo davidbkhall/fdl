@@ -5,6 +5,7 @@
  * @brief Schema (Draft 2020-12) and semantic validation using embedded schema data.
  */
 #include "fdl_validate.h"
+#include "fdl_constants.h"
 #include "fdl_schema_data.h"
 
 #include <jsoncons_ext/jsonschema/jsonschema.hpp>
@@ -17,6 +18,9 @@
 #include <stdexcept>
 
 namespace fdl::detail {
+
+/** Offset for adjacent-pair iteration (levels[i] vs levels[i + kAdjacentPairStep]). */
+constexpr size_t kAdjacentPairStep = 1;
 
 // ---------------------------------------------------------------------------
 // Schema registry — version-based lookup matching Python's patch-preference
@@ -78,7 +82,7 @@ static const std::map<SchemaKey, CompiledSchema>& get_schema_registry() {
  */
 static void validate_schema(const ojson& fdl, std::vector<std::string>& errors) {
     // Extract version from document (default to 2.0 like Python)
-    int major = 2, minor = 0;
+    int major = fdl::constants::kDefaultVersionMajor, minor = 0;
     if (fdl.contains("version") && fdl["version"].is_object()) {
         const auto& ver = fdl["version"];
         if (ver.contains("major") && ver["major"].is_number()) {
@@ -481,9 +485,9 @@ static void validate_dimension_hierarchy(const ojson& fdl, std::vector<std::stri
                     }
 
                     // Check adjacent pairs
-                    for (size_t i = 0; i + 1 < levels.size(); ++i) {
+                    for (size_t i = 0; i + kAdjacentPairStep < levels.size(); ++i) {
                         auto& outer = levels[i];
-                        auto& inner = levels[i + 1];
+                        auto& inner = levels[i + kAdjacentPairStep];
 
                         auto outer_name = format_path(outer.path);
                         auto inner_name = format_path(inner.path);

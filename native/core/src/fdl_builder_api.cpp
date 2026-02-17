@@ -97,9 +97,9 @@ fdl_framing_intent_t* fdl_doc_add_framing_intent(
     }
 
     auto fi = fdl::detail::make_framing_intent(id, label, aspect_w, aspect_h, protection);
-    data["framing_intents"].push_back(std::move(fi));
-
-    uint32_t index = static_cast<uint32_t>(data["framing_intents"].size() - 1);
+    auto& fi_arr = data["framing_intents"];
+    uint32_t index = static_cast<uint32_t>(fi_arr.size());
+    fi_arr.push_back(std::move(fi));
     auto handle = std::make_unique<fdl_framing_intent>();
     handle->owner = doc;
     handle->fi_index = index;
@@ -121,9 +121,9 @@ fdl_context_t* fdl_doc_add_context(fdl_doc_t* doc, const char* label, const char
     }
 
     auto ctx = fdl::detail::make_context(label, context_creator);
-    data["contexts"].push_back(std::move(ctx));
-
-    uint32_t index = static_cast<uint32_t>(data["contexts"].size() - 1);
+    auto& ctx_arr = data["contexts"];
+    uint32_t index = static_cast<uint32_t>(ctx_arr.size());
+    ctx_arr.push_back(std::move(ctx));
     auto handle = std::make_unique<fdl_context>();
     handle->owner = doc;
     handle->ctx_index = index;
@@ -156,9 +156,9 @@ fdl_canvas_t* fdl_context_add_canvas(
     }
 
     auto canvas = fdl::detail::make_canvas(id, label, source_canvas_id, dim_w, dim_h, squeeze);
-    (*n)["canvases"].push_back(std::move(canvas));
-
-    uint32_t cvs_index = static_cast<uint32_t>((*n)["canvases"].size() - 1);
+    auto& cvs_arr = (*n)["canvases"];
+    uint32_t cvs_index = static_cast<uint32_t>(cvs_arr.size());
+    cvs_arr.push_back(std::move(canvas));
     auto handle = std::make_unique<fdl_canvas>();
     handle->owner = ctx->owner;
     handle->ctx_index = ctx->ctx_index;
@@ -236,9 +236,9 @@ fdl_framing_decision_t* fdl_canvas_add_framing_decision(
     }
 
     auto fd = fdl::detail::make_framing_decision(id, label, framing_intent_id, dim_w, dim_h, anchor_x, anchor_y);
-    (*n)["framing_decisions"].push_back(std::move(fd));
-
-    uint32_t fd_index = static_cast<uint32_t>((*n)["framing_decisions"].size() - 1);
+    auto& fd_arr = (*n)["framing_decisions"];
+    uint32_t fd_index = static_cast<uint32_t>(fd_arr.size());
+    fd_arr.push_back(std::move(fd));
     auto handle = std::make_unique<fdl_framing_decision>();
     handle->owner = canvas->owner;
     handle->ctx_index = canvas->ctx_index;
@@ -294,9 +294,9 @@ fdl_canvas_template_t* fdl_doc_add_canvas_template(
 
     auto ct = fdl::detail::make_canvas_template(
         id, label, target_w, target_h, target_squeeze, fit_source, fit_method, halign, valign, rounding);
-    data["canvas_templates"].push_back(std::move(ct));
-
-    uint32_t index = static_cast<uint32_t>(data["canvas_templates"].size() - 1);
+    auto& ct_arr = data["canvas_templates"];
+    uint32_t index = static_cast<uint32_t>(ct_arr.size());
+    ct_arr.push_back(std::move(ct));
     auto handle = std::make_unique<fdl_canvas_template>();
     handle->owner = doc;
     handle->ct_index = index;

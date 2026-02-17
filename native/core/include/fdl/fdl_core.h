@@ -22,6 +22,17 @@ extern "C" {
 #endif
 
 /* -----------------------------------------------------------------------
+ * Boolean constants for C ABI int fields/returns
+ * ----------------------------------------------------------------------- */
+
+/** Boolean constants for C ABI @c int fields and return values. */
+#define FDL_TRUE 1  /**< Boolean true. */
+#define FDL_FALSE 0 /**< Boolean false. */
+
+/** Default JSON serialization indent. */
+#define FDL_DEFAULT_JSON_INDENT 2 /**< Spaces per indent level. */
+
+/* -----------------------------------------------------------------------
  * ABI version
  * ----------------------------------------------------------------------- */
 
@@ -81,9 +92,9 @@ typedef struct fdl_file_sequence_t {
  *  A clip_id has either a file OR a sequence, never both. */
 typedef struct fdl_clip_id_t {
     const char* clip_name;        /**< Clip name identifier (strdup'd, caller frees). */
-    int has_file;                 /**< 1 if @c file is populated, 0 otherwise. */
+    int has_file;                 /**< FDL_TRUE if @c file is populated, FDL_FALSE otherwise. */
     const char* file;             /**< File path (strdup'd, caller frees). NULL if !has_file. */
-    int has_sequence;             /**< 1 if @c sequence is populated, 0 otherwise. */
+    int has_sequence;             /**< FDL_TRUE if @c sequence is populated, FDL_FALSE otherwise. */
     fdl_file_sequence_t sequence; /**< File sequence data. Valid only if has_sequence. */
 } fdl_clip_id_t;
 
@@ -154,7 +165,7 @@ typedef struct fdl_round_strategy_t {
 typedef struct fdl_from_intent_result_t {
     fdl_dimensions_f64_t dimensions;            /**< Computed framing dimensions. */
     fdl_point_f64_t anchor_point;               /**< Computed anchor point. */
-    int has_protection;                         /**< 1 if protection was computed, 0 otherwise. */
+    int has_protection;                         /**< FDL_TRUE if protection was computed, FDL_FALSE otherwise. */
     fdl_dimensions_f64_t protection_dimensions; /**< Protection dimensions (valid if has_protection). */
     fdl_point_f64_t protection_anchor_point;    /**< Protection anchor (valid if has_protection). */
 } fdl_from_intent_result_t;
@@ -254,7 +265,7 @@ FDL_API fdl_dimensions_f64_t fdl_dimensions_sub(fdl_dimensions_f64_t a, fdl_dime
  *
  * @param a  First dimensions.
  * @param b  Second dimensions.
- * @return 1 if approximately equal, 0 otherwise.
+ * @return FDL_TRUE if approximately equal, FDL_FALSE otherwise.
  */
 FDL_API int fdl_dimensions_equal(fdl_dimensions_f64_t a, fdl_dimensions_f64_t b);
 
@@ -263,7 +274,7 @@ FDL_API int fdl_dimensions_equal(fdl_dimensions_f64_t a, fdl_dimensions_f64_t b)
  *
  * @param a  First dimensions.
  * @param b  Second dimensions.
- * @return 1 if a.width > b.width OR a.height > b.height, 0 otherwise.
+ * @return FDL_TRUE if a.width > b.width OR a.height > b.height, FDL_FALSE otherwise.
  */
 FDL_API int fdl_dimensions_f64_gt(fdl_dimensions_f64_t a, fdl_dimensions_f64_t b);
 
@@ -272,7 +283,7 @@ FDL_API int fdl_dimensions_f64_gt(fdl_dimensions_f64_t a, fdl_dimensions_f64_t b
  *
  * @param a  First dimensions.
  * @param b  Second dimensions.
- * @return 1 if a.width < b.width OR a.height < b.height, 0 otherwise.
+ * @return FDL_TRUE if a.width < b.width OR a.height < b.height, FDL_FALSE otherwise.
  */
 FDL_API int fdl_dimensions_f64_lt(fdl_dimensions_f64_t a, fdl_dimensions_f64_t b);
 
@@ -280,7 +291,7 @@ FDL_API int fdl_dimensions_f64_lt(fdl_dimensions_f64_t a, fdl_dimensions_f64_t b
  * Check if both width and height are zero.
  *
  * @param dims  Dimensions to test.
- * @return 1 if both components are zero, 0 otherwise.
+ * @return FDL_TRUE if both components are zero, FDL_FALSE otherwise.
  */
 FDL_API int fdl_dimensions_is_zero(fdl_dimensions_f64_t dims);
 
@@ -292,7 +303,7 @@ FDL_API int fdl_dimensions_is_zero(fdl_dimensions_f64_t dims);
  * Check if both width and height are zero (int64 variant).
  *
  * @param dims  Integer dimensions to test.
- * @return 1 if both components are zero, 0 otherwise.
+ * @return FDL_TRUE if both components are zero, FDL_FALSE otherwise.
  */
 FDL_API int fdl_dimensions_i64_is_zero(fdl_dimensions_i64_t dims);
 
@@ -318,7 +329,7 @@ FDL_API fdl_dimensions_i64_t fdl_dimensions_f64_to_i64(fdl_dimensions_f64_t dims
  *
  * @param a  First dimensions.
  * @param b  Second dimensions.
- * @return 1 if a.width > b.width OR a.height > b.height, 0 otherwise.
+ * @return FDL_TRUE if a.width > b.width OR a.height > b.height, FDL_FALSE otherwise.
  */
 FDL_API int fdl_dimensions_i64_gt(fdl_dimensions_i64_t a, fdl_dimensions_i64_t b);
 
@@ -327,7 +338,7 @@ FDL_API int fdl_dimensions_i64_gt(fdl_dimensions_i64_t a, fdl_dimensions_i64_t b
  *
  * @param a  First dimensions.
  * @param b  Second dimensions.
- * @return 1 if a.width < b.width OR a.height < b.height, 0 otherwise.
+ * @return FDL_TRUE if a.width < b.width OR a.height < b.height, FDL_FALSE otherwise.
  */
 FDL_API int fdl_dimensions_i64_lt(fdl_dimensions_i64_t a, fdl_dimensions_i64_t b);
 
@@ -392,8 +403,8 @@ FDL_API fdl_point_f64_t fdl_point_mul_scalar(fdl_point_f64_t a, double scalar);
  * @param point    Point to clamp.
  * @param min_val  Minimum bound (applied to both x and y).
  * @param max_val  Maximum bound (applied to both x and y).
- * @param has_min  1 to apply min_val, 0 to skip.
- * @param has_max  1 to apply max_val, 0 to skip.
+ * @param has_min  FDL_TRUE to apply min_val, FDL_FALSE to skip.
+ * @param has_max  FDL_TRUE to apply max_val, FDL_FALSE to skip.
  * @return Clamped point.
  */
 FDL_API fdl_point_f64_t
@@ -403,7 +414,7 @@ fdl_point_clamp(fdl_point_f64_t point, double min_val, double max_val, int has_m
  * Check if both x and y are zero.
  *
  * @param point  Point to test.
- * @return 1 if both components are zero, 0 otherwise.
+ * @return FDL_TRUE if both components are zero, FDL_FALSE otherwise.
  */
 FDL_API int fdl_point_is_zero(fdl_point_f64_t point);
 
@@ -424,7 +435,7 @@ fdl_point_normalize_and_scale(fdl_point_f64_t point, double input_squeeze, doubl
  *
  * @param a  First point.
  * @param b  Second point.
- * @return 1 if approximately equal, 0 otherwise.
+ * @return FDL_TRUE if approximately equal, FDL_FALSE otherwise.
  */
 FDL_API int fdl_point_equal(fdl_point_f64_t a, fdl_point_f64_t b);
 
@@ -433,7 +444,7 @@ FDL_API int fdl_point_equal(fdl_point_f64_t a, fdl_point_f64_t b);
  *
  * @param a  First point.
  * @param b  Second point.
- * @return 1 if a.x < b.x OR a.y < b.y, 0 otherwise.
+ * @return FDL_TRUE if a.x < b.x OR a.y < b.y, FDL_FALSE otherwise.
  */
 FDL_API int fdl_point_f64_lt(fdl_point_f64_t a, fdl_point_f64_t b);
 
@@ -568,8 +579,8 @@ FDL_API double fdl_calculate_scale_factor(
  *
  * @param canvas_size  Computed canvas size for this axis.
  * @param max_size     Maximum allowed size for this axis.
- * @param has_max      1 if max_size constraint is active, 0 if unconstrained.
- * @param pad_to_max   1 to pad output to max_size, 0 otherwise.
+ * @param has_max      FDL_TRUE if max_size constraint is active, FDL_FALSE if unconstrained.
+ * @param pad_to_max   FDL_TRUE to pad output to max_size, FDL_FALSE otherwise.
  * @return Final output size for this axis.
  */
 FDL_API double fdl_output_size_for_axis(double canvas_size, double max_size, int has_max, int pad_to_max);
@@ -585,9 +596,9 @@ FDL_API double fdl_output_size_for_axis(double canvas_size, double max_size, int
  * @param output_size   Final output canvas size.
  * @param canvas_size   Computed canvas size before clamping.
  * @param target_size   Target template size.
- * @param is_center     1 if alignment is center, 0 for edge alignment.
+ * @param is_center     FDL_TRUE if alignment is center, FDL_FALSE for edge alignment.
  * @param align_factor  Alignment factor (0.0 = left/top, 1.0 = right/bottom).
- * @param pad_to_max    1 if padding to maximum, 0 otherwise.
+ * @param pad_to_max    FDL_TRUE if padding to maximum, FDL_FALSE otherwise.
  * @return Translation shift for this axis.
  */
 FDL_API double fdl_alignment_shift(
@@ -971,7 +982,7 @@ FDL_API const char* fdl_context_get_context_creator(const fdl_context_t* ctx);
 /**
  * Check if a context has a clip_id.
  * @param ctx  Context handle.
- * @return 1 if clip_id is present, 0 otherwise.
+ * @return FDL_TRUE if clip_id is present, FDL_FALSE otherwise.
  */
 FDL_API int fdl_context_has_clip_id(const fdl_context_t* ctx);
 
@@ -987,7 +998,7 @@ FDL_API const char* fdl_context_get_clip_id(const fdl_context_t* ctx);
 /**
  * Get clip_id as a typed struct.
  *
- * Only call after fdl_context_has_clip_id() returns 1.
+ * Only call after fdl_context_has_clip_id() returns FDL_TRUE.
  *
  * @param ctx  Context handle.
  * @return Populated clip_id struct. String fields are strdup'd copies —
@@ -1028,12 +1039,12 @@ FDL_API fdl_dimensions_i64_t fdl_canvas_get_dimensions(const fdl_canvas_t* canva
 
 /** Check if the canvas has effective dimensions set.
  * @param canvas  Canvas handle.
- * @return 1 if effective dimensions are present, 0 otherwise. */
+ * @return FDL_TRUE if effective dimensions are present, FDL_FALSE otherwise. */
 FDL_API int fdl_canvas_has_effective_dimensions(const fdl_canvas_t* canvas);
 
 /** Get effective (active image area) dimensions.
  * @param canvas  Canvas handle.
- * @return Effective dimensions. Only valid if fdl_canvas_has_effective_dimensions() returns 1. */
+ * @return Effective dimensions. Only valid if fdl_canvas_has_effective_dimensions() returns FDL_TRUE. */
 FDL_API fdl_dimensions_i64_t fdl_canvas_get_effective_dimensions(const fdl_canvas_t* canvas);
 
 /** Get the effective anchor point (offset from canvas origin).
@@ -1048,22 +1059,22 @@ FDL_API double fdl_canvas_get_anamorphic_squeeze(const fdl_canvas_t* canvas);
 
 /** Check if the canvas has photosite dimensions set.
  * @param canvas  Canvas handle.
- * @return 1 if photosite dimensions are present, 0 otherwise. */
+ * @return FDL_TRUE if photosite dimensions are present, FDL_FALSE otherwise. */
 FDL_API int fdl_canvas_has_photosite_dimensions(const fdl_canvas_t* canvas);
 
 /** Get photosite (sensor) dimensions.
  * @param canvas  Canvas handle.
- * @return Photosite dimensions. Only valid if fdl_canvas_has_photosite_dimensions() returns 1. */
+ * @return Photosite dimensions. Only valid if fdl_canvas_has_photosite_dimensions() returns FDL_TRUE. */
 FDL_API fdl_dimensions_i64_t fdl_canvas_get_photosite_dimensions(const fdl_canvas_t* canvas);
 
 /** Check if the canvas has physical dimensions set.
  * @param canvas  Canvas handle.
- * @return 1 if physical dimensions are present, 0 otherwise. */
+ * @return FDL_TRUE if physical dimensions are present, FDL_FALSE otherwise. */
 FDL_API int fdl_canvas_has_physical_dimensions(const fdl_canvas_t* canvas);
 
 /** Get physical dimensions (e.g. millimeters on sensor).
  * @param canvas  Canvas handle.
- * @return Physical dimensions. Only valid if fdl_canvas_has_physical_dimensions() returns 1. */
+ * @return Physical dimensions. Only valid if fdl_canvas_has_physical_dimensions() returns FDL_TRUE. */
 FDL_API fdl_dimensions_f64_t fdl_canvas_get_physical_dimensions(const fdl_canvas_t* canvas);
 /* -----------------------------------------------------------------------
  * Field accessors — Framing Decision
@@ -1096,17 +1107,17 @@ FDL_API fdl_point_f64_t fdl_framing_decision_get_anchor_point(const fdl_framing_
 
 /** Check if a framing decision has protection area set.
  * @param fd  Framing decision handle.
- * @return 1 if protection is present, 0 otherwise. */
+ * @return FDL_TRUE if protection is present, FDL_FALSE otherwise. */
 FDL_API int fdl_framing_decision_has_protection(const fdl_framing_decision_t* fd);
 
 /** Get the protection area dimensions.
  * @param fd  Framing decision handle.
- * @return Protection dimensions. Only valid if fdl_framing_decision_has_protection() returns 1. */
+ * @return Protection dimensions. Only valid if fdl_framing_decision_has_protection() returns FDL_TRUE. */
 FDL_API fdl_dimensions_f64_t fdl_framing_decision_get_protection_dimensions(const fdl_framing_decision_t* fd);
 
 /** Get the protection anchor point.
  * @param fd  Framing decision handle.
- * @return Protection anchor point. Only valid if fdl_framing_decision_has_protection() returns 1. */
+ * @return Protection anchor point. Only valid if fdl_framing_decision_has_protection() returns FDL_TRUE. */
 FDL_API fdl_point_f64_t fdl_framing_decision_get_protection_anchor_point(const fdl_framing_decision_t* fd);
 
 /* -----------------------------------------------------------------------
@@ -1179,27 +1190,27 @@ FDL_API fdl_valign_t fdl_canvas_template_get_alignment_method_vertical(const fdl
 
 /** Check if preserve_from_source_canvas is set.
  * @param ct  Canvas template handle.
- * @return 1 if present, 0 otherwise. */
+ * @return FDL_TRUE if present, FDL_FALSE otherwise. */
 FDL_API int fdl_canvas_template_has_preserve_from_source_canvas(const fdl_canvas_template_t* ct);
 
 /** Get the preserve_from_source_canvas geometry path.
  * @param ct  Canvas template handle.
- * @return Geometry path to preserve. Only valid if has_preserve returns 1. */
+ * @return Geometry path to preserve. Only valid if has_preserve returns FDL_TRUE. */
 FDL_API fdl_geometry_path_t fdl_canvas_template_get_preserve_from_source_canvas(const fdl_canvas_template_t* ct);
 
 /** Check if maximum_dimensions constraint is set.
  * @param ct  Canvas template handle.
- * @return 1 if maximum dimensions are set, 0 otherwise. */
+ * @return FDL_TRUE if maximum dimensions are set, FDL_FALSE otherwise. */
 FDL_API int fdl_canvas_template_has_maximum_dimensions(const fdl_canvas_template_t* ct);
 
 /** Get the maximum_dimensions constraint.
  * @param ct  Canvas template handle.
- * @return Maximum dimensions. Only valid if has_maximum_dimensions returns 1. */
+ * @return Maximum dimensions. Only valid if has_maximum_dimensions returns FDL_TRUE. */
 FDL_API fdl_dimensions_i64_t fdl_canvas_template_get_maximum_dimensions(const fdl_canvas_template_t* ct);
 
 /** Get the pad_to_maximum flag.
  * @param ct  Canvas template handle.
- * @return 1 if output should be padded to maximum dimensions, 0 otherwise. */
+ * @return FDL_TRUE if output should be padded to maximum dimensions, FDL_FALSE otherwise. */
 FDL_API int fdl_canvas_template_get_pad_to_maximum(const fdl_canvas_template_t* ct);
 
 /** Get the rounding strategy.
@@ -1257,7 +1268,7 @@ FDL_API fdl_rect_t fdl_canvas_get_rect(const fdl_canvas_t* canvas);
  *
  * @param canvas    Canvas handle.
  * @param out_rect  [out] Effective rect if present.
- * @return 1 if effective dimensions exist and out_rect was written, 0 if absent.
+ * @return FDL_TRUE if effective dimensions exist and out_rect was written, FDL_FALSE if absent.
  */
 FDL_API int fdl_canvas_get_effective_rect(const fdl_canvas_t* canvas, fdl_rect_t* out_rect);
 
@@ -1274,7 +1285,7 @@ FDL_API fdl_rect_t fdl_framing_decision_get_rect(const fdl_framing_decision_t* f
  *
  * @param fd        Framing decision handle.
  * @param out_rect  [out] Protection rect if present.
- * @return 1 if protection exists and out_rect was written, 0 if absent.
+ * @return FDL_TRUE if protection exists and out_rect was written, FDL_FALSE if absent.
  */
 FDL_API int fdl_framing_decision_get_protection_rect(const fdl_framing_decision_t* fd, fdl_rect_t* out_rect);
 
@@ -1336,7 +1347,7 @@ FDL_API void fdl_template_result_free(fdl_template_result_t* result);
 typedef struct fdl_resolve_canvas_result_t {
     fdl_canvas_t* canvas;                     /**< Resolved canvas (non-owning, do NOT free). */
     fdl_framing_decision_t* framing_decision; /**< Resolved framing decision (non-owning, do NOT free). */
-    int was_resolved;                         /**< 1 if a different canvas was found, 0 if original matched. */
+    int was_resolved;                         /**< FDL_TRUE if a different canvas was found, FDL_FALSE if original matched. */
     const char* error;                        /**< Error message on failure (caller frees with fdl_free). */
 } fdl_resolve_canvas_result_t;
 
@@ -1544,7 +1555,7 @@ FDL_API void fdl_canvas_template_set_maximum_dimensions(fdl_canvas_template_t* c
  * Set pad_to_maximum flag on a canvas template.
  *
  * @param ct   Canvas template handle.
- * @param pad  1 to pad output to maximum dimensions, 0 otherwise.
+ * @param pad  FDL_TRUE to pad output to maximum dimensions, FDL_FALSE otherwise.
  */
 FDL_API void fdl_canvas_template_set_pad_to_maximum(fdl_canvas_template_t* ct, int pad);
 
