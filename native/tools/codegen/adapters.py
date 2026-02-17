@@ -11,7 +11,7 @@ directly.
 
 from __future__ import annotations
 
-from .ir import DefaultDescriptor, render_default_python
+from .ir import DefaultDescriptor
 
 
 class PythonAdapter:
@@ -77,7 +77,18 @@ class PythonAdapter:
         return self.ERROR_CLASSES.get(semantic_key, semantic_key)
 
     def render_default(self, desc: DefaultDescriptor) -> str:
-        return render_default_python(desc)
+        if desc.kind == "none":
+            return "None"
+        if desc.kind == "literal":
+            return desc.value or ""
+        if desc.kind == "enum_member":
+            return f"{desc.enum_class}.{desc.member}"
+        if desc.kind == "constructor":
+            if desc.constructor_kwargs:
+                args = ", ".join(f"{k}={v}" for k, v in desc.constructor_kwargs.items())
+                return f"{desc.constructor_class}({args})"
+            return f"{desc.constructor_class}()"
+        return ""
 
 
 class CppAdapter:

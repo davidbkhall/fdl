@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 class DefaultDescriptor:
     """Language-neutral representation of a parameter default value.
 
-    Replaces raw Python-syntax strings (e.g. ``"FitMethod.WIDTH"``) with
+    Replaces raw syntax strings (e.g. ``"FitMethod.WIDTH"``) with
     a structured form that each language adapter can render independently.
     """
 
@@ -57,22 +57,6 @@ def parse_default(raw: str) -> DefaultDescriptor:
         return DefaultDescriptor(kind="constructor", constructor_class=cls_name, constructor_kwargs=kwargs)
 
     return DefaultDescriptor(kind="literal", value=raw)
-
-
-def render_default_python(desc: DefaultDescriptor) -> str:
-    """Render a DefaultDescriptor to a Python expression string."""
-    if desc.kind == "none":
-        return "None"
-    if desc.kind == "literal":
-        return desc.value or ""
-    if desc.kind == "enum_member":
-        return f"{desc.enum_class}.{desc.member}"
-    if desc.kind == "constructor":
-        if desc.constructor_kwargs:
-            args = ", ".join(f"{k}={v}" for k, v in desc.constructor_kwargs.items())
-            return f"{desc.constructor_class}({args})"
-        return f"{desc.constructor_class}()"
-    return ""
 
 
 # -----------------------------------------------------------------------
