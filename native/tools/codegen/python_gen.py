@@ -14,13 +14,13 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 from .python_context import (
+    build_constants_enum_context,
     build_converter_context,
     build_facade_class_context,
     build_free_function_context,
     build_value_type_context,
 )
 from .shared_context import (
-    build_constants_enum_context,
     build_enum_context,
 )
 from .fdl_idl import IDL, Function, ValueType, build_ir

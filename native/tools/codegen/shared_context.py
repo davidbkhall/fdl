@@ -38,7 +38,7 @@ def build_enum_context(idl_enum: EnumType) -> dict:
     prefix = idl_enum.facade_prefix
     values = []
     for ev in idl_enum.values:
-        member = ev.name[len(prefix) :]  # strip prefix to get Python member name
+        member = ev.name[len(prefix) :]  # strip prefix to get member name
         values.append({"name": ev.name, "member": member})
 
     python_class = idl_enum.facade_class
@@ -50,20 +50,4 @@ def build_enum_context(idl_enum: EnumType) -> dict:
         "prefix": prefix,
         "map_name": map_name,
         "entries": values,
-    }
-
-
-def build_constants_enum_context(idl_enum: EnumType) -> dict:
-    """Build template context for one StrEnum class in _constants.py."""
-    prefix = idl_enum.facade_prefix
-    str_values = idl_enum.string_values or {}
-    members = []
-    for ev in idl_enum.values:
-        member_name = ev.name[len(prefix) :]
-        str_value = str_values.get(member_name, member_name.lower())
-        members.append({"name": member_name, "str_value": str_value})
-
-    return {
-        "python_class": idl_enum.facade_class,
-        "members": members,
     }

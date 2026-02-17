@@ -10,10 +10,32 @@ and FFI bindings.  Type resolution is delegated to PythonAdapter.
 from __future__ import annotations
 
 from .adapters import PythonAdapter
-from .fdl_idl import IDL, FreeFunctionDef, ValueType, VTMethod, VTOperator
+from .fdl_idl import IDL, EnumType, FreeFunctionDef, ValueType, VTMethod, VTOperator
 from .shared_context import camel_to_upper_snake
 
 _py = PythonAdapter()
+
+
+# -----------------------------------------------------------------------
+# Enum context builders (Python-specific)
+# -----------------------------------------------------------------------
+
+
+def build_constants_enum_context(idl_enum: EnumType) -> dict:
+    """Build template context for one StrEnum class in _constants.py."""
+    prefix = idl_enum.facade_prefix
+    str_values = idl_enum.string_values or {}
+    members = []
+    for ev in idl_enum.values:
+        member_name = ev.name[len(prefix) :]
+        str_value = str_values.get(member_name, member_name.lower())
+        members.append({"name": member_name, "str_value": str_value})
+
+    return {
+        "python_class": idl_enum.facade_class,
+        "members": members,
+    }
+
 
 # -----------------------------------------------------------------------
 # Value type helpers
