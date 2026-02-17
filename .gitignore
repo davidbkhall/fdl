@@ -19,3 +19,4 @@ native/bindings/python/fdl.egg-info/**
 packages/fdl_viewer/.build_venv/**
 packages/fdl_viewer/build/**
 packages/fdl_viewer/dist/**
+/build/*

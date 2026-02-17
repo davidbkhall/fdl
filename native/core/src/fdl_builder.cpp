@@ -61,7 +61,7 @@ ojson make_root(
     root.insert_or_assign("uuid", uuid);
     root.insert_or_assign("version", make_version(version_major, version_minor));
     root.insert_or_assign("fdl_creator", fdl_creator);
-    if (default_framing_intent) {
+    if (default_framing_intent != nullptr) {
         root.insert_or_assign("default_framing_intent", default_framing_intent);
     }
     root.insert_or_assign("framing_intents", ojson(jsoncons::json_array_arg));
@@ -74,7 +74,7 @@ ojson make_root(
 ojson make_framing_intent(const char* id, const char* label, int64_t aspect_w, int64_t aspect_h, double protection) {
     // Key order: label, id, aspect_ratio, protection
     ojson fi(jsoncons::json_object_arg);
-    if (label) {
+    if (label != nullptr) {
         fi.insert_or_assign("label", label);
     }
     fi.insert_or_assign("id", id);
@@ -87,10 +87,10 @@ ojson make_framing_intent(const char* id, const char* label, int64_t aspect_w, i
 ojson make_context(const char* label, const char* context_creator) {
     // Key order: label, context_creator, clip_id, canvases
     ojson ctx(jsoncons::json_object_arg);
-    if (label) {
+    if (label != nullptr) {
         ctx.insert_or_assign("label", label);
     }
-    if (context_creator) {
+    if (context_creator != nullptr) {
         ctx.insert_or_assign("context_creator", context_creator);
     }
     ctx.insert_or_assign("canvases", ojson(jsoncons::json_array_arg));
@@ -105,7 +105,7 @@ ojson make_canvas(
     //            photosite_dimensions, physical_dimensions,
     //            anamorphic_squeeze, framing_decisions
     ojson c(jsoncons::json_object_arg);
-    if (label) {
+    if (label != nullptr) {
         c.insert_or_assign("label", label);
     }
     c.insert_or_assign("id", id);
@@ -128,7 +128,7 @@ ojson make_framing_decision(
     // Key order: label, id, framing_intent_id, dimensions,
     //            anchor_point, protection_dimensions, protection_anchor_point
     ojson fd(jsoncons::json_object_arg);
-    if (label) {
+    if (label != nullptr) {
         fd.insert_or_assign("label", label);
     }
     fd.insert_or_assign("id", id);
@@ -155,7 +155,7 @@ ojson make_canvas_template(
     //            alignment_method_vertical, round, preserve_from_source_canvas,
     //            maximum_dimensions, pad_to_maximum
     ojson ct(jsoncons::json_object_arg);
-    if (label) {
+    if (label != nullptr) {
         ct.insert_or_assign("label", label);
     }
     ct.insert_or_assign("id", id);
