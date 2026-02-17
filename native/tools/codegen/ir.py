@@ -66,7 +66,7 @@ class IRResultField:
     extract: str  # "handle", "scalar", "value_type", "string"
     wrap_class: str | None = None  # For extract=handle
     converter: str | None = None  # For extract=value_type
-    python_type: str | None = None  # For extract=scalar
+    scalar_type: str | None = None  # For extract=scalar (e.g. "bool", "int")
     private: bool = False  # If True, prefix field name with _ in constructor call
 
 

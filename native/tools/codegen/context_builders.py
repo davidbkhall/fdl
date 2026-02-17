@@ -612,7 +612,7 @@ def build_lifecycle_method_context(method, idl: IDL, enum_contexts: list[dict]) 
                     "extract": rf.extract,
                     "wrap_class": rf.wrap_class,
                     "converter": rf.converter,
-                    "python_type": rf.python_type,
+                    "scalar_type": rf.scalar_type,
                     "private": rf.private,
                 }
                 for rf in eh.result_fields

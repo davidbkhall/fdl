@@ -531,7 +531,7 @@ object_model:
             fields:
               - { name: canvas,           source: canvas,           extract: handle_ref, wrap_class: Canvas }
               - { name: framing_decision, source: framing_decision, extract: handle_ref, wrap_class: FramingDecision }
-              - { name: was_resolved,     source: was_resolved,     extract: scalar, python_type: bool }
+              - { name: was_resolved,     source: was_resolved,     extract: scalar, scalar_type: bool }
       init:
         depth: 1
         builder_method: add_context
@@ -858,7 +858,7 @@ object_model:
             free_fn: fdl_free
             fields:
               - { name: fdl,                   source: output_fdl,          extract: handle, wrap_class: FDL }
-              - { name: scale_factor,          source: scale_factor,        extract: scalar, python_type: float }
+              - { name: scale_factor,          source: scale_factor,        extract: scalar, scalar_type: float }
               - { name: scaled_bounding_box,   source: scaled_bounding_box, extract: value_type, converter: dims_f64 }
               - { name: content_translation,   source: content_translation, extract: value_type, converter: point_f64 }
               - { name: context_label,         source: context_label,       extract: string, private: true }

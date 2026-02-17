@@ -174,7 +174,7 @@ class ResultFieldMapping:
     extract: str  # "handle", "scalar", "value_type", "string"
     wrap_class: str | None = None
     converter: str | None = None
-    python_type: str | None = None
+    scalar_type: str | None = None
     private: bool = False
 
 
@@ -525,7 +525,7 @@ def _parse_method(name: str, raw: dict) -> MethodMapping:
                     extract=f["extract"],
                     wrap_class=f.get("wrap_class"),
                     converter=f.get("converter"),
-                    python_type=f.get("python_type"),
+                    scalar_type=f.get("scalar_type"),
                     private=f.get("private", False),
                 )
                 for f in eh["fields"]
@@ -806,7 +806,7 @@ def build_ir(idl: IDL) -> IR:
                             extract=rf.extract,
                             wrap_class=rf.wrap_class,
                             converter=rf.converter,
-                            python_type=rf.python_type,
+                            scalar_type=rf.scalar_type,
                             private=rf.private,
                         )
                         for rf in eh.result_fields

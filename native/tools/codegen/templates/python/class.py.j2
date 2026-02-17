@@ -498,7 +498,7 @@ class {{ cls.name }}({{ "OwnedHandle" if cls.owns_handle else "HandleWrapper" }}
 {% elif field.extract == "handle_ref" %}
         _{{ field.name }} = {{ field.wrap_class }}._from_handle(result.{{ field.source }}, self._lib, self._doc_ref)
 {% elif field.extract == "scalar" %}
-        _{{ field.name }} = {{ field.python_type }}(result.{{ field.source }})
+        _{{ field.name }} = {{ field.scalar_type }}(result.{{ field.source }})
 {% elif field.extract == "value_type" %}
         _{{ field.name }} = _{{ field.converter }}(result.{{ field.source }})
 {% elif field.extract == "string" %}
