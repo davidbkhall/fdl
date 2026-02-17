@@ -85,7 +85,7 @@ class IRProperty:
     """A readable (and optionally writable) property on a class."""
 
     name: str
-    type_key: str  # Language-neutral key resolved by type_maps
+    type_key: str  # Language-neutral key resolved by language adapters
     getter_fn: str
     setter_fn: str | None = None
     remover_fn: str | None = None
@@ -115,7 +115,7 @@ class IRMethodParam:
     """A parameter for a method."""
 
     name: str
-    type_key: str  # Language-neutral key resolved by type_maps
+    type_key: str  # Language-neutral key resolved by language adapters
     nullable: bool = False
     default: DefaultDescriptor | None = None  # Structured default value
     expand: bool = False  # Expand value type fields as separate C args
@@ -171,7 +171,7 @@ class IRInitParam:
     """A parameter for a kwargs __init__ method."""
 
     name: str
-    type_key: str  # Language-neutral key resolved by type_maps
+    type_key: str  # Language-neutral key resolved by language adapters
     nullable: bool = False
     default: DefaultDescriptor | None = None  # Structured default value
 

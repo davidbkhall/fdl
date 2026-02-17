@@ -3,7 +3,7 @@
 """
 C++ code generator: produces a single-file RAII header (fdl.hpp) from the IDL.
 
-Mirrors the Python facade interfaces, adapting for C++ idioms:
+Consumes the language-neutral IR and CppAdapter to produce C++ idioms:
 RAII ownership, move semantics, std::optional, forward declarations,
 and inline implementations at file bottom for cross-class references.
 """
@@ -163,7 +163,7 @@ _C_FIELD_CPP: dict[str, str] = {
     "uint32_t": "uint32_t",
 }
 
-# Python operator name → C++ operator symbol
+# IDL operator name → C++ operator symbol
 _OP_MAP: dict[str, str] = {
     "__add__": "+",
     "__iadd__": "+=",
