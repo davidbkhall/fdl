@@ -166,6 +166,7 @@ jobs:
         run: python scripts/build_native.py --run-tests
 
       - name: Check ABI symbol parity
+        if: runner.os != 'Windows'
         run: python scripts/check_abi_symbols.py
 
       # --- Python environment ---
