@@ -39,8 +39,8 @@ int64_t fdl_round(double value, fdl_rounding_even_t even, fdl_rounding_mode_t mo
             v = (v % fdl::constants::kEvenDivisor == 0) ? v : v - fdl::constants::kEvenRoundingAdjustment;
         } else {
             if (v % fdl::constants::kEvenDivisor != 0) {
-                int64_t up = v + fdl::constants::kEvenRoundingAdjustment;
-                int64_t down = v - fdl::constants::kEvenRoundingAdjustment;
+                int64_t const up = v + fdl::constants::kEvenRoundingAdjustment;
+                int64_t const down = v - fdl::constants::kEvenRoundingAdjustment;
                 v = (std::abs(static_cast<double>(up) - value) <= std::abs(static_cast<double>(down) - value)) ? up
                                                                                                                : down;
             }

@@ -17,6 +17,14 @@
 #   -bugprone-easily-swappable-parameters  Too noisy for APIs with multiple same-type params.
 #   -readability-function-cognitive-complexity  Pipeline/geometry functions are inherently complex.
 #   -cppcoreguidelines-init-variables      Conflicts with declaration-near-use style.
+#
+# C ABI compatibility — the following checks are incompatible with a public C
+# ABI header (fdl_core.h) and are disabled project-wide:
+#   -modernize-use-using            C requires typedef struct syntax, not using.
+#   -cppcoreguidelines-macro-usage  C ABI enums/constants must be macros for C consumers.
+#   -misc-include-cleaner           Unstable across clang versions; disagrees on transitive includes.
+#   -misc-no-recursion              Tree-walking (canonical/validation) is inherently recursive.
+#   -readability-function-size      Pipeline/validation functions are complex by nature.
 
 Checks: >
   -*,
@@ -24,6 +32,7 @@ Checks: >
   -bugprone-easily-swappable-parameters,
   cppcoreguidelines-*,
   -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   -cppcoreguidelines-pro-bounds-constant-array-index,
@@ -35,13 +44,17 @@ Checks: >
   modernize-*,
   -modernize-use-trailing-return-type,
   -modernize-avoid-c-arrays,
+  -modernize-use-using,
   performance-*,
   readability-*,
   -readability-identifier-length,
   -readability-function-cognitive-complexity,
+  -readability-function-size,
   clang-analyzer-*,
   misc-*,
   -misc-non-private-member-variables-in-classes,
+  -misc-include-cleaner,
+  -misc-no-recursion,
 
 WarningsAsErrors: 'readability-magic-numbers,cppcoreguidelines-avoid-magic-numbers'
 
@@ -56,10 +69,6 @@ CheckOptions:
     value: ''
   - key: cppcoreguidelines-avoid-magic-numbers.IgnoredFloatingPointValues
     value: ''
-  - key: readability-function-size.LineThreshold
-    value: 100
-  - key: readability-function-size.StatementThreshold
-    value: 80
   - key: readability-braces-around-statements.ShortStatementLines
     value: 0
   - key: modernize-use-override.AllowOverrideAndFinal

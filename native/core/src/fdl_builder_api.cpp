@@ -23,36 +23,36 @@ extern "C" {
 // -----------------------------------------------------------------------
 
 void fdl_doc_set_uuid(fdl_doc_t* doc, const char* uuid) {
-    if (!doc || !uuid) {
+    if (doc == nullptr || uuid == nullptr) {
         return;
     }
-    doc_lock lock(doc);
+    const doc_lock lock(doc);
     doc->doc.data().insert_or_assign("uuid", uuid);
 }
 
 void fdl_doc_set_fdl_creator(fdl_doc_t* doc, const char* creator) {
-    if (!doc || !creator) {
+    if (doc == nullptr || creator == nullptr) {
         return;
     }
-    doc_lock lock(doc);
+    const doc_lock lock(doc);
     doc->doc.data().insert_or_assign("fdl_creator", creator);
 }
 
 void fdl_doc_set_default_framing_intent(fdl_doc_t* doc, const char* fi_id) {
-    if (!doc) {
+    if (doc == nullptr) {
         return;
     }
-    doc_lock lock(doc);
-    if (fi_id) {
+    const doc_lock lock(doc);
+    if (fi_id != nullptr) {
         doc->doc.data().insert_or_assign("default_framing_intent", fi_id);
     }
 }
 
 void fdl_doc_set_version(fdl_doc_t* doc, int major, int minor) {
-    if (!doc) {
+    if (doc == nullptr) {
         return;
     }
-    doc_lock lock(doc);
+    const doc_lock lock(doc);
     doc->doc.data().insert_or_assign("version", fdl::detail::make_version(major, minor));
 }
 
@@ -66,12 +66,12 @@ fdl_doc_t* fdl_doc_create_with_header(
     int version_minor,
     const char* fdl_creator,
     const char* default_framing_intent) {
-    if (!uuid || !fdl_creator) {
+    if (uuid == nullptr || fdl_creator == nullptr) {
         return nullptr;
     }
 
     auto* doc = new (std::nothrow) fdl_doc{};
-    if (!doc) {
+    if (doc == nullptr) {
         return nullptr;
     }
 
@@ -86,11 +86,11 @@ fdl_doc_t* fdl_doc_create_with_header(
 
 fdl_framing_intent_t* fdl_doc_add_framing_intent(
     fdl_doc_t* doc, const char* id, const char* label, int64_t aspect_w, int64_t aspect_h, double protection) {
-    if (!doc || !id) {
+    if (doc == nullptr || id == nullptr) {
         return nullptr;
     }
 
-    doc_lock lock(doc);
+    const doc_lock lock(doc);
     auto& data = doc->doc.data();
     if (!data.contains("framing_intents")) {
         data.insert_or_assign("framing_intents", ojson(jsoncons::json_array_arg));
@@ -98,7 +98,7 @@ fdl_framing_intent_t* fdl_doc_add_framing_intent(
 
     auto fi = fdl::detail::make_framing_intent(id, label, aspect_w, aspect_h, protection);
     auto& fi_arr = data["framing_intents"];
-    uint32_t index = static_cast<uint32_t>(fi_arr.size());
+    auto index = static_cast<uint32_t>(fi_arr.size());
     fi_arr.push_back(std::move(fi));
     auto handle = std::make_unique<fdl_framing_intent>();
     handle->owner = doc;
@@ -110,11 +110,11 @@ fdl_framing_intent_t* fdl_doc_add_framing_intent(
 }
 
 fdl_context_t* fdl_doc_add_context(fdl_doc_t* doc, const char* label, const char* context_creator) {
-    if (!doc) {
+    if (doc == nullptr) {
         return nullptr;
     }
 
-    doc_lock lock(doc);
+    const doc_lock lock(doc);
     auto& data = doc->doc.data();
     if (!data.contains("contexts")) {
         data.insert_or_assign("contexts", ojson(jsoncons::json_array_arg));
@@ -122,7 +122,7 @@ fdl_context_t* fdl_doc_add_context(fdl_doc_t* doc, const char* label, const char
 
     auto ctx = fdl::detail::make_context(label, context_creator);
     auto& ctx_arr = data["contexts"];
-    uint32_t index = static_cast<uint32_t>(ctx_arr.size());
+    auto index = static_cast<uint32_t>(ctx_arr.size());
     ctx_arr.push_back(std::move(ctx));
     auto handle = std::make_unique<fdl_context>();
     handle->owner = doc;
@@ -141,13 +141,13 @@ fdl_canvas_t* fdl_context_add_canvas(
     int64_t dim_w,
     int64_t dim_h,
     double squeeze) {
-    if (!ctx || !id || !source_canvas_id) {
+    if (ctx == nullptr || id == nullptr || source_canvas_id == nullptr) {
         return nullptr;
     }
 
-    doc_lock lock(ctx->owner);
+    const doc_lock lock(ctx->owner);
     auto* n = ctx->node();
-    if (!n) {
+    if (n == nullptr) {
         return nullptr;
     }
 
@@ -157,7 +157,7 @@ fdl_canvas_t* fdl_context_add_canvas(
 
     auto canvas = fdl::detail::make_canvas(id, label, source_canvas_id, dim_w, dim_h, squeeze);
     auto& cvs_arr = (*n)["canvases"];
-    uint32_t cvs_index = static_cast<uint32_t>(cvs_arr.size());
+    auto cvs_index = static_cast<uint32_t>(cvs_arr.size());
     cvs_arr.push_back(std::move(canvas));
     auto handle = std::make_unique<fdl_canvas>();
     handle->owner = ctx->owner;
@@ -170,13 +170,13 @@ fdl_canvas_t* fdl_context_add_canvas(
 }
 
 void fdl_canvas_set_effective_dimensions(fdl_canvas_t* canvas, fdl_dimensions_i64_t dims, fdl_point_f64_t anchor) {
-    if (!canvas) {
+    if (canvas == nullptr) {
         return;
     }
 
-    doc_lock lock(canvas->owner);
+    const doc_lock lock(canvas->owner);
     auto* n = canvas->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -185,13 +185,13 @@ void fdl_canvas_set_effective_dimensions(fdl_canvas_t* canvas, fdl_dimensions_i6
 }
 
 void fdl_canvas_set_photosite_dimensions(fdl_canvas_t* canvas, fdl_dimensions_i64_t dims) {
-    if (!canvas) {
+    if (canvas == nullptr) {
         return;
     }
 
-    doc_lock lock(canvas->owner);
+    const doc_lock lock(canvas->owner);
     auto* n = canvas->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -199,13 +199,13 @@ void fdl_canvas_set_photosite_dimensions(fdl_canvas_t* canvas, fdl_dimensions_i6
 }
 
 void fdl_canvas_set_physical_dimensions(fdl_canvas_t* canvas, fdl_dimensions_f64_t dims) {
-    if (!canvas) {
+    if (canvas == nullptr) {
         return;
     }
 
-    doc_lock lock(canvas->owner);
+    const doc_lock lock(canvas->owner);
     auto* n = canvas->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -221,13 +221,13 @@ fdl_framing_decision_t* fdl_canvas_add_framing_decision(
     double dim_h,
     double anchor_x,
     double anchor_y) {
-    if (!canvas || !id || !framing_intent_id) {
+    if (canvas == nullptr || id == nullptr || framing_intent_id == nullptr) {
         return nullptr;
     }
 
-    doc_lock lock(canvas->owner);
+    const doc_lock lock(canvas->owner);
     auto* n = canvas->node();
-    if (!n) {
+    if (n == nullptr) {
         return nullptr;
     }
 
@@ -237,7 +237,7 @@ fdl_framing_decision_t* fdl_canvas_add_framing_decision(
 
     auto fd = fdl::detail::make_framing_decision(id, label, framing_intent_id, dim_w, dim_h, anchor_x, anchor_y);
     auto& fd_arr = (*n)["framing_decisions"];
-    uint32_t fd_index = static_cast<uint32_t>(fd_arr.size());
+    auto fd_index = static_cast<uint32_t>(fd_arr.size());
     fd_arr.push_back(std::move(fd));
     auto handle = std::make_unique<fdl_framing_decision>();
     handle->owner = canvas->owner;
@@ -252,13 +252,13 @@ fdl_framing_decision_t* fdl_canvas_add_framing_decision(
 
 void fdl_framing_decision_set_protection(
     fdl_framing_decision_t* fd, fdl_dimensions_f64_t dims, fdl_point_f64_t anchor) {
-    if (!fd) {
+    if (fd == nullptr) {
         return;
     }
 
-    doc_lock lock(fd->owner);
+    const doc_lock lock(fd->owner);
     auto* n = fd->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -282,11 +282,11 @@ fdl_canvas_template_t* fdl_doc_add_canvas_template(
     fdl_halign_t halign,
     fdl_valign_t valign,
     fdl_round_strategy_t rounding) {
-    if (!doc || !id) {
+    if (doc == nullptr || id == nullptr) {
         return nullptr;
     }
 
-    doc_lock lock(doc);
+    const doc_lock lock(doc);
     auto& data = doc->doc.data();
     if (!data.contains("canvas_templates")) {
         data.insert_or_assign("canvas_templates", ojson(jsoncons::json_array_arg));
@@ -295,7 +295,7 @@ fdl_canvas_template_t* fdl_doc_add_canvas_template(
     auto ct = fdl::detail::make_canvas_template(
         id, label, target_w, target_h, target_squeeze, fit_source, fit_method, halign, valign, rounding);
     auto& ct_arr = data["canvas_templates"];
-    uint32_t index = static_cast<uint32_t>(ct_arr.size());
+    auto index = static_cast<uint32_t>(ct_arr.size());
     ct_arr.push_back(std::move(ct));
     auto handle = std::make_unique<fdl_canvas_template>();
     handle->owner = doc;
@@ -307,13 +307,13 @@ fdl_canvas_template_t* fdl_doc_add_canvas_template(
 }
 
 void fdl_canvas_template_set_preserve_from_source_canvas(fdl_canvas_template_t* ct, fdl_geometry_path_t path) {
-    if (!ct) {
+    if (ct == nullptr) {
         return;
     }
 
-    doc_lock lock(ct->owner);
+    const doc_lock lock(ct->owner);
     auto* n = ct->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -321,13 +321,13 @@ void fdl_canvas_template_set_preserve_from_source_canvas(fdl_canvas_template_t* 
 }
 
 void fdl_canvas_template_set_maximum_dimensions(fdl_canvas_template_t* ct, fdl_dimensions_i64_t dims) {
-    if (!ct) {
+    if (ct == nullptr) {
         return;
     }
 
-    doc_lock lock(ct->owner);
+    const doc_lock lock(ct->owner);
     auto* n = ct->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -335,13 +335,13 @@ void fdl_canvas_template_set_maximum_dimensions(fdl_canvas_template_t* ct, fdl_d
 }
 
 void fdl_canvas_template_set_pad_to_maximum(fdl_canvas_template_t* ct, int pad) {
-    if (!ct) {
+    if (ct == nullptr) {
         return;
     }
 
-    doc_lock lock(ct->owner);
+    const doc_lock lock(ct->owner);
     auto* n = ct->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -353,13 +353,13 @@ void fdl_canvas_template_set_pad_to_maximum(fdl_canvas_template_t* ct, int pad) 
 // -----------------------------------------------------------------------
 
 void fdl_framing_intent_set_aspect_ratio(fdl_framing_intent_t* fi, fdl_dimensions_i64_t dims) {
-    if (!fi) {
+    if (fi == nullptr) {
         return;
     }
 
-    doc_lock lock(fi->owner);
+    const doc_lock lock(fi->owner);
     auto* n = fi->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -367,13 +367,13 @@ void fdl_framing_intent_set_aspect_ratio(fdl_framing_intent_t* fi, fdl_dimension
 }
 
 void fdl_framing_intent_set_protection(fdl_framing_intent_t* fi, double protection) {
-    if (!fi) {
+    if (fi == nullptr) {
         return;
     }
 
-    doc_lock lock(fi->owner);
+    const doc_lock lock(fi->owner);
     auto* n = fi->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -385,13 +385,13 @@ void fdl_framing_intent_set_protection(fdl_framing_intent_t* fi, double protecti
 // -----------------------------------------------------------------------
 
 void fdl_canvas_set_dimensions(fdl_canvas_t* canvas, fdl_dimensions_i64_t dims) {
-    if (!canvas) {
+    if (canvas == nullptr) {
         return;
     }
 
-    doc_lock lock(canvas->owner);
+    const doc_lock lock(canvas->owner);
     auto* n = canvas->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -399,13 +399,13 @@ void fdl_canvas_set_dimensions(fdl_canvas_t* canvas, fdl_dimensions_i64_t dims) 
 }
 
 void fdl_canvas_set_anamorphic_squeeze(fdl_canvas_t* canvas, double squeeze) {
-    if (!canvas) {
+    if (canvas == nullptr) {
         return;
     }
 
-    doc_lock lock(canvas->owner);
+    const doc_lock lock(canvas->owner);
     auto* n = canvas->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -413,13 +413,13 @@ void fdl_canvas_set_anamorphic_squeeze(fdl_canvas_t* canvas, double squeeze) {
 }
 
 void fdl_canvas_set_effective_dims_only(fdl_canvas_t* canvas, fdl_dimensions_i64_t dims) {
-    if (!canvas) {
+    if (canvas == nullptr) {
         return;
     }
 
-    doc_lock lock(canvas->owner);
+    const doc_lock lock(canvas->owner);
     auto* n = canvas->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -430,13 +430,13 @@ void fdl_canvas_set_effective_dims_only(fdl_canvas_t* canvas, fdl_dimensions_i64
 }
 
 void fdl_canvas_remove_effective(fdl_canvas_t* canvas) {
-    if (!canvas) {
+    if (canvas == nullptr) {
         return;
     }
 
-    doc_lock lock(canvas->owner);
+    const doc_lock lock(canvas->owner);
     auto* n = canvas->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -449,13 +449,13 @@ void fdl_canvas_remove_effective(fdl_canvas_t* canvas) {
 // -----------------------------------------------------------------------
 
 void fdl_framing_decision_set_dimensions(fdl_framing_decision_t* fd, fdl_dimensions_f64_t dims) {
-    if (!fd) {
+    if (fd == nullptr) {
         return;
     }
 
-    doc_lock lock(fd->owner);
+    const doc_lock lock(fd->owner);
     auto* n = fd->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -463,13 +463,13 @@ void fdl_framing_decision_set_dimensions(fdl_framing_decision_t* fd, fdl_dimensi
 }
 
 void fdl_framing_decision_set_anchor_point(fdl_framing_decision_t* fd, fdl_point_f64_t point) {
-    if (!fd) {
+    if (fd == nullptr) {
         return;
     }
 
-    doc_lock lock(fd->owner);
+    const doc_lock lock(fd->owner);
     auto* n = fd->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -477,13 +477,13 @@ void fdl_framing_decision_set_anchor_point(fdl_framing_decision_t* fd, fdl_point
 }
 
 void fdl_framing_decision_set_protection_dimensions(fdl_framing_decision_t* fd, fdl_dimensions_f64_t dims) {
-    if (!fd) {
+    if (fd == nullptr) {
         return;
     }
 
-    doc_lock lock(fd->owner);
+    const doc_lock lock(fd->owner);
     auto* n = fd->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -491,13 +491,13 @@ void fdl_framing_decision_set_protection_dimensions(fdl_framing_decision_t* fd, 
 }
 
 void fdl_framing_decision_set_protection_anchor_point(fdl_framing_decision_t* fd, fdl_point_f64_t point) {
-    if (!fd) {
+    if (fd == nullptr) {
         return;
     }
 
-    doc_lock lock(fd->owner);
+    const doc_lock lock(fd->owner);
     auto* n = fd->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -505,13 +505,13 @@ void fdl_framing_decision_set_protection_anchor_point(fdl_framing_decision_t* fd
 }
 
 void fdl_framing_decision_remove_protection(fdl_framing_decision_t* fd) {
-    if (!fd) {
+    if (fd == nullptr) {
         return;
     }
 
-    doc_lock lock(fd->owner);
+    const doc_lock lock(fd->owner);
     auto* n = fd->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -524,7 +524,7 @@ void fdl_framing_decision_remove_protection(fdl_framing_decision_t* fd) {
 // -----------------------------------------------------------------------
 
 const char* fdl_clip_id_validate_json(const char* json_str, size_t json_len) {
-    if (!json_str) {
+    if (json_str == nullptr) {
         return fdl_strdup("json_str is NULL");
     }
 
@@ -547,12 +547,12 @@ const char* fdl_clip_id_validate_json(const char* json_str, size_t json_len) {
 }
 
 const char* fdl_context_set_clip_id_json(fdl_context_t* ctx, const char* json_str, size_t json_len) {
-    if (!ctx) {
+    if (ctx == nullptr) {
         return fdl_strdup("context handle is NULL");
     }
 
     const char* err = fdl_clip_id_validate_json(json_str, json_len);
-    if (err) {
+    if (err != nullptr) {
         return err;
     }
 
@@ -563,9 +563,9 @@ const char* fdl_context_set_clip_id_json(fdl_context_t* ctx, const char* json_st
         return fdl_strdup((std::string("Invalid JSON: ") + e.what()).c_str());
     }
 
-    doc_lock lock(ctx->owner);
+    const doc_lock lock(ctx->owner);
     auto* n = ctx->node();
-    if (!n) {
+    if (n == nullptr) {
         return fdl_strdup("context handle is invalid");
     }
 
@@ -574,13 +574,13 @@ const char* fdl_context_set_clip_id_json(fdl_context_t* ctx, const char* json_st
 }
 
 void fdl_context_remove_clip_id(fdl_context_t* ctx) {
-    if (!ctx) {
+    if (ctx == nullptr) {
         return;
     }
 
-    doc_lock lock(ctx->owner);
+    const doc_lock lock(ctx->owner);
     auto* n = ctx->node();
-    if (!n) {
+    if (n == nullptr) {
         return;
     }
 

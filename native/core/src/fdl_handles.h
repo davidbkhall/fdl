@@ -29,7 +29,7 @@ struct fdl_framing_intent {
     fdl_doc* owner;    /**< Owning document. */
     uint32_t fi_index; /**< Index into root "framing_intents" array. */
     /** @brief Resolve handle to its JSON node. @return Pointer to ojson node. */
-    jsoncons::ojson* node() const;
+    [[nodiscard]] jsoncons::ojson* node() const;
 };
 
 /** Handle to a context (root-level, single index). */
@@ -37,7 +37,7 @@ struct fdl_context {
     fdl_doc* owner;     /**< Owning document. */
     uint32_t ctx_index; /**< Index into root "contexts" array. */
     /** @brief Resolve handle to its JSON node. @return Pointer to ojson node. */
-    jsoncons::ojson* node() const;
+    [[nodiscard]] jsoncons::ojson* node() const;
 };
 
 /** Handle to a canvas template (root-level, single index). */
@@ -45,7 +45,7 @@ struct fdl_canvas_template {
     fdl_doc* owner;    /**< Owning document. */
     uint32_t ct_index; /**< Index into root "canvas_templates" array. */
     /** @brief Resolve handle to its JSON node. @return Pointer to ojson node. */
-    jsoncons::ojson* node() const;
+    [[nodiscard]] jsoncons::ojson* node() const;
 };
 
 /** Handle to a canvas (child of context, two-level index). */
@@ -54,7 +54,7 @@ struct fdl_canvas {
     uint32_t ctx_index; /**< Index into "contexts" array. */
     uint32_t cvs_index; /**< Index into context's "canvases" array. */
     /** @brief Resolve handle to its JSON node. @return Pointer to ojson node. */
-    jsoncons::ojson* node() const;
+    [[nodiscard]] jsoncons::ojson* node() const;
 };
 
 /** Handle to a framing decision (child of canvas, three-level index). */
@@ -64,7 +64,7 @@ struct fdl_framing_decision {
     uint32_t cvs_index; /**< Index into context's "canvases" array. */
     uint32_t fd_index;  /**< Index into canvas's "framing_decisions" array. */
     /** @brief Resolve handle to its JSON node. @return Pointer to ojson node. */
-    jsoncons::ojson* node() const;
+    [[nodiscard]] jsoncons::ojson* node() const;
 };
 
 /** @} */

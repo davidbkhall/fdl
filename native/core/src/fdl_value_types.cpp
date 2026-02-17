@@ -14,17 +14,12 @@
 // Floating-point comparison constants
 // ---------------------------------------------------------------------------
 
-/** @brief Relative tolerance for floating-point comparison (matches Python math.isclose). */
-static constexpr double kRelTol = 1e-9;
-/** @brief Absolute tolerance for floating-point comparison (matches Python math.isclose). */
-static constexpr double kAbsTol = 1e-6;
+namespace {
 
-double fdl_fp_rel_tol(void) {
-    return kRelTol;
-}
-double fdl_fp_abs_tol(void) {
-    return kAbsTol;
-}
+/** @brief Relative tolerance for floating-point comparison (matches Python math.isclose). */
+constexpr double kRelTol = 1e-9;
+/** @brief Absolute tolerance for floating-point comparison (matches Python math.isclose). */
+constexpr double kAbsTol = 1e-6;
 
 /**
  * @brief Test whether two doubles are approximately equal.
@@ -36,10 +31,19 @@ double fdl_fp_abs_tol(void) {
  * @param b  Second value.
  * @return True if the values are within tolerance.
  */
-static bool fp_close(double a, double b) {
-    double diff = std::abs(a - b);
-    double tol = std::max(kRelTol * std::max(std::abs(a), std::abs(b)), kAbsTol);
+bool fp_close(double a, double b) {
+    double const diff = std::abs(a - b);
+    double const tol = std::max(kRelTol * std::max(std::abs(a), std::abs(b)), kAbsTol);
     return diff <= tol;
+}
+
+} // namespace
+
+double fdl_fp_rel_tol(void) {
+    return kRelTol;
+}
+double fdl_fp_abs_tol(void) {
+    return kAbsTol;
 }
 
 // ---------------------------------------------------------------------------
@@ -56,7 +60,7 @@ fdl_dimensions_f64_t fdl_dimensions_scale(fdl_dimensions_f64_t dims, double scal
 
 fdl_dimensions_f64_t fdl_dimensions_normalize_and_scale(
     fdl_dimensions_f64_t dims, double input_squeeze, double scale_factor, double target_squeeze) {
-    fdl_dimensions_f64_t normalized = fdl_dimensions_normalize(dims, input_squeeze);
+    fdl_dimensions_f64_t const normalized = fdl_dimensions_normalize(dims, input_squeeze);
     return fdl_dimensions_scale(normalized, scale_factor, target_squeeze);
 }
 
@@ -131,11 +135,11 @@ fdl_point_f64_t fdl_point_mul_scalar(fdl_point_f64_t a, double scalar) {
 fdl_point_f64_t fdl_point_clamp(fdl_point_f64_t point, double min_val, double max_val, int has_min, int has_max) {
     double x = point.x;
     double y = point.y;
-    if (has_min) {
+    if (has_min != 0) {
         x = std::max(x, min_val);
         y = std::max(y, min_val);
     }
-    if (has_max) {
+    if (has_max != 0) {
         x = std::min(x, max_val);
         y = std::min(y, max_val);
     }
@@ -148,7 +152,7 @@ int fdl_point_is_zero(fdl_point_f64_t point) {
 
 fdl_point_f64_t fdl_point_normalize_and_scale(
     fdl_point_f64_t point, double input_squeeze, double scale_factor, double target_squeeze) {
-    fdl_point_f64_t normalized = fdl_point_normalize(point, input_squeeze);
+    fdl_point_f64_t const normalized = fdl_point_normalize(point, input_squeeze);
     return fdl_point_scale(normalized, scale_factor, target_squeeze);
 }
 
@@ -165,5 +169,5 @@ int fdl_point_f64_lt(fdl_point_f64_t a, fdl_point_f64_t b) {
 // ---------------------------------------------------------------------------
 
 void fdl_free(void* ptr) {
-    free(ptr);
+    free(ptr); // NOLINT(cppcoreguidelines-no-malloc)
 }

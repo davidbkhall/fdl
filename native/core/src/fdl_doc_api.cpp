@@ -15,6 +15,8 @@
 #include <string>
 #include <unordered_map>
 
+namespace {
+
 /** @brief Thread-local buffer cache key for document-level strings.
  *
  * This ensures that reading the same field from different documents returns
@@ -55,8 +57,8 @@ struct DocStringBufKeyHash {
  * @param key  Top-level field name to look up.
  * @return Pointer to a thread-local C string, or nullptr if absent/empty.
  */
-static const char* get_doc_string(const fdl_doc_t* doc, const char* key) {
-    if (!doc) {
+const char* get_doc_string(const fdl_doc_t* doc, const char* key) {
+    if (doc == nullptr) {
         return nullptr;
     }
     const auto& data = doc->doc.data();
@@ -64,11 +66,13 @@ static const char* get_doc_string(const fdl_doc_t* doc, const char* key) {
         return nullptr;
     }
     static thread_local std::unordered_map<DocStringBufKey, std::string, DocStringBufKeyHash> bufs;
-    DocStringBufKey bk{reinterpret_cast<uintptr_t>(doc), key};
+    DocStringBufKey const bk{reinterpret_cast<uintptr_t>(doc), key};
     auto& buf = bufs[bk];
     buf = data[key].as<std::string>();
     return buf.empty() ? nullptr : buf.c_str();
 }
+
+} // namespace
 
 extern "C" {
 
@@ -85,7 +89,7 @@ fdl_parse_result_t fdl_doc_parse_json(const char* json_str, size_t json_len) {
     try {
         auto document = fdl::detail::Document::parse(json_str, json_len);
         auto* handle = new (std::nothrow) fdl_doc{std::move(document), {}, {}};
-        if (!handle) {
+        if (handle == nullptr) {
             auto msg = std::string("Out of memory");
             result.error = fdl_strdup(msg.c_str());
             return result;
@@ -100,34 +104,34 @@ fdl_parse_result_t fdl_doc_parse_json(const char* json_str, size_t json_len) {
 }
 
 const char* fdl_doc_get_uuid(const fdl_doc_t* doc) {
-    if (!doc) {
+    if (doc == nullptr) {
         return nullptr;
     }
-    doc_lock lock(doc);
+    const doc_lock lock(doc);
     return get_doc_string(doc, "uuid");
 }
 
 const char* fdl_doc_get_fdl_creator(const fdl_doc_t* doc) {
-    if (!doc) {
+    if (doc == nullptr) {
         return nullptr;
     }
-    doc_lock lock(doc);
+    const doc_lock lock(doc);
     return get_doc_string(doc, "fdl_creator");
 }
 
 const char* fdl_doc_get_default_framing_intent(const fdl_doc_t* doc) {
-    if (!doc) {
+    if (doc == nullptr) {
         return nullptr;
     }
-    doc_lock lock(doc);
+    const doc_lock lock(doc);
     return get_doc_string(doc, "default_framing_intent");
 }
 
 char* fdl_doc_to_json(const fdl_doc_t* doc, int indent) {
-    if (!doc) {
+    if (doc == nullptr) {
         return nullptr;
     }
-    doc_lock lock(doc);
+    const doc_lock lock(doc);
     auto json_str = doc->doc.to_canonical_json(indent);
     return fdl_strdup(json_str.c_str());
 }

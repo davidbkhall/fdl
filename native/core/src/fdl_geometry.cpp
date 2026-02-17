@@ -24,6 +24,8 @@
 
 namespace fdl::detail {
 
+namespace {
+
 /**
  * @brief Normalize a point for squeeze then apply uniform scale.
  * @param pt              Input point.
@@ -32,9 +34,8 @@ namespace fdl::detail {
  * @param target_squeeze  Target anamorphic squeeze factor.
  * @return The normalized and scaled point.
  */
-static fdl_point_f64_t point_normalize_and_scale(
-    fdl_point_f64_t pt, double squeeze, double scale, double target_squeeze) {
-    fdl_point_f64_t normalized = fdl_point_normalize(pt, squeeze);
+fdl_point_f64_t point_normalize_and_scale(fdl_point_f64_t pt, double squeeze, double scale, double target_squeeze) {
+    fdl_point_f64_t const normalized = fdl_point_normalize(pt, squeeze);
     return fdl_point_scale(normalized, scale, target_squeeze);
 }
 
@@ -44,12 +45,14 @@ static fdl_point_f64_t point_normalize_and_scale(
  * @param clamp_dims  Maximum allowed dimensions.
  * @return Dimensions with each axis clamped to the corresponding bound.
  */
-static fdl_dimensions_f64_t dims_clamp_to_dims(fdl_dimensions_f64_t dims, fdl_dimensions_f64_t clamp_dims) {
+fdl_dimensions_f64_t dims_clamp_to_dims(fdl_dimensions_f64_t dims, fdl_dimensions_f64_t clamp_dims) {
     return {
         std::min(dims.width, clamp_dims.width),
         std::min(dims.height, clamp_dims.height),
     };
 }
+
+} // namespace
 
 fdl_geometry_t geometry_fill_hierarchy_gaps(fdl_geometry_t geo, fdl_point_f64_t anchor_offset) {
 
@@ -67,13 +70,13 @@ fdl_geometry_t geometry_fill_hierarchy_gaps(fdl_geometry_t geo, fdl_point_f64_t 
     fdl_dimensions_f64_t reference_dims;
     fdl_point_f64_t reference_anchor;
 
-    if (!fdl_dimensions_is_zero(canvas)) {
+    if (fdl_dimensions_is_zero(canvas) == 0) {
         reference_dims = canvas;
         reference_anchor = {0.0, 0.0};
-    } else if (!fdl_dimensions_is_zero(effective)) {
+    } else if (fdl_dimensions_is_zero(effective) == 0) {
         reference_dims = effective;
         reference_anchor = effective_anchor;
-    } else if (!fdl_dimensions_is_zero(protection)) {
+    } else if (fdl_dimensions_is_zero(protection) == 0) {
         reference_dims = protection;
         reference_anchor = protection_anchor;
     } else {
@@ -83,12 +86,12 @@ fdl_geometry_t geometry_fill_hierarchy_gaps(fdl_geometry_t geo, fdl_point_f64_t 
     }
 
     // Fill canvas if zero
-    if (fdl_dimensions_is_zero(canvas)) {
+    if (fdl_dimensions_is_zero(canvas) != 0) {
         canvas = reference_dims;
     }
 
     // Fill effective if zero
-    if (fdl_dimensions_is_zero(effective)) {
+    if (fdl_dimensions_is_zero(effective) != 0) {
         effective = reference_dims;
         effective_anchor = reference_anchor;
     }
@@ -165,6 +168,8 @@ fdl_geometry_t geometry_apply_offset(
     };
 }
 
+namespace {
+
 /**
  * @brief Clip a dimension to the visible portion within canvas bounds.
  *
@@ -177,19 +182,19 @@ fdl_geometry_t geometry_apply_offset(
  * @param canvas_dims     Canvas bounds used for clipping.
  * @return Visible portion of @p dims within the canvas.
  */
-static fdl_dimensions_f64_t crop_dim(
+fdl_dimensions_f64_t crop_dim(
     fdl_dimensions_f64_t dims,
     fdl_point_f64_t theo_anchor,
     fdl_point_f64_t clamped_anchor,
     fdl_dimensions_f64_t canvas_dims) {
 
-    if (fdl_dimensions_is_zero(dims)) {
+    if (fdl_dimensions_is_zero(dims) != 0) {
         return dims;
     }
 
     // Calculate how much is clipped from left/top edge (negative anchor)
-    double clip_left = std::max(0.0, -theo_anchor.x);
-    double clip_top = std::max(0.0, -theo_anchor.y);
+    double const clip_left = std::max(0.0, -theo_anchor.x);
+    double const clip_top = std::max(0.0, -theo_anchor.y);
     // Reduce dimensions by clipped amount
     double visible_w = dims.width - clip_left;
     double visible_h = dims.height - clip_top;
@@ -199,6 +204,8 @@ static fdl_dimensions_f64_t crop_dim(
 
     return {std::max(0.0, visible_w), std::max(0.0, visible_h)};
 }
+
+} // namespace
 
 fdl_geometry_t geometry_crop(
     fdl_geometry_t geo, fdl_point_f64_t theo_eff, fdl_point_f64_t theo_prot, fdl_point_f64_t theo_fram) {
@@ -212,14 +219,15 @@ fdl_geometry_t geometry_crop(
 
     // Enforce hierarchy: each layer <= parent
     // effective must fit within canvas
-    visible_effective = dims_clamp_to_dims(visible_effective, canvas_dims);
+    visible_effective =
+        dims_clamp_to_dims(visible_effective, canvas_dims); // NOLINT(readability-suspicious-call-argument)
     // Protection must fit within effective (if protection exists)
-    if (!fdl_dimensions_is_zero(visible_protection)) {
+    if (fdl_dimensions_is_zero(visible_protection) == 0) {
         visible_protection = dims_clamp_to_dims(visible_protection, visible_effective);
     }
     // Framing must fit within protection (or effective if no protection)
-    auto parent_dims = fdl_dimensions_is_zero(visible_protection) ? visible_effective : visible_protection;
-    visible_framing = dims_clamp_to_dims(visible_framing, parent_dims);
+    auto parent_dims = (fdl_dimensions_is_zero(visible_protection) != 0) ? visible_effective : visible_protection;
+    visible_framing = dims_clamp_to_dims(visible_framing, parent_dims); // NOLINT(readability-suspicious-call-argument)
 
     return {
         canvas_dims,

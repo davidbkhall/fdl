@@ -10,7 +10,7 @@
 using ojson = jsoncons::ojson;
 
 ojson* fdl_framing_intent::node() const {
-    if (!owner) {
+    if (owner == nullptr) {
         return nullptr;
     }
     auto& data = owner->doc.data();
@@ -22,7 +22,7 @@ ojson* fdl_framing_intent::node() const {
 }
 
 ojson* fdl_context::node() const {
-    if (!owner) {
+    if (owner == nullptr) {
         return nullptr;
     }
     auto& data = owner->doc.data();
@@ -34,7 +34,7 @@ ojson* fdl_context::node() const {
 }
 
 ojson* fdl_canvas_template::node() const {
-    if (!owner) {
+    if (owner == nullptr) {
         return nullptr;
     }
     auto& data = owner->doc.data();
@@ -46,7 +46,7 @@ ojson* fdl_canvas_template::node() const {
 }
 
 ojson* fdl_canvas::node() const {
-    if (!owner) {
+    if (owner == nullptr) {
         return nullptr;
     }
     auto& data = owner->doc.data();
@@ -66,7 +66,7 @@ ojson* fdl_canvas::node() const {
 }
 
 ojson* fdl_framing_decision::node() const {
-    if (!owner) {
+    if (owner == nullptr) {
         return nullptr;
     }
     auto& data = owner->doc.data();

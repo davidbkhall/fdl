@@ -18,25 +18,25 @@ struct fdl_validation_result {
 extern "C" {
 
 fdl_validation_result_t* fdl_doc_validate(const fdl_doc_t* doc) {
-    if (!doc) {
+    if (doc == nullptr) {
         auto* r = new (std::nothrow) fdl_validation_result{};
         return r;
     }
-    doc_lock lock(doc);
+    const doc_lock lock(doc);
     auto vr = fdl::detail::validate(doc->doc.data());
     auto* r = new (std::nothrow) fdl_validation_result{std::move(vr)};
     return r;
 }
 
 uint32_t fdl_validation_result_error_count(const fdl_validation_result_t* result) {
-    if (!result) {
+    if (result == nullptr) {
         return 0;
     }
     return static_cast<uint32_t>(result->result.errors.size());
 }
 
 const char* fdl_validation_result_error_at(const fdl_validation_result_t* result, uint32_t index) {
-    if (!result || index >= result->result.errors.size()) {
+    if (result == nullptr || index >= result->result.errors.size()) {
         return nullptr;
     }
     return result->result.errors[index].c_str();

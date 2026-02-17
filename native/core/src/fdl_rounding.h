@@ -29,7 +29,7 @@ namespace fdl::detail {
 inline int64_t bankers_round(double value) {
     double rounded = std::round(value);
     // Check if we're exactly at the halfway point
-    double remainder = value - std::floor(value);
+    double const remainder = value - std::floor(value);
     if (std::abs(remainder - constants::kHalfway) < constants::kFpHalfwayTolerance) {
         // Halfway case: round to even
         auto r = static_cast<int64_t>(rounded);

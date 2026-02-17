@@ -24,29 +24,31 @@ fdl_template_result_t fdl_apply_canvas_template(
 }
 
 void fdl_template_result_free(fdl_template_result_t* result) {
-    if (!result) {
+    if (result == nullptr) {
         return;
     }
-    if (result->output_fdl) {
+    if (result->output_fdl != nullptr) {
         fdl_doc_free(result->output_fdl);
         result->output_fdl = nullptr;
     }
-    if (result->context_label) {
+    // NOLINTBEGIN(cppcoreguidelines-no-malloc,cppcoreguidelines-pro-type-const-cast)
+    if (result->context_label != nullptr) {
         free(const_cast<char*>(result->context_label));
         result->context_label = nullptr;
     }
-    if (result->canvas_id) {
+    if (result->canvas_id != nullptr) {
         free(const_cast<char*>(result->canvas_id));
         result->canvas_id = nullptr;
     }
-    if (result->framing_decision_id) {
+    if (result->framing_decision_id != nullptr) {
         free(const_cast<char*>(result->framing_decision_id));
         result->framing_decision_id = nullptr;
     }
-    if (result->error) {
+    if (result->error != nullptr) {
         free(const_cast<char*>(result->error));
         result->error = nullptr;
     }
+    // NOLINTEND(cppcoreguidelines-no-malloc,cppcoreguidelines-pro-type-const-cast)
 }
 
 } // extern "C"

@@ -15,21 +15,23 @@ namespace fdl::detail {
 // Key ordering tables matching FDL canonical field order
 // -----------------------------------------------------------------------
 
+namespace {
+
 /** @brief Canonical key order for the FDL root object. */
-static const std::vector<std::string> ROOT_KEYS = {
+const std::vector<std::string> ROOT_KEYS = {
     "uuid", "version", "fdl_creator", "default_framing_intent", "framing_intents", "contexts", "canvas_templates"};
 
 /** @brief Canonical key order for the version object. */
-static const std::vector<std::string> VERSION_KEYS = {"major", "minor"};
+const std::vector<std::string> VERSION_KEYS = {"major", "minor"};
 
 /** @brief Canonical key order for context objects. */
-static const std::vector<std::string> CONTEXT_KEYS = {"label", "context_creator", "clip_id", "canvases"};
+const std::vector<std::string> CONTEXT_KEYS = {"label", "context_creator", "clip_id", "canvases"};
 
 /** @brief Canonical key order for clip_id objects. */
-static const std::vector<std::string> CLIP_ID_KEYS = {"clip_name", "file", "sequence"};
+const std::vector<std::string> CLIP_ID_KEYS = {"clip_name", "file", "sequence"};
 
 /** @brief Canonical key order for canvas objects. */
-static const std::vector<std::string> CANVAS_KEYS = {
+const std::vector<std::string> CANVAS_KEYS = {
     "label",
     "id",
     "source_canvas_id",
@@ -42,7 +44,7 @@ static const std::vector<std::string> CANVAS_KEYS = {
     "framing_decisions"};
 
 /** @brief Canonical key order for framing decision objects. */
-static const std::vector<std::string> FRAMING_DECISION_KEYS = {
+const std::vector<std::string> FRAMING_DECISION_KEYS = {
     "label",
     "id",
     "framing_intent_id",
@@ -52,10 +54,10 @@ static const std::vector<std::string> FRAMING_DECISION_KEYS = {
     "protection_anchor_point"};
 
 /** @brief Canonical key order for framing intent objects. */
-static const std::vector<std::string> FRAMING_INTENT_KEYS = {"label", "id", "aspect_ratio", "protection"};
+const std::vector<std::string> FRAMING_INTENT_KEYS = {"label", "id", "aspect_ratio", "protection"};
 
 /** @brief Canonical key order for canvas template objects. */
-static const std::vector<std::string> CANVAS_TEMPLATE_KEYS = {
+const std::vector<std::string> CANVAS_TEMPLATE_KEYS = {
     "label",
     "id",
     "target_dimensions",
@@ -70,11 +72,11 @@ static const std::vector<std::string> CANVAS_TEMPLATE_KEYS = {
     "round"};
 
 /** @brief Canonical key order for dimensions objects. */
-static const std::vector<std::string> DIMENSIONS_KEYS = {"width", "height"};
+const std::vector<std::string> DIMENSIONS_KEYS = {"width", "height"};
 /** @brief Canonical key order for point objects. */
-static const std::vector<std::string> POINT_KEYS = {"x", "y"};
+const std::vector<std::string> POINT_KEYS = {"x", "y"};
 /** @brief Canonical key order for round strategy objects. */
-static const std::vector<std::string> ROUND_STRATEGY_KEYS = {"even", "mode"};
+const std::vector<std::string> ROUND_STRATEGY_KEYS = {"even", "mode"};
 
 // -----------------------------------------------------------------------
 // Helpers
@@ -85,7 +87,7 @@ static const std::vector<std::string> ROUND_STRATEGY_KEYS = {"even", "mode"};
  * @param key          Key name of the child field.
  * @return Type hint string for the child, or empty if unknown.
  */
-static std::string child_type_hint(const std::string& /*parent_type*/, const std::string& key) {
+std::string child_type_hint(const std::string& /*parent_type*/, const std::string& key) {
     if (key == "version") {
         return "version";
     }
@@ -120,6 +122,8 @@ static std::string child_type_hint(const std::string& /*parent_type*/, const std
     }
     return "";
 }
+
+} // namespace
 
 // -----------------------------------------------------------------------
 // Public API
@@ -178,12 +182,12 @@ ojson reorder_object(const ojson& obj, const std::string& type_hint) {
 
     ojson result(jsoncons::json_object_arg);
 
-    if (key_order) {
+    if (key_order != nullptr) {
         // Insert keys in canonical order
-        for (auto& key : *key_order) {
+        for (const auto& key : *key_order) {
             if (obj.contains(key)) {
                 const auto& val = obj[key];
-                std::string c_hint = child_type_hint(type_hint, key);
+                const std::string c_hint = child_type_hint(type_hint, key);
 
                 if (val.is_object() && !c_hint.empty()) {
                     result.insert_or_assign(key, reorder_object(val, c_hint));
@@ -231,11 +235,11 @@ ojson reorder_object(const ojson& obj, const std::string& type_hint) {
 }
 
 char* node_to_canonical_json(const ojson* node, const std::string& type_hint, int indent) {
-    if (!node) {
+    if (node == nullptr) {
         return nullptr;
     }
-    ojson cleaned = strip_nulls(*node);
-    ojson ordered = reorder_object(cleaned, type_hint);
+    const ojson cleaned = strip_nulls(*node);
+    const ojson ordered = reorder_object(cleaned, type_hint);
     std::string buffer;
     if (indent > 0) {
         jsoncons::json_options options;

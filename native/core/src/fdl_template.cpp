@@ -28,16 +28,18 @@
 #include <string>
 
 /**
- * @name Static helpers
+ * @name File-scope helpers
  * @{
  */
+
+namespace {
 
 /**
  * @brief Convert horizontal alignment enum to a 0.0-1.0 factor.
  * @param align  Horizontal alignment enum value.
  * @return 0.0 for left, 1.0 for right, 0.5 for center.
  */
-static double alignment_factor_h(fdl_halign_t align) {
+double alignment_factor_h(fdl_halign_t align) {
     if (align == FDL_HALIGN_LEFT) {
         return fdl::constants::kAlignStart;
     }
@@ -52,7 +54,7 @@ static double alignment_factor_h(fdl_halign_t align) {
  * @param align  Vertical alignment enum value.
  * @return 0.0 for top, 1.0 for bottom, 0.5 for center.
  */
-static double alignment_factor_v(fdl_valign_t align) {
+double alignment_factor_v(fdl_valign_t align) {
     if (align == FDL_VALIGN_TOP) {
         return 0.0;
     }
@@ -69,7 +71,7 @@ static double alignment_factor_v(fdl_valign_t align) {
  * @param canvas   Source canvas handle.
  * @param framing  Source framing decision handle.
  */
-static void populate_layer(
+void populate_layer(
     fdl_geometry_t& geo, fdl_geometry_path_t path, const fdl_canvas_t* canvas, const fdl_framing_decision_t* framing) {
 
     fdl_dimensions_f64_t dims;
@@ -94,6 +96,8 @@ static void populate_layer(
         geo.framing_dims = dims;
         geo.framing_anchor = anchor;
         break;
+    default:
+        break;
     }
 }
 
@@ -104,7 +108,7 @@ static void populate_layer(
  * @param canvas      Source canvas handle.
  * @param framing     Source framing decision handle.
  */
-static void populate_from_path(
+void populate_from_path(
     fdl_geometry_t& geo,
     fdl_geometry_path_t start_path,
     const fdl_canvas_t* canvas,
@@ -120,11 +124,13 @@ static void populate_from_path(
  * @param s  Pointer to a C string, or nullptr.
  * @return The string value, or an empty string if @p s is null.
  */
-static std::string safe_copy(const char* s) {
-    return s ? std::string(s) : std::string();
+std::string safe_copy(const char* s) {
+    return (s != nullptr) ? std::string(s) : std::string();
 }
 
-/** @} */ // end Static helpers
+} // namespace
+
+/** @} */ // end File-scope helpers
 
 namespace fdl::detail {
 
@@ -139,7 +145,7 @@ fdl_template_result_t apply_canvas_template(
 
     fdl_template_result_t result = {};
 
-    if (!tmpl || !source_canvas || !source_framing || !new_canvas_id) {
+    if ((tmpl == nullptr) || (source_canvas == nullptr) || (source_framing == nullptr) || (new_canvas_id == nullptr)) {
         result.error = fdl_strdup("NULL parameter");
         return result;
     }
@@ -155,25 +161,25 @@ fdl_template_result_t apply_canvas_template(
         target_squeeze = input_squeeze;
     }
 
-    fdl_fit_method_t fit_method = fdl_canvas_template_get_fit_method(tmpl);
-    fdl_geometry_path_t fit_source = fdl_canvas_template_get_fit_source(tmpl);
-    fdl_halign_t h_align = fdl_canvas_template_get_alignment_method_horizontal(tmpl);
-    fdl_valign_t v_align = fdl_canvas_template_get_alignment_method_vertical(tmpl);
-    bool has_preserve = fdl_canvas_template_has_preserve_from_source_canvas(tmpl) != 0;
-    fdl_geometry_path_t preserve_path =
+    fdl_fit_method_t const fit_method = fdl_canvas_template_get_fit_method(tmpl);
+    fdl_geometry_path_t const fit_source = fdl_canvas_template_get_fit_source(tmpl);
+    fdl_halign_t const h_align = fdl_canvas_template_get_alignment_method_horizontal(tmpl);
+    fdl_valign_t const v_align = fdl_canvas_template_get_alignment_method_vertical(tmpl);
+    bool const has_preserve = fdl_canvas_template_has_preserve_from_source_canvas(tmpl) != 0;
+    fdl_geometry_path_t const preserve_path =
         has_preserve ? fdl_canvas_template_get_preserve_from_source_canvas(tmpl) : FDL_GEOMETRY_PATH_CANVAS_DIMENSIONS;
 
-    bool has_max_dims = fdl_canvas_template_has_maximum_dimensions(tmpl) != 0;
-    fdl_dimensions_i64_t max_dims_i =
+    bool const has_max_dims = fdl_canvas_template_has_maximum_dimensions(tmpl) != 0;
+    fdl_dimensions_i64_t const max_dims_i =
         has_max_dims ? fdl_canvas_template_get_maximum_dimensions(tmpl) : fdl_dimensions_i64_t{0, 0};
-    double max_w = static_cast<double>(max_dims_i.width);
-    double max_h = static_cast<double>(max_dims_i.height);
-    bool pad_to_max = fdl_canvas_template_get_pad_to_maximum(tmpl) != 0;
+    auto max_w = static_cast<double>(max_dims_i.width);
+    auto max_h = static_cast<double>(max_dims_i.height);
+    bool const pad_to_max = fdl_canvas_template_get_pad_to_maximum(tmpl) != 0;
 
-    fdl_round_strategy_t rounding = fdl_canvas_template_get_round(tmpl);
+    fdl_round_strategy_t const rounding = fdl_canvas_template_get_round(tmpl);
 
-    fdl_dimensions_i64_t target_dims_i = fdl_canvas_template_get_target_dimensions(tmpl);
-    fdl_dimensions_f64_t target_dims = {
+    fdl_dimensions_i64_t const target_dims_i = fdl_canvas_template_get_target_dimensions(tmpl);
+    fdl_dimensions_f64_t const target_dims = {
         static_cast<double>(target_dims_i.width), static_cast<double>(target_dims_i.height)};
 
     // --- Validate that fit_source and preserve paths exist in source ---
@@ -225,7 +231,7 @@ fdl_template_result_t apply_canvas_template(
         fdl_dimensions_f64_t preserve_dims;
         fdl_point_f64_t preserve_anchor;
         fdl_geometry_get_dims_anchor_from_path(&geometry, preserve_path, &preserve_dims, &preserve_anchor);
-        if (!fdl_dimensions_is_zero(preserve_dims)) {
+        if (fdl_dimensions_is_zero(preserve_dims) == 0) {
             anchor_offset = preserve_anchor;
         }
     }
@@ -233,9 +239,9 @@ fdl_template_result_t apply_canvas_template(
     geometry = fdl_geometry_fill_hierarchy_gaps(geometry, anchor_offset);
 
     // --- Calculate scale factor ---
-    fdl_dimensions_f64_t fit_norm = fdl_dimensions_normalize(fit_dims, input_squeeze);
-    fdl_dimensions_f64_t target_norm = fdl_dimensions_normalize(target_dims, target_squeeze);
-    double scale_factor = fdl_calculate_scale_factor(fit_norm, target_norm, fit_method);
+    fdl_dimensions_f64_t const fit_norm = fdl_dimensions_normalize(fit_dims, input_squeeze);
+    fdl_dimensions_f64_t const target_norm = fdl_dimensions_normalize(target_dims, target_squeeze);
+    double const scale_factor = fdl_calculate_scale_factor(fit_norm, target_norm, fit_method);
 
     // --- Phase 5: Scale and round ---
     geometry = fdl_geometry_normalize_and_scale(geometry, input_squeeze, scale_factor, target_squeeze);
@@ -245,20 +251,20 @@ fdl_template_result_t apply_canvas_template(
     fdl_dimensions_f64_t scaled_fit;
     fdl_point_f64_t scaled_fit_anchor;
     fdl_geometry_get_dims_anchor_from_path(&geometry, fit_source, &scaled_fit, &scaled_fit_anchor);
-    fdl_dimensions_f64_t scaled_bounding_box = geometry.canvas_dims;
+    fdl_dimensions_f64_t const scaled_bounding_box = geometry.canvas_dims;
 
     // --- Phases 6-8: Output canvas size and content translation ---
-    double out_w = fdl_output_size_for_axis(
+    double const out_w = fdl_output_size_for_axis(
         geometry.canvas_dims.width, max_w, has_max_dims ? FDL_TRUE : FDL_FALSE, pad_to_max ? FDL_TRUE : FDL_FALSE);
-    double out_h = fdl_output_size_for_axis(
+    double const out_h = fdl_output_size_for_axis(
         geometry.canvas_dims.height, max_h, has_max_dims ? FDL_TRUE : FDL_FALSE, pad_to_max ? FDL_TRUE : FDL_FALSE);
 
-    bool is_center_h = (h_align == FDL_HALIGN_CENTER);
-    bool is_center_v = (v_align == FDL_VALIGN_CENTER);
-    double af_h = alignment_factor_h(h_align);
-    double af_v = alignment_factor_v(v_align);
+    bool const is_center_h = (h_align == FDL_HALIGN_CENTER);
+    bool const is_center_v = (v_align == FDL_VALIGN_CENTER);
+    double const af_h = alignment_factor_h(h_align);
+    double const af_v = alignment_factor_v(v_align);
 
-    double shift_x = fdl_alignment_shift(
+    double const shift_x = fdl_alignment_shift(
         scaled_fit.width,
         scaled_fit_anchor.x,
         out_w,
@@ -267,7 +273,7 @@ fdl_template_result_t apply_canvas_template(
         is_center_h ? FDL_TRUE : FDL_FALSE,
         af_h,
         pad_to_max ? FDL_TRUE : FDL_FALSE);
-    double shift_y = fdl_alignment_shift(
+    double const shift_y = fdl_alignment_shift(
         scaled_fit.height,
         scaled_fit_anchor.y,
         out_h,
@@ -277,11 +283,13 @@ fdl_template_result_t apply_canvas_template(
         af_v,
         pad_to_max ? FDL_TRUE : FDL_FALSE);
 
-    fdl_point_f64_t content_translation = {shift_x, shift_y};
+    fdl_point_f64_t const content_translation = {shift_x, shift_y};
     geometry.canvas_dims = {out_w, out_h};
 
     // --- Phase 8b: Apply offsets ---
-    fdl_point_f64_t theo_eff, theo_prot, theo_fram;
+    fdl_point_f64_t theo_eff;
+    fdl_point_f64_t theo_prot;
+    fdl_point_f64_t theo_fram;
     geometry = fdl_geometry_apply_offset(geometry, content_translation, &theo_eff, &theo_prot, &theo_fram);
 
     // --- Phase 9: Crop ---
@@ -295,13 +303,14 @@ fdl_template_result_t apply_canvas_template(
         label_str = "Template";
     }
 
-    std::string source_canvas_id_s = safe_copy(fdl_canvas_get_id(source_canvas));
-    std::string source_fi_id_s = safe_copy(fdl_framing_decision_get_framing_intent_id(source_framing));
+    std::string const source_canvas_id_s = safe_copy(fdl_canvas_get_id(source_canvas));
+    std::string const source_fi_id_s = safe_copy(fdl_framing_decision_get_framing_intent_id(source_framing));
 
     std::string canvas_label;
-    if (source_context_label) {
-        std::string src_canvas_label_s = safe_copy(fdl_canvas_get_label(source_canvas));
-        canvas_label = label_str + ": " + source_context_label + " " + src_canvas_label_s;
+    if (source_context_label != nullptr) {
+        std::string const src_canvas_label_s = safe_copy(fdl_canvas_get_label(source_canvas));
+        canvas_label =
+            std::string(label_str).append(": ").append(source_context_label).append(" ").append(src_canvas_label_s);
     } else {
         canvas_label = label_str;
     }
@@ -311,10 +320,10 @@ fdl_template_result_t apply_canvas_template(
         "00000000-0000-0000-0000-000000000000", // placeholder UUID
         fdl::constants::kDefaultVersionMajor,
         0,
-        context_creator ? context_creator : "",
+        (context_creator != nullptr) ? context_creator : "",
         source_fi_id_s.c_str());
 
-    if (!out_doc) {
+    if (out_doc == nullptr) {
         result.error = fdl_strdup("Failed to create output document");
         return result;
     }
@@ -333,8 +342,8 @@ fdl_template_result_t apply_canvas_template(
 
     // Add source canvas (copy) — copy all string properties to locals first
     auto src_dims = fdl_canvas_get_dimensions(source_canvas);
-    std::string src_label_s = safe_copy(fdl_canvas_get_label(source_canvas));
-    std::string src_scid_s = safe_copy(fdl_canvas_get_source_canvas_id(source_canvas));
+    std::string const src_label_s = safe_copy(fdl_canvas_get_label(source_canvas));
+    std::string const src_scid_s = safe_copy(fdl_canvas_get_source_canvas_id(source_canvas));
     auto* src_cvs = fdl_context_add_canvas(
         out_ctx,
         source_canvas_id_s.c_str(),
@@ -344,23 +353,24 @@ fdl_template_result_t apply_canvas_template(
         src_dims.height,
         fdl_canvas_get_anamorphic_squeeze(source_canvas));
 
-    if (fdl_canvas_has_effective_dimensions(source_canvas)) {
+    if (fdl_canvas_has_effective_dimensions(source_canvas) != 0) {
         auto src_eff = fdl_canvas_get_effective_dimensions(source_canvas);
         auto src_eff_a = fdl_canvas_get_effective_anchor_point(source_canvas);
         fdl_canvas_set_effective_dimensions(src_cvs, src_eff, src_eff_a);
     }
 
     // Copy source framing decisions — copy strings to locals in each iteration
-    uint32_t fd_count = fdl_canvas_framing_decisions_count(source_canvas);
+    uint32_t const fd_count = fdl_canvas_framing_decisions_count(source_canvas);
     for (uint32_t i = 0; i < fd_count; ++i) {
-        auto* sfd = fdl_canvas_framing_decision_at(const_cast<fdl_canvas_t*>(source_canvas), i);
-        if (!sfd) {
+        auto* sfd = fdl_canvas_framing_decision_at(
+            const_cast<fdl_canvas_t*>(source_canvas), i); // NOLINT(cppcoreguidelines-pro-type-const-cast)
+        if (sfd == nullptr) {
             continue;
         }
 
-        std::string sfd_id_s = safe_copy(fdl_framing_decision_get_id(sfd));
-        std::string sfd_label_s = safe_copy(fdl_framing_decision_get_label(sfd));
-        std::string sfd_fi_id_s = safe_copy(fdl_framing_decision_get_framing_intent_id(sfd));
+        std::string const sfd_id_s = safe_copy(fdl_framing_decision_get_id(sfd));
+        std::string const sfd_label_s = safe_copy(fdl_framing_decision_get_label(sfd));
+        std::string const sfd_fi_id_s = safe_copy(fdl_framing_decision_get_framing_intent_id(sfd));
         auto sfd_dims = fdl_framing_decision_get_dimensions(sfd);
         auto sfd_anchor = fdl_framing_decision_get_anchor_point(sfd);
 
@@ -374,7 +384,7 @@ fdl_template_result_t apply_canvas_template(
             sfd_anchor.x,
             sfd_anchor.y);
 
-        if (fdl_framing_decision_has_protection(sfd)) {
+        if (fdl_framing_decision_has_protection(sfd) != 0) {
             auto sfd_prot = fdl_framing_decision_get_protection_dimensions(sfd);
             auto sfd_prot_a = fdl_framing_decision_get_protection_anchor_point(sfd);
             fdl_framing_decision_set_protection(copied_fd, sfd_prot, sfd_prot_a);
@@ -382,8 +392,8 @@ fdl_template_result_t apply_canvas_template(
     }
 
     // Add new canvas (output of transformation)
-    int64_t out_canvas_w = static_cast<int64_t>(std::round(geometry.canvas_dims.width));
-    int64_t out_canvas_h = static_cast<int64_t>(std::round(geometry.canvas_dims.height));
+    auto out_canvas_w = static_cast<int64_t>(std::round(geometry.canvas_dims.width));
+    auto out_canvas_h = static_cast<int64_t>(std::round(geometry.canvas_dims.height));
     auto* new_cvs = fdl_context_add_canvas(
         out_ctx,
         new_canvas_id,
@@ -394,22 +404,22 @@ fdl_template_result_t apply_canvas_template(
         target_squeeze);
 
     // Set effective dimensions on new canvas
-    bool has_eff = !fdl_dimensions_is_zero(geometry.effective_dims);
+    bool const has_eff = fdl_dimensions_is_zero(geometry.effective_dims) == 0;
     if (has_eff) {
-        fdl_dimensions_i64_t eff_dims = {
+        fdl_dimensions_i64_t const eff_dims = {
             static_cast<int64_t>(std::round(geometry.effective_dims.width)),
             static_cast<int64_t>(std::round(geometry.effective_dims.height))};
         fdl_canvas_set_effective_dimensions(new_cvs, eff_dims, geometry.effective_anchor);
     }
 
     // Build framing decision ID: new_canvas_id-source_fi_id
-    std::string fd_id = std::string(new_canvas_id) + "-" + source_fi_id_s;
+    std::string const fd_id = std::string(new_canvas_id).append("-").append(source_fi_id_s);
 
     // Add new framing decision
     auto* new_fd = fdl_canvas_add_framing_decision(
         new_cvs,
         fd_id.c_str(),
-        new_fd_name ? new_fd_name : "",
+        (new_fd_name != nullptr) ? new_fd_name : "",
         source_fi_id_s.c_str(),
         geometry.framing_dims.width,
         geometry.framing_dims.height,
@@ -417,12 +427,12 @@ fdl_template_result_t apply_canvas_template(
         geometry.framing_anchor.y);
 
     // Set protection if present
-    if (!fdl_dimensions_is_zero(geometry.protection_dims)) {
+    if (fdl_dimensions_is_zero(geometry.protection_dims) == 0) {
         fdl_framing_decision_set_protection(new_fd, geometry.protection_dims, geometry.protection_anchor);
     }
 
     // Copy canvas template into output FDL
-    std::string tmpl_id_s = safe_copy(fdl_canvas_template_get_id(tmpl));
+    std::string const tmpl_id_s = safe_copy(fdl_canvas_template_get_id(tmpl));
     auto* out_ct = fdl_doc_add_canvas_template(
         out_doc,
         tmpl_id_s.c_str(),

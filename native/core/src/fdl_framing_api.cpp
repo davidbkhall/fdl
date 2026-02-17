@@ -10,6 +10,30 @@
 #include "fdl_doc.h"
 #include "fdl_framing.h"
 
+namespace {
+
+/**
+ * @brief Compute alignment offset for a single axis.
+ * @param container  Size of the containing dimension.
+ * @param content    Size of the content to align.
+ * @param align      Alignment enum value (0=left/top, 1=center, 2=right/bottom).
+ * @return Pixel offset to apply for the requested alignment.
+ */
+double align_offset(double container, double content, uint32_t align) {
+    // CENTER enum value is 1 for both halign and valign
+    if (align == FDL_HALIGN_CENTER) {
+        return (container - content) / fdl::constants::kCenterDivisor;
+    }
+    // RIGHT (halign=2) or BOTTOM (valign=2)
+    if (align == FDL_HALIGN_RIGHT) {
+        return container - content;
+    }
+    // LEFT (halign=0) or TOP (valign=0)
+    return 0.0;
+}
+
+} // namespace
+
 extern "C" {
 
 fdl_from_intent_result_t fdl_compute_framing_from_intent(
@@ -23,70 +47,50 @@ fdl_from_intent_result_t fdl_compute_framing_from_intent(
         canvas_dims, working_dims, squeeze, aspect_ratio, protection, rounding);
 }
 
-/**
- * @brief Compute alignment offset for a single axis.
- * @param container  Size of the containing dimension.
- * @param content    Size of the content to align.
- * @param align      Alignment enum value (0=left/top, 1=center, 2=right/bottom).
- * @return Pixel offset to apply for the requested alignment.
- */
-static double align_offset(double container, double content, uint32_t align) {
-    // CENTER enum value is 1 for both halign and valign
-    if (align == FDL_HALIGN_CENTER) {
-        return (container - content) / fdl::constants::kCenterDivisor;
-    }
-    // RIGHT (halign=2) or BOTTOM (valign=2)
-    if (align == FDL_HALIGN_RIGHT) {
-        return container - content;
-    }
-    // LEFT (halign=0) or TOP (valign=0)
-    return 0.0;
-}
-
 void fdl_framing_decision_adjust_anchor(
     fdl_framing_decision_t* fd, const fdl_canvas_t* canvas, fdl_halign_t h_align, fdl_valign_t v_align) {
-    if (!fd || !canvas) {
+    if (fd == nullptr || canvas == nullptr) {
         return;
     }
 
-    doc_lock lock(fd->owner);
+    const doc_lock lock(fd->owner);
     auto* fd_n = fd->node();
     auto* canvas_n = canvas->node();
-    if (!fd_n || !canvas_n) {
+    if (fd_n == nullptr || canvas_n == nullptr) {
         return;
     }
 
-    double canvas_w = static_cast<double>((*canvas_n)["dimensions"]["width"].as<int64_t>());
-    double canvas_h = static_cast<double>((*canvas_n)["dimensions"]["height"].as<int64_t>());
-    double fd_w = (*fd_n)["dimensions"]["width"].as<double>();
-    double fd_h = (*fd_n)["dimensions"]["height"].as<double>();
+    double const canvas_w = static_cast<double>((*canvas_n)["dimensions"]["width"].as<int64_t>());
+    double const canvas_h = static_cast<double>((*canvas_n)["dimensions"]["height"].as<int64_t>());
+    double const fd_w = (*fd_n)["dimensions"]["width"].as<double>();
+    double const fd_h = (*fd_n)["dimensions"]["height"].as<double>();
 
-    double anchor_x = align_offset(canvas_w, fd_w, h_align);
-    double anchor_y = align_offset(canvas_h, fd_h, v_align);
+    double const anchor_x = align_offset(canvas_w, fd_w, h_align);
+    double const anchor_y = align_offset(canvas_h, fd_h, v_align);
 
     fd_n->insert_or_assign("anchor_point", fdl::detail::make_point_float(anchor_x, anchor_y));
 }
 
 void fdl_framing_decision_adjust_protection_anchor(
     fdl_framing_decision_t* fd, const fdl_canvas_t* canvas, fdl_halign_t h_align, fdl_valign_t v_align) {
-    if (!fd || !canvas) {
+    if (fd == nullptr || canvas == nullptr) {
         return;
     }
 
-    doc_lock lock(fd->owner);
+    const doc_lock lock(fd->owner);
     auto* fd_n = fd->node();
     auto* canvas_n = canvas->node();
-    if (!fd_n || !canvas_n) {
+    if (fd_n == nullptr || canvas_n == nullptr) {
         return;
     }
 
-    double canvas_w = static_cast<double>((*canvas_n)["dimensions"]["width"].as<int64_t>());
-    double canvas_h = static_cast<double>((*canvas_n)["dimensions"]["height"].as<int64_t>());
-    double prot_w = (*fd_n)["protection_dimensions"]["width"].as<double>();
-    double prot_h = (*fd_n)["protection_dimensions"]["height"].as<double>();
+    double const canvas_w = static_cast<double>((*canvas_n)["dimensions"]["width"].as<int64_t>());
+    double const canvas_h = static_cast<double>((*canvas_n)["dimensions"]["height"].as<int64_t>());
+    double const prot_w = (*fd_n)["protection_dimensions"]["width"].as<double>();
+    double const prot_h = (*fd_n)["protection_dimensions"]["height"].as<double>();
 
-    double anchor_x = align_offset(canvas_w, prot_w, h_align);
-    double anchor_y = align_offset(canvas_h, prot_h, v_align);
+    double const anchor_x = align_offset(canvas_w, prot_w, h_align);
+    double const anchor_y = align_offset(canvas_h, prot_h, v_align);
 
     fd_n->insert_or_assign("protection_anchor_point", fdl::detail::make_point_float(anchor_x, anchor_y));
 }
@@ -96,20 +100,20 @@ void fdl_framing_decision_populate_from_intent(
     const fdl_canvas_t* canvas,
     const fdl_framing_intent_t* intent,
     fdl_round_strategy_t rounding) {
-    if (!fd || !canvas || !intent) {
+    if (fd == nullptr || canvas == nullptr || intent == nullptr) {
         return;
     }
 
-    doc_lock lock(fd->owner);
+    const doc_lock lock(fd->owner);
     auto* fd_n = fd->node();
     auto* canvas_n = canvas->node();
     auto* intent_n = intent->node();
-    if (!fd_n || !canvas_n || !intent_n) {
+    if (fd_n == nullptr || canvas_n == nullptr || intent_n == nullptr) {
         return;
     }
 
     // Get canvas dimensions (int -> double)
-    fdl_dimensions_f64_t canvas_dims = {
+    fdl_dimensions_f64_t const canvas_dims = {
         static_cast<double>((*canvas_n)["dimensions"]["width"].as<int64_t>()),
         static_cast<double>((*canvas_n)["dimensions"]["height"].as<int64_t>())};
 
@@ -121,18 +125,18 @@ void fdl_framing_decision_populate_from_intent(
     }
 
     // Get squeeze
-    double squeeze = canvas_n->contains("anamorphic_squeeze") ? (*canvas_n)["anamorphic_squeeze"].as<double>()
-                                                              : fdl::constants::kIdentitySqueeze;
+    double const squeeze = canvas_n->contains("anamorphic_squeeze") ? (*canvas_n)["anamorphic_squeeze"].as<double>()
+                                                                    : fdl::constants::kIdentitySqueeze;
 
     // Get aspect ratio from intent
-    fdl_dimensions_i64_t aspect_ratio = {
+    fdl_dimensions_i64_t const aspect_ratio = {
         (*intent_n)["aspect_ratio"]["width"].as<int64_t>(), (*intent_n)["aspect_ratio"]["height"].as<int64_t>()};
 
     // Get protection from intent
-    double protection = intent_n->contains("protection") ? (*intent_n)["protection"].as<double>() : 0.0;
+    double const protection = intent_n->contains("protection") ? (*intent_n)["protection"].as<double>() : 0.0;
 
     // Compute
-    fdl_from_intent_result_t result = fdl::detail::compute_framing_from_intent(
+    fdl_from_intent_result_t const result = fdl::detail::compute_framing_from_intent(
         canvas_dims, working_dims, squeeze, aspect_ratio, protection, rounding);
 
     // Write to FD
@@ -140,7 +144,7 @@ void fdl_framing_decision_populate_from_intent(
         "dimensions", fdl::detail::make_dimensions_float(result.dimensions.width, result.dimensions.height));
     fd_n->insert_or_assign("anchor_point", fdl::detail::make_point_float(result.anchor_point.x, result.anchor_point.y));
 
-    if (result.has_protection) {
+    if (result.has_protection != 0) {
         fd_n->insert_or_assign(
             "protection_dimensions",
             fdl::detail::make_dimensions_float(

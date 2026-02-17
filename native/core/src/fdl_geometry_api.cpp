@@ -59,7 +59,7 @@ int fdl_resolve_geometry_layer(
         return 0;
     }
     case FDL_GEOMETRY_PATH_CANVAS_EFFECTIVE_DIMENSIONS: {
-        if (!fdl_canvas_has_effective_dimensions(canvas)) {
+        if (fdl_canvas_has_effective_dimensions(canvas) == 0) {
             return fdl::constants::kGeometryNotFound;
         }
         auto d = fdl_canvas_get_effective_dimensions(canvas);
@@ -68,7 +68,7 @@ int fdl_resolve_geometry_layer(
         return 0;
     }
     case FDL_GEOMETRY_PATH_FRAMING_PROTECTION_DIMENSIONS: {
-        if (!fdl_framing_decision_has_protection(framing)) {
+        if (fdl_framing_decision_has_protection(framing) == 0) {
             return fdl::constants::kGeometryNotFound;
         }
         *out_dims = fdl_framing_decision_get_protection_dimensions(framing);
@@ -99,7 +99,7 @@ fdl_rect_t fdl_canvas_get_rect(const fdl_canvas_t* canvas) {
 }
 
 int fdl_canvas_get_effective_rect(const fdl_canvas_t* canvas, fdl_rect_t* out_rect) {
-    if (!fdl_canvas_has_effective_dimensions(canvas)) {
+    if (fdl_canvas_has_effective_dimensions(canvas) == 0) {
         return 0;
     }
     auto dims = fdl_canvas_get_effective_dimensions(canvas);
@@ -115,7 +115,7 @@ fdl_rect_t fdl_framing_decision_get_rect(const fdl_framing_decision_t* fd) {
 }
 
 int fdl_framing_decision_get_protection_rect(const fdl_framing_decision_t* fd, fdl_rect_t* out_rect) {
-    if (!fdl_framing_decision_has_protection(fd)) {
+    if (fdl_framing_decision_has_protection(fd) == 0) {
         return 0;
     }
     auto dims = fdl_framing_decision_get_protection_dimensions(fd);

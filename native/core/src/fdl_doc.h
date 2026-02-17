@@ -44,23 +44,23 @@ public:
      * @brief Access the internal JSON data (const).
      * @return Const reference to the ojson tree.
      */
-    const ojson& data() const { return data_; }
+    [[nodiscard]] const ojson& data() const { return data_; }
     /**
      * @brief Access the internal JSON data (mutable).
      * @return Mutable reference to the ojson tree.
      */
-    ojson& data() { return data_; }
+    [[nodiscard]] ojson& data() { return data_; }
 
     /**
      * @brief Get UUID from the document.
      * @return UUID string, or empty string if missing.
      */
-    std::string get_uuid() const;
+    [[nodiscard]] std::string get_uuid() const;
     /**
      * @brief Get fdl_creator from the document.
      * @return Creator string, or empty string if missing.
      */
-    std::string get_fdl_creator() const;
+    [[nodiscard]] std::string get_fdl_creator() const;
 
     /**
      * @brief Canonical JSON serialization.
@@ -70,7 +70,7 @@ public:
      * @param indent  Spaces per indent level (default 2, 0 for compact).
      * @return Formatted JSON string.
      */
-    std::string to_canonical_json(int indent = constants::kDefaultJsonIndent) const;
+    [[nodiscard]] std::string to_canonical_json(int indent = constants::kDefaultJsonIndent) const;
 
 private:
     ojson data_;
@@ -99,7 +99,7 @@ struct doc_lock {
      * @param doc  Document to lock (may be NULL, in which case no lock is acquired).
      */
     explicit doc_lock(const fdl_doc* doc) {
-        if (doc) {
+        if (doc != nullptr) {
             lock_ = std::unique_lock<std::mutex>(doc->mtx);
         }
     }

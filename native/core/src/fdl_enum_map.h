@@ -164,8 +164,6 @@ inline const char* geometry_path_to_string(fdl_geometry_path_t p) {
         return "canvas.effective_dimensions";
     case FDL_GEOMETRY_PATH_FRAMING_PROTECTION_DIMENSIONS:
         return "framing_decision.protection_dimensions";
-    case FDL_GEOMETRY_PATH_FRAMING_DIMENSIONS:
-        return "framing_decision.dimensions";
     default:
         return "framing_decision.dimensions";
     }
@@ -234,8 +232,6 @@ inline const char* rounding_mode_to_string(fdl_rounding_mode_t m) {
         return "up";
     case FDL_ROUNDING_MODE_DOWN:
         return "down";
-    case FDL_ROUNDING_MODE_ROUND:
-        return "round";
     default:
         return "round";
     }
