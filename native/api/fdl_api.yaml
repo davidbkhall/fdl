@@ -382,7 +382,7 @@ object_model:
             error_field: error
             success_field: doc
             free_fn: fdl_free
-            error_class: ValueError
+            error_class: validation_error
         create:
           function: fdl_doc_create_with_header
           kind: static_factory
@@ -526,7 +526,7 @@ object_model:
           error_handling:
             pattern: result_struct_multi
             error_field: error
-            error_class: ValueError
+            error_class: validation_error
             free_fn: fdl_free
             fields:
               - { name: canvas,           source: canvas,           extract: handle_ref, wrap_class: Canvas }
@@ -854,7 +854,7 @@ object_model:
           error_handling:
             pattern: result_struct_multi
             error_field: error
-            error_class: ValueError
+            error_class: validation_error
             free_fn: fdl_free
             fields:
               - { name: fdl,                   source: output_fdl,          extract: handle, wrap_class: FDL }

@@ -13,6 +13,11 @@ from __future__ import annotations
 from .fdl_idl import IDL, EnumType, FreeFunctionDef, ValueType, VTMethod, VTOperator
 from .type_maps import PYTHON_CONVERTERS, PYTHON_TYPES, resolve_python_type
 
+# Semantic error class → Python exception class
+_ERROR_CLASS_MAP: dict[str, str] = {
+    "validation_error": "ValueError",
+}
+
 # -----------------------------------------------------------------------
 # Utilities
 # -----------------------------------------------------------------------
@@ -621,7 +626,7 @@ def build_lifecycle_method_context(method, idl: IDL, enum_contexts: list[dict]) 
             "pattern": eh.pattern,
             "error_field": eh.error_field,
             "success_field": eh.success_field,
-            "error_class": eh.error_class,
+            "error_class": _ERROR_CLASS_MAP.get(eh.error_class, eh.error_class),
             "free_fn": eh.free_fn,
             "count_fn": eh.count_fn,
             "at_fn": eh.at_fn,
