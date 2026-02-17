@@ -372,6 +372,7 @@ jobs:
               export PATH=/opt/python/cp312-cp312/bin:$PATH
               pip install cmake pyyaml jinja2 build setuptools wheel auditwheel
               python scripts/run_codegen.py
+              rm -rf native/core/build
               python scripts/build_native.py --no-tests
               cp native/core/build/libfdl_core.so native/bindings/python/fdl_ffi/
               cd native/bindings/python
