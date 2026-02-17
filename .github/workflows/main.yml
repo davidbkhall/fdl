@@ -144,15 +144,15 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v4
 
-      # --- CMake ---
-      - name: Install CMake (Linux)
+      # --- CMake & clang-format ---
+      - name: Install CMake and clang-format (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get install -y cmake
+        run: sudo apt-get install -y cmake clang-format
 
-      - name: Install CMake (macOS)
+      - name: Install CMake and clang-format (macOS)
         if: runner.os == 'macOS'
-        run: brew install cmake || true
-      # Windows runners already have CMake
+        run: brew install cmake clang-format || true
+      # Windows runners already have CMake and LLVM (clang-format)
 
       # --- Codegen ---
       - name: Install codegen dependencies
@@ -285,14 +285,15 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v4
 
-      # --- CMake ---
-      - name: Install CMake (Linux)
+      # --- CMake & clang-format ---
+      - name: Install CMake and clang-format (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get install -y cmake
+        run: sudo apt-get install -y cmake clang-format
 
-      - name: Install CMake (macOS)
+      - name: Install CMake and clang-format (macOS)
         if: runner.os == 'macOS'
-        run: brew install cmake || true
+        run: brew install cmake clang-format || true
+      # Windows runners already have CMake and LLVM (clang-format)
 
       # --- Codegen ---
       - name: Install codegen dependencies
