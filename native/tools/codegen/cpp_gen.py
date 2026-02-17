@@ -14,10 +14,10 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
-from .python_context import build_facade_class_context
-from .shared_context import build_enum_context
+from .adapters import CppAdapter
 from .fdl_idl import IDL, ValueType, VTMethod, VTOperator, build_ir
-from .type_maps import CPP_TYPES, resolve_cpp_type
+
+_cpp = CppAdapter()
 
 # -----------------------------------------------------------------------
 # C++ naming helpers
@@ -55,80 +55,52 @@ def _singular(name: str) -> str:
 
 
 # -----------------------------------------------------------------------
-# Type resolution: IDL type_key / Python type → C++ declaration
+# Type resolution: IR type_key → C++ declaration
 # -----------------------------------------------------------------------
-
-# Python type string → C++ type
-_PY_TO_CPP: dict[str, str] = {
-    "str": "std::string",
-    "str | None": "std::string",
-    "float": "double",
-    "int": "int",
-    "bool": "bool",
-    "bytes": "std::string",
-    "DimensionsInt": "fdl_dimensions_i64_t",
-    "DimensionsFloat": "fdl_dimensions_f64_t",
-    "PointFloat": "fdl_point_f64_t",
-    "Rect": "fdl_rect_t",
-    "RoundStrategy": "fdl_round_strategy_t",
-    "GeometryPath": "fdl_geometry_path_t",
-    "FitMethod": "fdl_fit_method_t",
-    "HAlign": "fdl_halign_t",
-    "VAlign": "fdl_valign_t",
-    "RoundStrategy | None": "fdl_round_strategy_t",
-}
-
-# Default value mappings
-_PY_DEFAULT_TO_CPP: dict[str, str] = {
-    '""': '""',
-    "None": '""',
-    "1.0": "1.0",
-    "0.0": "0.0",
-    "RoundStrategy()": "{FDL_ROUNDING_EVEN_EVEN, FDL_ROUNDING_MODE_ROUND}",
-    "GeometryPath.FRAMING_DIMENSIONS": "FDL_GEOMETRY_PATH_FRAMING_DIMENSIONS",
-    "FitMethod.WIDTH": "FDL_FIT_METHOD_WIDTH",
-    "HAlign.CENTER": "FDL_HALIGN_CENTER",
-    "VAlign.CENTER": "FDL_VALIGN_CENTER",
-    "False": "false",
-    "True": "true",
-}
 
 # Types that should be passed by const ref
 _CONST_REF_TYPES = {"std::string", "fdl_dimensions_i64_t", "fdl_dimensions_f64_t", "fdl_point_f64_t", "fdl_round_strategy_t"}
 
-# All facade class names → Ref class names
+# All facade class names
 _ALL_CLASSES = {"FDL", "Context", "Canvas", "FramingDecision", "FramingIntent", "CanvasTemplate"}
 
-
-def _resolve_cpp_type(py_type: str) -> str:
-    """Resolve a Python type annotation to C++ type."""
-    clean = py_type.replace(" | None", "")
-    if clean in _ALL_CLASSES:
-        return _cpp_class_name(clean)
-    return _PY_TO_CPP.get(py_type, _PY_TO_CPP.get(clean, clean))
+# Auxiliary dataclass field type → C++ type (for YAML-defined dataclass fields)
+_DC_FIELD_CPP: dict[str, str] = {
+    "str": "std::string",
+    "float": "double",
+}
 
 
-def _cpp_param(name: str, py_type: str, default: str | None = None, *, type_key: str | None = None) -> dict:
-    """Build a C++ parameter dict with type, pass convention, and default.
+def _cpp_param(name: str, type_key: str, default=None, *, nullable: bool = False, source_class: str | None = None) -> dict:
+    """Build a C++ parameter dict from IR type information.
 
-    If type_key is given and maps to a known C++ type, it overrides py_type
-    for type resolution (needed for enum params where python_type is "str").
+    Parameters
+    ----------
+    name : str
+        Parameter name.
+    type_key : str
+        IR type key (e.g. "string", "fdl_halign_t").
+    default : DefaultDescriptor | None
+        Structured default from IR.
+    nullable : bool
+        Whether the parameter is nullable.
+    source_class : str | None
+        For handle params: the facade class name (e.g. "FramingIntent").
     """
-    if type_key and type_key in CPP_TYPES:
-        cpp_type = CPP_TYPES[type_key]
+    if source_class:
+        cpp_type = _cpp_class_name(source_class)
     else:
-        cpp_type = _resolve_cpp_type(py_type)
+        cpp_type = _cpp.resolve_type(type_key)
     is_ref = cpp_type in _CONST_REF_TYPES or cpp_type.endswith("Ref")
     pass_decl = f"const {cpp_type}&" if is_ref else cpp_type
     cpp_default = None
     if default is not None:
-        cpp_default = _PY_DEFAULT_TO_CPP.get(default)
-        if cpp_default is None:
-            # Try direct numeric/string defaults
-            cpp_default = default
+        cpp_default = _cpp.render_default(default)
         # Don't apply string-typed defaults (like '""') to non-string C++ types
         if cpp_default == '""' and cpp_type != "std::string":
             cpp_default = None
+    elif nullable and cpp_type == "std::string":
+        cpp_default = '""'
     bare = f"{pass_decl} {name}"
     return {
         "name": name,
@@ -137,28 +109,25 @@ def _cpp_param(name: str, py_type: str, default: str | None = None, *, type_key:
     }
 
 
-def _cpp_call_arg(name: str, py_type: str, *, expand_vt: bool = True, type_key: str | None = None) -> list[str]:
-    """Build C ABI call argument(s) for a parameter.
+def _cpp_call_arg(
+    name: str, type_key: str, *, expand_vt: bool = True, nullable: bool = False, source_class: str | None = None
+) -> list[str]:
+    """Build C ABI call argument(s) for a parameter from IR type information.
 
-    Value types with expand=True get their fields expanded (e.g. dims.width, dims.height).
+    Value types with expand_vt=True get their fields expanded (e.g. dims.width, dims.height).
     Returns a list because some types expand to multiple args.
-    If type_key is an enum, pass through directly (not as string).
     """
-    # If type_key is a known C type and not "string", use it directly.
-    # This handles enum params (python_type="str", type_key="fdl_halign_t").
-    if type_key and type_key in CPP_TYPES and type_key != "string":
-        return [name]
-    clean = py_type.replace(" | None", "")
-    if clean == "str":
-        if "None" in py_type:
+    if source_class:
+        return [f"{name}.get()"]
+    if type_key == "string":
+        if nullable:
             return [f"{name}.empty() ? nullptr : {name}.c_str()"]
         return [f"{name}.c_str()"]
-    if clean in _ALL_CLASSES:
-        return [f"{name}.get()"]
-    if clean in ("DimensionsInt", "DimensionsFloat") and expand_vt:
-        return [f"{name}.width", f"{name}.height"]
-    if clean == "PointFloat" and expand_vt:
-        return [f"{name}.x", f"{name}.y"]
+    if expand_vt:
+        if type_key in ("fdl_dimensions_i64_t", "fdl_dimensions_f64_t"):
+            return [f"{name}.width", f"{name}.height"]
+        if type_key == "fdl_point_f64_t":
+            return [f"{name}.x", f"{name}.y"]
     return [name]
 
 
@@ -602,58 +571,58 @@ def _build_auxiliary_structs(idl: IDL) -> dict:
 # -----------------------------------------------------------------------
 
 
-def _build_prop(prop: dict, handle_field: str) -> dict | None:
-    """Build C++ property context. Returns None to skip."""
-    # Skip json_value converter properties (no equivalent in C++)
-    if prop["converter"] == "json_value":
+def _build_prop(prop, handle_field: str) -> dict | None:
+    """Build C++ property context from an IRProperty. Returns None to skip."""
+    # Skip json_value properties (no equivalent in C++)
+    if prop.type_key == "json_value":
         return None
 
     # Special handling for clip_id
-    if prop["name"] == "clip_id":
+    if prop.name == "clip_id":
         return {
             "name": "clip_id",
             "kind": "clip_id",
-            "has_fn": prop["has_fn"],
-            "getter_fn": prop["getter_fn"],
-            "setter_fn": prop["setter_fn"],
-            "remover_fn": prop.get("remover_fn"),
+            "has_fn": prop.has_fn,
+            "getter_fn": prop.getter_fn,
+            "setter_fn": prop.setter_fn,
+            "remover_fn": prop.remover_fn,
             "handle_field": handle_field,
         }
 
-    type_key = prop["type_key"]
-    nullable = prop["nullable"]
+    type_key = prop.type_key
+    nullable = prop.nullable
 
     # Determine C++ getter return type and body
-    if prop["converter"] == "string":
+    if type_key == "string":
         cpp_return_type = "std::string"
-        getter_body = f"const char* p = {prop['getter_fn']}({handle_field});\n        return p ? std::string(p) : std::string();"
-    elif prop["converter"] == "bool":
+        getter_body = f"const char* p = {prop.getter_fn}({handle_field});\n        return p ? std::string(p) : std::string();"
+    elif type_key == "bool":
         cpp_return_type = "bool"
-        getter_body = f"return {prop['getter_fn']}({handle_field}) != 0;"
-    elif nullable and prop["has_fn"]:
-        base_type = resolve_cpp_type(type_key)
+        getter_body = f"return {prop.getter_fn}({handle_field}) != 0;"
+    elif nullable and prop.has_fn:
+        base_type = _cpp.resolve_type(type_key)
         cpp_return_type = f"std::optional<{base_type}>"
-        getter_body = f"if (!{prop['has_fn']}({handle_field})) return std::nullopt;\n        return {prop['getter_fn']}({handle_field});"
+        getter_body = f"if (!{prop.has_fn}({handle_field})) return std::nullopt;\n        return {prop.getter_fn}({handle_field});"
     else:
-        cpp_return_type = resolve_cpp_type(type_key)
-        getter_body = f"return {prop['getter_fn']}({handle_field});"
+        cpp_return_type = _cpp.resolve_type(type_key)
+        getter_body = f"return {prop.getter_fn}({handle_field});"
 
     # Setter
     setter = None
-    if prop["setter_fn"]:
-        if prop["converter"] == "string":
+    if prop.setter_fn:
+        if type_key == "string":
             setter_type = "const std::string&"
-            setter_body = f"{prop['setter_fn']}({handle_field}, value.c_str());"
-        elif prop["converter"] == "bool":
+            setter_body = f"{prop.setter_fn}({handle_field}, value.c_str());"
+        elif type_key == "bool":
             setter_type = "bool"
-            setter_body = f"{prop['setter_fn']}({handle_field}, value ? 1 : 0);"
+            setter_body = f"{prop.setter_fn}({handle_field}, value ? 1 : 0);"
         elif type_key == "double":
             setter_type = "double"
-            setter_body = f"{prop['setter_fn']}({handle_field}, value);"
+            setter_body = f"{prop.setter_fn}({handle_field}, value);"
         else:
-            base = resolve_cpp_type(type_key)
+            base = _cpp.resolve_type(type_key)
             setter_type = base
-            setter_body = f"{prop['setter_fn']}({handle_field}, value);"
+            setter_body = f"{prop.setter_fn}({handle_field}, value);"
 
         setter = {
             "type": setter_type,
@@ -661,17 +630,17 @@ def _build_prop(prop: dict, handle_field: str) -> dict | None:
         }
 
     has_fn_ctx = None
-    if nullable and prop["has_fn"]:
-        has_fn_ctx = {"name": f"has_{prop['name']}", "body": f"return {prop['has_fn']}({handle_field}) != 0;"}
+    if nullable and prop.has_fn:
+        has_fn_ctx = {"name": f"has_{prop.name}", "body": f"return {prop.has_fn}({handle_field}) != 0;"}
 
     # Remover for nullable properties (e.g. remove_effective, remove_protection)
     remover_ctx = None
-    if nullable and prop.get("remover_fn"):
-        remover_name = f"remove_{prop['name']}"
-        remover_ctx = {"name": remover_name, "body": f"{prop['remover_fn']}({handle_field});"}
+    if nullable and prop.remover_fn:
+        remover_name = f"remove_{prop.name}"
+        remover_ctx = {"name": remover_name, "body": f"{prop.remover_fn}({handle_field});"}
 
     return {
-        "name": prop["name"],
+        "name": prop.name,
         "return_type": cpp_return_type,
         "getter_body": getter_body,
         "setter": setter,
@@ -685,22 +654,21 @@ def _build_prop(prop: dict, handle_field: str) -> dict | None:
 # -----------------------------------------------------------------------
 
 
-def _build_builder(builder: dict, handle_field: str) -> dict:
-    """Build C++ builder method context with pre-computed params and call args."""
+def _build_builder(method, handle_field: str) -> dict:
+    """Build C++ builder method context from an IRMethod."""
     params = []
     c_args = [handle_field]
 
-    for p in builder["params"]:
-        py_type = p["python_type"]
-        params.append(_cpp_param(p["name"], py_type, p.get("default")))
-        c_args.extend(_cpp_call_arg(p["name"], py_type))
+    for p in method.params:
+        params.append(_cpp_param(p.name, p.type_key, p.default, nullable=p.nullable, source_class=p.source_class))
+        c_args.extend(_cpp_call_arg(p.name, p.type_key, expand_vt=p.expand, nullable=p.nullable, source_class=p.source_class))
 
-    returns = _cpp_class_name(builder["returns"])
+    returns = _cpp_class_name(method.returns)
     return {
-        "name": builder["name"],
-        "c_function": builder["c_function"],
+        "name": method.name,
+        "c_function": method.function,
         "returns": returns,
-        "doc": builder["doc"],
+        "doc": method.doc,
         "params": params,
         "c_args": c_args,
     }
@@ -711,19 +679,45 @@ def _build_builder(builder: dict, handle_field: str) -> dict:
 # -----------------------------------------------------------------------
 
 
-def _build_lifecycle(lc: dict, handle_field: str) -> dict | None:
-    """Build C++ lifecycle method context. Returns None to skip."""
-    kind = lc.get("kind")
+def _build_error_ctx(eh) -> dict:
+    """Build error context dict from an IRErrorHandling for the C++ template."""
+    result_fields = None
+    if eh.result_fields:
+        result_fields = [
+            {
+                "name": rf.name,
+                "source": rf.source,
+                "extract": rf.extract,
+                "wrap_class": _cpp_class_name(rf.wrap_class) if rf.wrap_class else None,
+                "converter": rf.converter,
+                "scalar_type": rf.scalar_type,
+                "private": rf.private,
+            }
+            for rf in eh.result_fields
+        ]
+    return {
+        "pattern": eh.pattern,
+        "error_field": eh.error_field,
+        "success_field": eh.success_field,
+        "error_class": _cpp.resolve_error_class(eh.error_class) if eh.error_class else None,
+        "free_fn": eh.free_fn,
+        "count_fn": eh.count_fn,
+        "at_fn": eh.at_fn,
+        "result_fields": result_fields,
+    }
+
+
+def _build_lifecycle(method, handle_field: str) -> dict | None:
+    """Build C++ lifecycle method context from an IRMethod. Returns None to skip."""
+    kind = method.kind
 
     if kind == "composite_property":
-        # FDL::version() → Version{major, minor}
-        compose_from = lc.get("compose_from", {})
         return {
             "kind": "composite_property",
-            "name": lc["name"],
-            "returns": lc["returns"],
-            "doc": lc["doc"],
-            "compose_from": compose_from,
+            "name": method.name,
+            "returns": method.returns,
+            "doc": method.doc,
+            "compose_from": method.compose_from or {},
         }
     if kind == "alias":
         return None
@@ -731,97 +725,84 @@ def _build_lifecycle(lc: dict, handle_field: str) -> dict | None:
         # populate_from_intent — convert to C++ instance method
         params = []
         c_args = [handle_field]
-        for p in lc["params"]:
-            py_type = p["python_type"]
-            tk = p.get("type_key")
-            params.append(_cpp_param(p["name"], py_type, p.get("default"), type_key=tk))
-            c_args.extend(_cpp_call_arg(p["name"], py_type, expand_vt=False, type_key=tk))
+        for p in method.params:
+            params.append(_cpp_param(p.name, p.type_key, p.default, nullable=p.nullable, source_class=p.source_class))
+            c_args.extend(_cpp_call_arg(p.name, p.type_key, expand_vt=False, nullable=p.nullable, source_class=p.source_class))
         return {
             "kind": "populate",
-            "name": lc["name"],
-            "c_function": lc["c_function"],
-            "doc": lc["doc"],
+            "name": method.name,
+            "c_function": method.function,
+            "doc": method.doc,
             "params": params,
             "c_args": c_args,
         }
 
     if kind == "static_factory":
-        error = lc.get("error", {})
-        if not error:
+        eh = method.error_handling
+        if not eh:
             return None
-        pattern = error.get("pattern")
 
-        if pattern == "result_struct":
+        if eh.pattern == "result_struct":
             # parse() — takes bytes/string
             return {
                 "kind": "parse",
-                "name": lc["name"],
-                "c_function": lc["c_function"],
-                "doc": lc["doc"],
-                "error": error,
+                "name": method.name,
+                "c_function": method.function,
+                "doc": method.doc,
+                "error": _build_error_ctx(eh),
             }
-        elif pattern == "null_check":
+        elif eh.pattern == "null_check":
             # create() — takes multiple params
             params = []
             c_args = []
-            for p in lc["params"]:
-                py_type = p["python_type"]
-                tk = p.get("type_key")
-                params.append(_cpp_param(p["name"], py_type, p.get("default"), type_key=tk))
-                c_args.extend(_cpp_call_arg(p["name"], py_type, expand_vt=False, type_key=tk))
+            for p in method.params:
+                params.append(_cpp_param(p.name, p.type_key, p.default, nullable=p.nullable, source_class=p.source_class))
+                c_args.extend(_cpp_call_arg(p.name, p.type_key, expand_vt=False, nullable=p.nullable, source_class=p.source_class))
             return {
                 "kind": "create",
-                "name": lc["name"],
-                "c_function": lc["c_function"],
-                "doc": lc["doc"],
+                "name": method.name,
+                "c_function": method.function,
+                "doc": method.doc,
                 "params": params,
                 "c_args": c_args,
             }
         return None
 
     if kind == "instance":
-        error = lc.get("error")
-        if error and error.get("pattern") == "validation":
+        eh = method.error_handling
+        if eh and eh.pattern == "validation":
             return {
                 "kind": "validate",
-                "name": lc["name"],
-                "c_function": lc["c_function"],
-                "doc": lc["doc"],
-                "error": error,
+                "name": method.name,
+                "c_function": method.function,
+                "doc": method.doc,
+                "error": _build_error_ctx(eh),
                 "handle_field": handle_field,
             }
-        if lc.get("returns") == "string_free":
+        if method.returns == "string_free":
             return {
                 "kind": "as_json",
-                "name": lc["name"],
-                "c_function": lc["c_function"],
-                "doc": lc["doc"],
+                "name": method.name,
+                "c_function": method.function,
+                "doc": method.doc,
                 "handle_field": handle_field,
             }
-        if error and error.get("pattern") == "result_struct_multi":
+        if eh and eh.pattern == "result_struct_multi":
             # apply() on CanvasTemplate
             params = []
             c_args = [handle_field]
-            for p in lc["params"]:
-                py_type = p["python_type"]
-                tk = p.get("type_key")
-                params.append(_cpp_param(p["name"], py_type, p.get("default"), type_key=tk))
-                c_args.extend(_cpp_call_arg(p["name"], py_type, expand_vt=False, type_key=tk))
-            # Transform result_fields wrap_class to C++ class names
-            cpp_error = dict(error)
-            if error.get("result_fields"):
-                cpp_error["result_fields"] = [
-                    {**rf, "wrap_class": _cpp_class_name(rf["wrap_class"])} if rf.get("wrap_class") else rf for rf in error["result_fields"]
-                ]
+            for p in method.params:
+                params.append(_cpp_param(p.name, p.type_key, p.default, nullable=p.nullable, source_class=p.source_class))
+                c_args.extend(_cpp_call_arg(p.name, p.type_key, expand_vt=False, nullable=p.nullable, source_class=p.source_class))
             return {
                 "kind": "apply",
-                "name": lc["name"],
-                "c_function": lc["c_function"],
-                "returns": lc["returns"],
-                "doc": lc["doc"],
+                "name": method.name,
+                "c_function": method.function,
+                "returns": method.returns,
+                "doc": method.doc,
                 "params": params,
                 "c_args": c_args,
-                "error": cpp_error,
+                "error": _build_error_ctx(eh),
                 "handle_field": handle_field,
             }
         return None
@@ -829,41 +810,38 @@ def _build_lifecycle(lc: dict, handle_field: str) -> dict | None:
     if kind == "compound_setter":
         params = []
         c_args = [handle_field]
-        for p in lc["params"]:
-            py_type = p["python_type"]
-            tk = p.get("type_key")
-            params.append(_cpp_param(p["name"], py_type, type_key=tk))
+        for p in method.params:
+            params.append(_cpp_param(p.name, p.type_key, nullable=p.nullable, source_class=p.source_class))
             # Compound setters pass value types directly (not expanded)
-            c_args.extend(_cpp_call_arg(p["name"], py_type, expand_vt=False, type_key=tk))
+            c_args.extend(_cpp_call_arg(p.name, p.type_key, expand_vt=False, nullable=p.nullable, source_class=p.source_class))
         return {
             "kind": "compound_setter",
-            "name": lc["name"],
-            "c_function": lc["c_function"],
-            "doc": lc["doc"],
+            "name": method.name,
+            "c_function": method.function,
+            "doc": method.doc,
             "params": params,
             "c_args": c_args,
         }
 
     if kind == "instance_getter":
-        cpp_returns = _VT_CLASS_MAP.get(lc.get("c_struct", ""), lc["returns"])
+        cpp_returns = _VT_CLASS_MAP.get(method.returns or "", method.returns)
         return {
             "kind": "instance_getter",
-            "name": lc["name"],
-            "c_function": lc["c_function"],
+            "name": method.name,
+            "c_function": method.function,
             "returns": cpp_returns,
-            "doc": lc["doc"],
+            "doc": method.doc,
         }
 
     if kind == "instance_getter_optional":
-        c_struct = lc.get("c_struct", "")
-        cpp_returns = _VT_CLASS_MAP.get(c_struct, lc["returns"])
+        cpp_returns = _VT_CLASS_MAP.get(method.returns or "", method.returns)
         return {
             "kind": "instance_getter_optional",
-            "name": lc["name"],
-            "c_function": lc["c_function"],
+            "name": method.name,
+            "c_function": method.function,
             "returns": cpp_returns,
-            "c_struct": c_struct,
-            "doc": lc["doc"],
+            "c_struct": method.returns or "",
+            "doc": method.doc,
         }
 
     return None
@@ -874,50 +852,66 @@ def _build_lifecycle(lc: dict, handle_field: str) -> dict | None:
 # -----------------------------------------------------------------------
 
 
-def _build_class(cls_ctx: dict, idl: IDL) -> dict:
-    """Build complete C++ class context."""
-    handle_type = cls_ctx["handle_type"]
-    hf = _handle_field(handle_type)
+def _build_class(ir_cls, idl: IDL) -> dict:
+    """Build complete C++ class context from an IRClass."""
+    hf = _handle_field(ir_cls.handle_type)
 
     properties = []
-    for p in cls_ctx["properties"]:
-        prop = _build_prop(p, hf)
-        if prop:
-            properties.append(prop)
+    for prop in ir_cls.properties:
+        p = _build_prop(prop, hf)
+        if p:
+            properties.append(p)
 
     collections = []
-    for c in cls_ctx["collections"]:
+    for coll in ir_cls.collections:
         collections.append(
             {
-                "name": c["name"],
-                "singular": _singular(c["name"]),
-                "item_class": _cpp_class_name(c["item_class"]),
-                "count_fn": c["count_fn"],
-                "at_fn": c["at_fn"],
-                "find_by_id_fn": c["find_by_id_fn"],
-                "find_by_label_fn": c["find_by_label_fn"],
+                "name": coll.name,
+                "singular": _singular(coll.name),
+                "item_class": _cpp_class_name(coll.item_class),
+                "count_fn": coll.count_fn,
+                "at_fn": coll.at_fn,
+                "find_by_id_fn": coll.find_by_id_fn,
+                "find_by_label_fn": coll.find_by_label_fn,
             }
         )
 
-    builders = [_build_builder(b, hf) for b in cls_ctx["builders"]]
+    builders = [_build_builder(m, hf) for m in ir_cls.methods if m.kind == "builder"]
 
+    # Find to_json function
+    to_json_fn = None
+    for method in ir_cls.methods:
+        if method.name == "to_json":
+            to_json_fn = method.function
+            break
+
+    # Build lifecycle method contexts (same filter as Python facade)
     lifecycle = []
-    for lc in cls_ctx.get("lifecycle", []):
-        ctx = _build_lifecycle(lc, hf)
-        if ctx:
-            lifecycle.append(ctx)
+    for method in ir_cls.methods:
+        if method.kind in (
+            "static_factory",
+            "class_factory",
+            "alias",
+            "compound_setter",
+            "composite_property",
+            "instance_getter",
+            "instance_getter_optional",
+        ) or (method.kind == "instance" and method.name != "to_json" and (method.params or method.error_handling)):
+            ctx = _build_lifecycle(method, hf)
+            if ctx:
+                lifecycle.append(ctx)
 
     return {
-        "ir_name": cls_ctx["name"],
-        "cpp_name": _cpp_class_name(cls_ctx["name"]),
-        "handle_type": handle_type,
+        "ir_name": ir_cls.name,
+        "cpp_name": _cpp_class_name(ir_cls.name),
+        "handle_type": ir_cls.handle_type,
         "handle_field": hf,
-        "owns_handle": cls_ctx["owns_handle"],
+        "owns_handle": ir_cls.owns_handle,
         "properties": properties,
         "collections": collections,
         "builders": builders,
         "lifecycle": lifecycle,
-        "to_json_fn": cls_ctx.get("to_json_fn"),
+        "to_json_fn": to_json_fn,
     }
 
 
@@ -943,12 +937,7 @@ def generate_raii(idl: IDL, output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     env = _make_env()
 
-    enum_contexts = [build_enum_context(e) for e in idl.enums if e.facade_class]
-
-    ir_class_by_name = {cls.name: cls for cls in ir.classes}
-    class_contexts = [build_facade_class_context(cls, idl, enum_contexts, ir_class_by_name) for cls in ir.classes]
-
-    cpp_classes = [_build_class(ctx, idl) for ctx in class_contexts]
+    cpp_classes = [_build_class(cls, idl) for cls in ir.classes]
 
     fdl_class = next(c for c in cpp_classes if c["owns_handle"])
     ref_classes = [c for c in cpp_classes if not c["owns_handle"]]
@@ -1002,7 +991,7 @@ def generate_raii(idl: IDL, output_dir: Path) -> None:
                     elif f.field_type in _vt_wrapper_names:
                         cpp_type = f.field_type
                     else:
-                        cpp_type = _resolve_cpp_type(f.field_type)
+                        cpp_type = _DC_FIELD_CPP.get(f.field_type, f.field_type)
                     fields.append(
                         {
                             "name": f.name,
@@ -1049,7 +1038,7 @@ def generate_raii(idl: IDL, output_dir: Path) -> None:
                 elif f.field_type in _vt_wrapper_names:
                     cpp_type = f.field_type
                 else:
-                    cpp_type = _resolve_cpp_type(f.field_type)
+                    cpp_type = _DC_FIELD_CPP.get(f.field_type, f.field_type)
                 fields.append({"name": f.name, "cpp_type": cpp_type})
             extra_dataclasses.append({"class_name": dc.class_name, "fields": fields})
 
