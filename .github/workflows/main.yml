@@ -340,6 +340,10 @@ jobs:
         if: runner.os == 'Windows'
         run: uv run python packages/fdl_viewer/compile.py --no-sign --no-dmg
 
+      - name: Build FDL Viewer application (Linux)
+        if: runner.os == 'Linux'
+        run: uv run python packages/fdl_viewer/compile.py --no-sign --no-dmg
+
       # --- Package FDL Viewer application for upload ---
       - name: Package FDL Viewer (macOS)
         if: runner.os == 'macOS'
@@ -352,6 +356,12 @@ jobs:
         shell: pwsh
         run: |
           Compress-Archive -Path "packages/fdl_viewer/dist/FDL Viewer" -DestinationPath "dist/FDL_Viewer-${{ runner.os }}-${{ runner.arch }}.zip"
+
+      - name: Package FDL Viewer (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          tar -czf "dist/FDL_Viewer-${{ runner.os }}-${{ runner.arch }}.tar.gz" -C packages/fdl_viewer/dist "FDL Viewer"
 
       # --- Upload build artifacts ---
       - name: Upload wheels
@@ -369,6 +379,7 @@ jobs:
           path: |
             dist/*.dmg
             dist/*.zip
+            dist/*.tar.gz
           if-no-files-found: warn
           retention-days: 2
 

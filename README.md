@@ -1,5 +1,11 @@
 # ASC Framing Decision List (FDL)
 
+[![CI/CD](https://github.com/ascmitc/fdl/actions/workflows/main.yml/badge.svg)](https://github.com/ascmitc/fdl/actions/workflows/main.yml)
+[![Nightly Build](https://img.shields.io/badge/Nightly_Build-download-blue?logo=github)](https://nightly.link/ascmitc/fdl/workflows/main/main)
+[![GitHub Actions](https://img.shields.io/badge/All_Runs-view-grey?logo=githubactions)](https://github.com/ascmitc/fdl/actions/workflows/main.yml)
+
+> **CI runs on macOS, Windows, and Linux** — click the CI/CD badge above to see per-platform results.
+
 Within this directory you will find many files and folders for the ASC FDL.
 Here is a breakdown of their purpose:
 
