@@ -289,43 +289,11 @@ jobs:
             cp native/core/build/fdl_core.dll native/bindings/python/fdl_ffi/
           fi
 
-      # --- Build Python wheels ---
+      # --- Build FDL Viewer standalone application (before wheels, so host .so is used) ---
       - name: Create dist directory
         shell: bash
         run: mkdir -p dist
 
-      - name: Install build tools
-        run: uv pip install build setuptools wheel hatchling --system
-
-      # fdl wheel (platform-specific — bundles native lib)
-      - name: Build fdl wheel
-        shell: bash
-        run: |
-          cd native/bindings/python
-          python -m build --wheel --outdir ../../../dist/
-
-      # fdl-imaging wheel (pure Python)
-      - name: Build fdl-imaging wheel
-        shell: bash
-        run: |
-          cd packages/fdl_imaging
-          python -m build --wheel --outdir ../../dist/
-
-      # fdl-frameline-generator wheel (pure Python)
-      - name: Build fdl-frameline-generator wheel
-        shell: bash
-        run: |
-          cd packages/fdl_frameline_generator
-          python -m build --wheel --outdir ../../dist/
-
-      # fdl-viewer wheel (pure Python)
-      - name: Build fdl-viewer wheel
-        shell: bash
-        run: |
-          cd packages/fdl_viewer
-          python -m build --wheel --outdir ../../dist/
-
-      # --- Build FDL Viewer standalone application ---
       - name: Install all Python packages
         run: uv sync --extra dev
 
@@ -344,7 +312,7 @@ jobs:
         if: runner.os == 'Linux'
         run: uv run python packages/fdl_viewer/compile.py --no-sign --no-dmg
 
-      # --- Package FDL Viewer application for upload ---
+      # --- Package FDL Viewer application ---
       - name: Package FDL Viewer (macOS)
         if: runner.os == 'macOS'
         shell: bash
@@ -362,6 +330,56 @@ jobs:
         shell: bash
         run: |
           tar -czf "dist/FDL_Viewer-${{ runner.os }}-${{ runner.arch }}.tar.gz" -C packages/fdl_viewer/dist "FDL Viewer"
+
+      # --- Build Python wheels ---
+      - name: Install build tools
+        run: uv pip install build setuptools wheel hatchling --system
+
+      # Pure Python wheels (all platforms)
+      - name: Build fdl-imaging wheel
+        shell: bash
+        run: |
+          cd packages/fdl_imaging
+          python -m build --wheel --outdir ../../dist/
+
+      - name: Build fdl-frameline-generator wheel
+        shell: bash
+        run: |
+          cd packages/fdl_frameline_generator
+          python -m build --wheel --outdir ../../dist/
+
+      - name: Build fdl-viewer wheel
+        shell: bash
+        run: |
+          cd packages/fdl_viewer
+          python -m build --wheel --outdir ../../dist/
+
+      # fdl wheel (platform-specific — bundles native lib)
+      - name: Build fdl wheel (macOS/Windows)
+        if: runner.os != 'Linux'
+        shell: bash
+        run: |
+          cd native/bindings/python
+          python -m build --wheel --outdir ../../../dist/
+
+      # Linux fdl wheel — built inside manylinux container for PyPI compatibility
+      - name: Build fdl wheel (Linux manylinux)
+        if: runner.os == 'Linux'
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/workspace \
+            quay.io/pypa/manylinux_2_28_x86_64 bash -c '
+              cd /workspace
+              export PATH=/opt/python/cp312-cp312/bin:$PATH
+              pip install cmake pyyaml jinja2 build setuptools wheel auditwheel
+              python scripts/run_codegen.py
+              python scripts/build_native.py --no-tests
+              cp native/core/build/libfdl_core.so native/bindings/python/fdl_ffi/
+              cd native/bindings/python
+              python -m build --wheel --outdir /workspace/dist/
+              cd /workspace
+              auditwheel repair dist/fdl-*-linux_*.whl --wheel-dir dist/
+              rm dist/fdl-*-linux_*.whl
+            '
 
       # --- Upload build artifacts ---
       - name: Upload wheels
