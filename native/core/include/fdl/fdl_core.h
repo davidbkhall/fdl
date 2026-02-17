@@ -1347,8 +1347,8 @@ FDL_API void fdl_template_result_free(fdl_template_result_t* result);
 typedef struct fdl_resolve_canvas_result_t {
     fdl_canvas_t* canvas;                     /**< Resolved canvas (non-owning, do NOT free). */
     fdl_framing_decision_t* framing_decision; /**< Resolved framing decision (non-owning, do NOT free). */
-    int was_resolved;                         /**< FDL_TRUE if a different canvas was found, FDL_FALSE if original matched. */
-    const char* error;                        /**< Error message on failure (caller frees with fdl_free). */
+    int was_resolved;  /**< FDL_TRUE if a different canvas was found, FDL_FALSE if original matched. */
+    const char* error; /**< Error message on failure (caller frees with fdl_free). */
 } fdl_resolve_canvas_result_t;
 
 /**
