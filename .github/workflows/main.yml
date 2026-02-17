@@ -165,6 +165,9 @@ jobs:
       - name: Build native library and run C++ tests
         run: python scripts/build_native.py --run-tests
 
+      - name: Check ABI symbol parity
+        run: python scripts/check_abi_symbols.py
+
       # --- Python environment ---
       - name: Install Python packages
         run: uv sync --extra dev
