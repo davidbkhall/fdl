@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from .constants import (
 {% for enum in enums %}
-    {{ enum.python_class }},
+    {{ enum.facade_class }},
 {% endfor %}
 )
 from fdl_ffi import (
@@ -22,11 +22,11 @@ from fdl_ffi import (
 
 {% for enum in enums %}
 
-# {{ enum.idl_name }} ↔ {{ enum.python_class }}
-{{ enum.map_name }}_FROM_C: dict[int, {{ enum.python_class }}] = {
+# {{ enum.idl_name }} ↔ {{ enum.facade_class }}
+{{ enum.map_name }}_FROM_C: dict[int, {{ enum.facade_class }}] = {
 {% for val in enum.entries %}
-    {{ val.name }}: {{ enum.python_class }}.{{ val.member }},
+    {{ val.name }}: {{ enum.facade_class }}.{{ val.member }},
 {% endfor %}
 }
-{{ enum.map_name }}_TO_C: dict[{{ enum.python_class }}, int] = {v: k for k, v in {{ enum.map_name }}_FROM_C.items()}
+{{ enum.map_name }}_TO_C: dict[{{ enum.facade_class }}, int] = {v: k for k, v in {{ enum.map_name }}_FROM_C.items()}
 {% endfor %}

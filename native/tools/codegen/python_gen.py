@@ -208,7 +208,7 @@ def _compute_per_class_imports(
     dataclass_name_set: set[str],
 ) -> dict:
     """Compute the import requirements for a single facade class file."""
-    all_enum_classes = {ec["python_class"] for ec in enum_contexts}
+    all_enum_classes = {ec["facade_class"] for ec in enum_contexts}
 
     # Sets for tracking
     types_set = {"DimensionsInt", "DimensionsFloat", "PointFloat", "Rect"}

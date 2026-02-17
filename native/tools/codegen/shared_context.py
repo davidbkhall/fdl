@@ -41,12 +41,12 @@ def build_enum_context(idl_enum: EnumType) -> dict:
         member = ev.name[len(prefix) :]  # strip prefix to get member name
         values.append({"name": ev.name, "member": member})
 
-    python_class = idl_enum.facade_class
-    map_name = camel_to_upper_snake(python_class)
+    facade_class = idl_enum.facade_class
+    map_name = camel_to_upper_snake(facade_class)
 
     return {
         "idl_name": idl_enum.name,
-        "python_class": python_class,
+        "facade_class": facade_class,
         "prefix": prefix,
         "map_name": map_name,
         "entries": values,
