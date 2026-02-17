@@ -10,14 +10,10 @@ any specific target language — type resolution is delegated to type_maps.
 
 from __future__ import annotations
 
+from .adapters import PythonAdapter
 from .fdl_idl import IDL, EnumType, FreeFunctionDef, ValueType, VTMethod, VTOperator
-from .ir import render_default_python
-from .type_maps import PYTHON_CONVERTERS, PYTHON_TYPES, resolve_python_type
 
-# Semantic error class → Python exception class
-_ERROR_CLASS_MAP: dict[str, str] = {
-    "validation_error": "ValueError",
-}
+_py = PythonAdapter()
 
 # -----------------------------------------------------------------------
 # Utilities
@@ -61,7 +57,7 @@ def _resolve_vt_python_type(idl_type: str, idl: IDL, *, for_self_class: str = ""
     if idl_type in ("int", "int64_t"):
         return "int"
     # Check if it's a known value type
-    py = PYTHON_TYPES.get(idl_type)
+    py = _py.TYPES.get(idl_type)
     if py:
         return py
     # Check enum IDL short names — all enums are passed as str in Python
@@ -170,7 +166,7 @@ def build_vt_method_context(method: VTMethod, vt: ValueType, idl: IDL) -> dict:
     c_call_args: list[str] = ["_c"]
 
     for p in method.params:
-        if p.param_type.startswith("fdl_") and p.param_type in PYTHON_TYPES:
+        if p.param_type.startswith("fdl_") and p.param_type in _py.TYPES:
             needed_c_structs.add(p.param_type)
             p_fields = _vt_field_names_for_type(p.param_type, idl)
             field_assigns = ", ".join(f"{fn}={p.name}.{fn}" for fn in p_fields)
@@ -260,7 +256,7 @@ def build_vt_operator_context(op: VTOperator, vt: ValueType, idl: IDL) -> dict:
     needed_c_structs: set[str] = set()
     if op.c_function:
         needed_c_structs.add(c_struct)
-        if op.param_type and op.param_type in PYTHON_TYPES and op.param_type.startswith("fdl_"):
+        if op.param_type and op.param_type in _py.TYPES and op.param_type.startswith("fdl_"):
             needed_c_structs.add(op.param_type)
 
     return {
@@ -306,7 +302,7 @@ def build_value_type_context(vt: ValueType, idl: IDL) -> dict:
                 default = "None"
             coerce = ""
         else:
-            py_type = PYTHON_TYPES.get(c_type, "object")
+            py_type = _py.TYPES.get(c_type, "object")
             default = "None"
             coerce = ""
 
@@ -464,8 +460,8 @@ def build_builder_method_context(method, idl: IDL, enum_contexts: list[dict]) ->
     c_args: list[str] = []
 
     for p in method.params:
-        python_type = resolve_python_type(p.type_key, nullable=p.nullable)
-        default = "None" if p.nullable and p.default is None else (render_default_python(p.default) if p.default else None)
+        python_type = _py.resolve_type(p.type_key, nullable=p.nullable)
+        default = "None" if p.nullable and p.default is None else (_py.render_default(p.default) if p.default else None)
         params.append(
             {
                 "name": p.name,
@@ -570,8 +566,8 @@ def build_lifecycle_method_context(method, idl: IDL, enum_contexts: list[dict]) 
         elif p.type_key in enum_to_c_maps:
             python_type = "str"
         else:
-            python_type = resolve_python_type(p.type_key, nullable=p.nullable)
-        default = "None" if p.nullable and p.default is None else (render_default_python(p.default) if p.default else None)
+            python_type = _py.resolve_type(p.type_key, nullable=p.nullable)
+        default = "None" if p.nullable and p.default is None else (_py.render_default(p.default) if p.default else None)
         param_ctx = {
             "name": p.name,
             "type_key": p.type_key,
@@ -627,7 +623,7 @@ def build_lifecycle_method_context(method, idl: IDL, enum_contexts: list[dict]) 
             "pattern": eh.pattern,
             "error_field": eh.error_field,
             "success_field": eh.success_field,
-            "error_class": _ERROR_CLASS_MAP.get(eh.error_class, eh.error_class),
+            "error_class": _py.resolve_error_class(eh.error_class),
             "free_fn": eh.free_fn,
             "count_fn": eh.count_fn,
             "at_fn": eh.at_fn,
@@ -691,8 +687,8 @@ def build_init_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_class_by_
                 }
             )
         else:
-            python_type = resolve_python_type(p.type_key, nullable=p.nullable)
-            default = render_default_python(p.default) if p.default else None
+            python_type = _py.resolve_type(p.type_key, nullable=p.nullable)
+            default = _py.render_default(p.default) if p.default else None
             if p.nullable and default is None:
                 default = "None"
             init_params.append(
@@ -760,8 +756,8 @@ def build_facade_class_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_c
 
     properties = []
     for prop in ir_cls.properties:
-        python_type = resolve_python_type(prop.type_key, nullable=prop.nullable)
-        converter = PYTHON_CONVERTERS.get(prop.type_key, "raw")
+        python_type = _py.resolve_type(prop.type_key, nullable=prop.nullable)
+        converter = _py.resolve_converter(prop.type_key)
 
         # For enum converters, resolve the FROM_C / TO_C map names
         enum_from_c = type_key_to_from_c.get(prop.type_key, "")
@@ -871,7 +867,7 @@ def build_free_function_context(ff: FreeFunctionDef, idl: IDL) -> dict:
         py_type = _resolve_vt_python_type(p.param_type, idl)
         params.append({"name": p.name, "python_type": py_type})
 
-        if p.param_type.startswith("fdl_") and p.param_type in PYTHON_TYPES:
+        if p.param_type.startswith("fdl_") and p.param_type in _py.TYPES:
             needed_c_structs.add(p.param_type)
             p_fields = _vt_field_names_for_type(p.param_type, idl)
             field_assigns = ", ".join(f"{fn}={p.name}.{fn}" for fn in p_fields)
