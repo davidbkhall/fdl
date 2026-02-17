@@ -2351,10 +2351,10 @@ auxiliary_types:
         - { name: sequence, type: FileSequence, nullable: true, c_has_flag: has_sequence }
       mutual_exclusion: [file, sequence]
 
-# Free functions exposed as top-level Python functions in fdl_core
+# Free functions exposed as top-level functions in target language bindings
 free_functions:
   - name: fdl_round
-    python_name: fdl_round
+    display_name: fdl_round
     c_function: fdl_round
     doc: Round a single float value according to FDL rounding rules.
     params:
@@ -2364,7 +2364,7 @@ free_functions:
     returns: int
 
   - name: calculate_scale_factor
-    python_name: calculate_scale_factor
+    display_name: calculate_scale_factor
     c_function: fdl_calculate_scale_factor
     doc: Calculate scale factor based on fit method.
     params:
@@ -2374,7 +2374,7 @@ free_functions:
     returns: float
 
   - name: make_rect
-    python_name: make_rect
+    display_name: make_rect
     c_function: fdl_make_rect
     module: utils
     doc: Create a rect from raw coordinates.

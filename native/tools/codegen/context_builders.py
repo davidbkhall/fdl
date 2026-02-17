@@ -885,7 +885,7 @@ def build_free_function_context(ff: FreeFunctionDef, idl: IDL) -> dict:
     python_return = _resolve_vt_python_type(ff.returns, idl)
 
     return {
-        "python_name": ff.python_name,
+        "display_name": ff.display_name,
         "c_function": ff.c_function,
         "doc": ff.doc,
         "params": params,

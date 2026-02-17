@@ -644,12 +644,12 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
         enum_imports=sorted(rs_enum_imports),
     )
     (output_dir / "rounding.py").write_text(encoding="utf-8", data=rounding_src)
-    rounding_ff_names = sorted(ctx["python_name"] for ctx in rounding_ff_contexts)
+    rounding_ff_names = sorted(ctx["display_name"] for ctx in rounding_ff_contexts)
     rounding_vt_names = sorted(ctx["python_class"] for ctx in rounding_vt_contexts)
 
     # --- utils.py (generated from template) ---
     utility_names = sorted(u.name for u in idl.utilities)
-    utils_ff_names = sorted(ctx["python_name"] for ctx in utils_ff_contexts)
+    utils_ff_names = sorted(ctx["display_name"] for ctx in utils_ff_contexts)
     utility_names = sorted(set(utility_names) | set(utils_ff_names))
     c_abi_utils = [u for u in idl.utilities if u.kind == "c_abi"]
     # Collect extra type imports needed by utils free functions (beyond DimensionsFloat/PointFloat)

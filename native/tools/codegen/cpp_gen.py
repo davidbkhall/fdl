@@ -520,7 +520,7 @@ def _build_free_function(ff, idl: IDL) -> dict:
         ret_type = "double"
 
     # Strip "fdl_" prefix for nicer C++ name: fdl_round → round
-    cpp_name = ff.python_name
+    cpp_name = ff.display_name
     if cpp_name.startswith("fdl_"):
         cpp_name = cpp_name[4:]
 

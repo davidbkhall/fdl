@@ -342,7 +342,7 @@ class FreeFunctionParam:
 @dataclass
 class FreeFunctionDef:
     name: str
-    python_name: str
+    display_name: str
     c_function: str
     doc: str
     params: list[FreeFunctionParam]
@@ -690,7 +690,7 @@ def parse_idl(path: Path) -> IDL:
         free_functions.append(
             FreeFunctionDef(
                 name=ff_raw["name"],
-                python_name=ff_raw["python_name"],
+                display_name=ff_raw["display_name"],
                 c_function=ff_raw["c_function"],
                 doc=ff_raw.get("doc", ""),
                 params=params,
