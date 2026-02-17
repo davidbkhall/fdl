@@ -51,7 +51,7 @@ jobs:
         run: |
           find native/core/src native/core/include native/core/tests \
             -type f \( -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) \
-            -exec clang-format --dry-run --Werror {} +
+            -print0 | xargs -0 -P"$(nproc)" -n 5 clang-format --dry-run --Werror
 
       - name: Install CMake
         run: sudo apt-get install -y cmake
@@ -69,9 +69,7 @@ jobs:
             -DFDL_BUILD_TESTS=OFF
 
       - name: Run clang-tidy
-        run: |
-          find native/core/src -type f -name '*.cpp' \
-            -exec clang-tidy -p native/core/build {} +
+        run: run-clang-tidy -p native/core/build -j"$(nproc)" native/core/src/
 
   # ---------------------------------------------------------------------------
   # Tests — gate for all downstream jobs
