@@ -2,7 +2,8 @@
 Python code generator: produces ctypes FFI bindings and idiomatic facade classes.
 
 This module contains all Python-specific type maps, context builders, and
-rendering logic. Language-neutral context builders live in context_builders.py.
+rendering logic. Language-neutral context builders live in shared_context.py;
+Python-specific ones live in python_context.py.
 """
 
 from __future__ import annotations
@@ -12,13 +13,15 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
-from .context_builders import (
-    build_constants_enum_context,
+from .python_context import (
     build_converter_context,
-    build_enum_context,
     build_facade_class_context,
     build_free_function_context,
     build_value_type_context,
+)
+from .shared_context import (
+    build_constants_enum_context,
+    build_enum_context,
 )
 from .fdl_idl import IDL, Function, ValueType, build_ir
 
