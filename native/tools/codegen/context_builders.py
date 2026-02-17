@@ -755,7 +755,7 @@ def build_facade_class_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_c
     properties = []
     for prop in ir_cls.properties:
         python_type = resolve_python_type(prop.type_key, nullable=prop.nullable)
-        converter = prop.converter or PYTHON_CONVERTERS.get(prop.type_key, "raw")
+        converter = PYTHON_CONVERTERS.get(prop.type_key, "raw")
 
         # For enum converters, resolve the FROM_C / TO_C map names
         enum_from_c = type_key_to_from_c.get(prop.type_key, "")

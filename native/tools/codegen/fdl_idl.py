@@ -27,7 +27,6 @@ from .ir import (
     IRProperty,
     IRResultField,
 )
-from .type_maps import PYTHON_CONVERTERS
 
 # -----------------------------------------------------------------------
 # Low-level IDL dataclasses (unchanged from Phase 3)
@@ -764,7 +763,6 @@ def build_ir(idl: IDL) -> IR:
                     remover_fn=prop.remover,
                     has_fn=prop.has_fn,
                     nullable=prop.nullable,
-                    converter=PYTHON_CONVERTERS.get(prop.value_type),
                 )
             )
 

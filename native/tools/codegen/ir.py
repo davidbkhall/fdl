@@ -25,7 +25,6 @@ class IRProperty:
     remover_fn: str | None = None
     has_fn: str | None = None
     nullable: bool = False
-    converter: str | None = None  # e.g. "dims_i64", "string", "enum_geometry_path"
 
     @property
     def read_only(self) -> bool:
