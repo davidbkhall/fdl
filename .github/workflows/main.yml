@@ -93,14 +93,14 @@ jobs:
       - name: Fetch LFS objects (non-Windows)
         if: runner.os != 'Windows'
         run: |
-          git lfs fetch --include="resources/**,packages/fdl_viewer/tests/expected/**,packages/fdl_viewer/src/fdl_viewer/resources/**,packages/fdl_frameline_generator/src/fdl_frameline_generator/resources/**"
+          git lfs fetch --include="resources/FDL/Original_Source_Files/**,resources/FDL/New_Source_Files/**,resources/FDL/EdgeCases/**,resources/FDL/Scenarios_For_Implementers/**,packages/fdl_viewer/tests/expected/**,packages/fdl_viewer/src/fdl_viewer/resources/**,packages/fdl_frameline_generator/src/fdl_frameline_generator/resources/**"
           git lfs checkout
 
       - name: Fetch LFS objects (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          git lfs fetch --include='resources/**,packages/fdl_viewer/tests/expected/**,packages/fdl_viewer/src/fdl_viewer/resources/**,packages/fdl_frameline_generator/src/fdl_frameline_generator/resources/**'
+          git lfs fetch --include='resources/FDL/Original_Source_Files/**,resources/FDL/New_Source_Files/**,resources/FDL/EdgeCases/**,resources/FDL/Scenarios_For_Implementers/**,packages/fdl_viewer/tests/expected/**,packages/fdl_viewer/src/fdl_viewer/resources/**,packages/fdl_frameline_generator/src/fdl_frameline_generator/resources/**'
           git lfs checkout
 
       # --- Python + uv ---
@@ -146,6 +146,10 @@ jobs:
 
       - name: Run fdl-frameline-generator tests
         run: uv run pytest packages/fdl_frameline_generator/tests/ -v -p no:pytest-qt
+
+      - name: Install Qt dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y libegl1 libxkbcommon0
 
       - name: Run fdl-viewer tests (Linux)
         if: runner.os == 'Linux'
@@ -402,7 +406,7 @@ jobs:
 
       - name: Fetch LFS objects
         run: |
-          git lfs fetch --include="resources/**"
+          git lfs fetch --include="resources/FDL/Original_Source_Files/**,resources/FDL/New_Source_Files/**,resources/FDL/EdgeCases/**,resources/FDL/Scenarios_For_Implementers/**"
           git lfs checkout
 
       - name: Set up Python
