@@ -74,8 +74,12 @@ ojson make_round_strategy(const char* even, const char* mode);
  * @param default_framing_intent  ID of the default framing intent.
  * @return ojson root document object.
  */
-ojson make_root(const char* uuid, int version_major, int version_minor,
-                const char* fdl_creator, const char* default_framing_intent);
+ojson make_root(
+    const char* uuid,
+    int version_major,
+    int version_minor,
+    const char* fdl_creator,
+    const char* default_framing_intent);
 
 /** @name Sub-object builders — canonical key order */
 /** @{ */
@@ -89,8 +93,7 @@ ojson make_root(const char* uuid, int version_major, int version_minor,
  * @param protection  Protection factor (0.0–1.0, 0 = no protection).
  * @return ojson framing_intent object.
  */
-ojson make_framing_intent(const char* id, const char* label,
-                          int64_t aspect_w, int64_t aspect_h, double protection);
+ojson make_framing_intent(const char* id, const char* label, int64_t aspect_w, int64_t aspect_h, double protection);
 
 /**
  * @brief Build a context JSON object.
@@ -110,8 +113,8 @@ ojson make_context(const char* label, const char* context_creator);
  * @param squeeze           Anamorphic squeeze ratio (1.0 for spherical).
  * @return ojson canvas object.
  */
-ojson make_canvas(const char* id, const char* label, const char* source_canvas_id,
-                  int64_t dim_w, int64_t dim_h, double squeeze);
+ojson make_canvas(
+    const char* id, const char* label, const char* source_canvas_id, int64_t dim_w, int64_t dim_h, double squeeze);
 
 /**
  * @brief Build a framing_decision JSON object.
@@ -124,10 +127,14 @@ ojson make_canvas(const char* id, const char* label, const char* source_canvas_i
  * @param anchor_y            Anchor Y offset within canvas.
  * @return ojson framing_decision object.
  */
-ojson make_framing_decision(const char* id, const char* label,
-                            const char* framing_intent_id,
-                            double dim_w, double dim_h,
-                            double anchor_x, double anchor_y);
+ojson make_framing_decision(
+    const char* id,
+    const char* label,
+    const char* framing_intent_id,
+    double dim_w,
+    double dim_h,
+    double anchor_x,
+    double anchor_y);
 
 /**
  * @brief Build a canvas_template JSON object.
@@ -143,11 +150,17 @@ ojson make_framing_decision(const char* id, const char* label,
  * @param rounding        Rounding strategy for dimensions.
  * @return ojson canvas_template object.
  */
-ojson make_canvas_template(const char* id, const char* label,
-                           int64_t target_w, int64_t target_h, double target_squeeze,
-                           fdl_geometry_path_t fit_source, fdl_fit_method_t fit_method,
-                           fdl_halign_t halign, fdl_valign_t valign,
-                           fdl_round_strategy_t rounding);
+ojson make_canvas_template(
+    const char* id,
+    const char* label,
+    int64_t target_w,
+    int64_t target_h,
+    double target_squeeze,
+    fdl_geometry_path_t fit_source,
+    fdl_fit_method_t fit_method,
+    fdl_halign_t halign,
+    fdl_valign_t valign,
+    fdl_round_strategy_t rounding);
 /** @} */
 
 } // namespace fdl::detail

@@ -20,16 +20,14 @@
  * independent buffers.
  */
 struct DocStringBufKey {
-    uintptr_t doc_addr;   /**< Address of the owning document. */
-    std::string field;    /**< Field name within the document. */
+    uintptr_t doc_addr; /**< Address of the owning document. */
+    std::string field;  /**< Field name within the document. */
     /**
      * @brief Equality comparison for hash-map lookup.
      * @param o  The other key to compare against.
      * @return True if both document address and field name match.
      */
-    bool operator==(const DocStringBufKey& o) const {
-        return doc_addr == o.doc_addr && field == o.field;
-    }
+    bool operator==(const DocStringBufKey& o) const { return doc_addr == o.doc_addr && field == o.field; }
 };
 
 /** @brief Hash functor for DocStringBufKey. */
@@ -40,8 +38,7 @@ struct DocStringBufKeyHash {
      * @return Combined hash value.
      */
     size_t operator()(const DocStringBufKey& k) const {
-        return std::hash<uintptr_t>{}(k.doc_addr) ^
-               (std::hash<std::string>{}(k.field) << 1);
+        return std::hash<uintptr_t>{}(k.doc_addr) ^ (std::hash<std::string>{}(k.field) << 1);
     }
 };
 
@@ -57,9 +54,13 @@ struct DocStringBufKeyHash {
  * @return Pointer to a thread-local C string, or nullptr if absent/empty.
  */
 static const char* get_doc_string(const fdl_doc_t* doc, const char* key) {
-    if (!doc) return nullptr;
+    if (!doc) {
+        return nullptr;
+    }
     const auto& data = doc->doc.data();
-    if (!data.contains(key) || !data[key].is_string()) return nullptr;
+    if (!data.contains(key) || !data[key].is_string()) {
+        return nullptr;
+    }
     static thread_local std::unordered_map<DocStringBufKey, std::string, DocStringBufKeyHash> bufs;
     DocStringBufKey bk{reinterpret_cast<uintptr_t>(doc), key};
     auto& buf = bufs[bk];
@@ -97,25 +98,33 @@ fdl_parse_result_t fdl_doc_parse_json(const char* json_str, size_t json_len) {
 }
 
 const char* fdl_doc_get_uuid(const fdl_doc_t* doc) {
-    if (!doc) return nullptr;
+    if (!doc) {
+        return nullptr;
+    }
     doc_lock lock(doc);
     return get_doc_string(doc, "uuid");
 }
 
 const char* fdl_doc_get_fdl_creator(const fdl_doc_t* doc) {
-    if (!doc) return nullptr;
+    if (!doc) {
+        return nullptr;
+    }
     doc_lock lock(doc);
     return get_doc_string(doc, "fdl_creator");
 }
 
 const char* fdl_doc_get_default_framing_intent(const fdl_doc_t* doc) {
-    if (!doc) return nullptr;
+    if (!doc) {
+        return nullptr;
+    }
     doc_lock lock(doc);
     return get_doc_string(doc, "default_framing_intent");
 }
 
 char* fdl_doc_to_json(const fdl_doc_t* doc, int indent) {
-    if (!doc) return nullptr;
+    if (!doc) {
+        return nullptr;
+    }
     doc_lock lock(doc);
     auto json_str = doc->doc.to_canonical_json(indent);
     return fdl_strdup(json_str.c_str());

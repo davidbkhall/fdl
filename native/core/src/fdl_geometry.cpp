@@ -42,17 +42,14 @@ static fdl_point_f64_t point_normalize_and_scale(
  * @param clamp_dims  Maximum allowed dimensions.
  * @return Dimensions with each axis clamped to the corresponding bound.
  */
-static fdl_dimensions_f64_t dims_clamp_to_dims(
-    fdl_dimensions_f64_t dims, fdl_dimensions_f64_t clamp_dims) {
+static fdl_dimensions_f64_t dims_clamp_to_dims(fdl_dimensions_f64_t dims, fdl_dimensions_f64_t clamp_dims) {
     return {
         std::min(dims.width, clamp_dims.width),
         std::min(dims.height, clamp_dims.height),
     };
 }
 
-fdl_geometry_t geometry_fill_hierarchy_gaps(
-    fdl_geometry_t geo,
-    fdl_point_f64_t anchor_offset) {
+fdl_geometry_t geometry_fill_hierarchy_gaps(fdl_geometry_t geo, fdl_point_f64_t anchor_offset) {
 
     auto canvas = geo.canvas_dims;
     auto effective = geo.effective_dims;
@@ -106,16 +103,18 @@ fdl_geometry_t geometry_fill_hierarchy_gaps(
     framing_anchor = fdl_point_clamp(framing_anchor, 0.0, 0.0, 1, 0);
 
     return {
-        canvas, effective, protection, framing,
-        effective_anchor, protection_anchor, framing_anchor,
+        canvas,
+        effective,
+        protection,
+        framing,
+        effective_anchor,
+        protection_anchor,
+        framing_anchor,
     };
 }
 
 fdl_geometry_t geometry_normalize_and_scale(
-    fdl_geometry_t geo,
-    double source_squeeze,
-    double scale_factor,
-    double target_squeeze) {
+    fdl_geometry_t geo, double source_squeeze, double scale_factor, double target_squeeze) {
 
     return {
         fdl_dimensions_normalize_and_scale(geo.canvas_dims, source_squeeze, scale_factor, target_squeeze),
@@ -128,9 +127,7 @@ fdl_geometry_t geometry_normalize_and_scale(
     };
 }
 
-fdl_geometry_t geometry_round(
-    fdl_geometry_t geo,
-    fdl_round_strategy_t strategy) {
+fdl_geometry_t geometry_round(fdl_geometry_t geo, fdl_round_strategy_t strategy) {
 
     return {
         fdl_round_dimensions(geo.canvas_dims, strategy.even, strategy.mode),
@@ -202,10 +199,7 @@ static fdl_dimensions_f64_t crop_dim(
 }
 
 fdl_geometry_t geometry_crop(
-    fdl_geometry_t geo,
-    fdl_point_f64_t theo_eff,
-    fdl_point_f64_t theo_prot,
-    fdl_point_f64_t theo_fram) {
+    fdl_geometry_t geo, fdl_point_f64_t theo_eff, fdl_point_f64_t theo_prot, fdl_point_f64_t theo_fram) {
 
     auto canvas_dims = geo.canvas_dims;
 
@@ -237,10 +231,7 @@ fdl_geometry_t geometry_crop(
 }
 
 int geometry_get_dims_anchor_from_path(
-    const fdl_geometry_t* geo,
-    fdl_geometry_path_t path,
-    fdl_dimensions_f64_t* out_dims,
-    fdl_point_f64_t* out_anchor) {
+    const fdl_geometry_t* geo, fdl_geometry_path_t path, fdl_dimensions_f64_t* out_dims, fdl_point_f64_t* out_anchor) {
 
     switch (path) {
     case FDL_GEOMETRY_PATH_CANVAS_DIMENSIONS:

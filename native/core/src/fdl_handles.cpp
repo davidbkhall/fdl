@@ -10,53 +10,85 @@
 using ojson = jsoncons::ojson;
 
 ojson* fdl_framing_intent::node() const {
-    if (!owner) return nullptr;
+    if (!owner) {
+        return nullptr;
+    }
     auto& data = owner->doc.data();
-    if (!data.contains("framing_intents")) return nullptr;
+    if (!data.contains("framing_intents")) {
+        return nullptr;
+    }
     auto& arr = data["framing_intents"];
     return fi_index < arr.size() ? &arr[fi_index] : nullptr;
 }
 
 ojson* fdl_context::node() const {
-    if (!owner) return nullptr;
+    if (!owner) {
+        return nullptr;
+    }
     auto& data = owner->doc.data();
-    if (!data.contains("contexts")) return nullptr;
+    if (!data.contains("contexts")) {
+        return nullptr;
+    }
     auto& arr = data["contexts"];
     return ctx_index < arr.size() ? &arr[ctx_index] : nullptr;
 }
 
 ojson* fdl_canvas_template::node() const {
-    if (!owner) return nullptr;
+    if (!owner) {
+        return nullptr;
+    }
     auto& data = owner->doc.data();
-    if (!data.contains("canvas_templates")) return nullptr;
+    if (!data.contains("canvas_templates")) {
+        return nullptr;
+    }
     auto& arr = data["canvas_templates"];
     return ct_index < arr.size() ? &arr[ct_index] : nullptr;
 }
 
 ojson* fdl_canvas::node() const {
-    if (!owner) return nullptr;
+    if (!owner) {
+        return nullptr;
+    }
     auto& data = owner->doc.data();
-    if (!data.contains("contexts")) return nullptr;
+    if (!data.contains("contexts")) {
+        return nullptr;
+    }
     auto& ctxs = data["contexts"];
-    if (ctx_index >= ctxs.size()) return nullptr;
+    if (ctx_index >= ctxs.size()) {
+        return nullptr;
+    }
     auto& ctx = ctxs[ctx_index];
-    if (!ctx.contains("canvases")) return nullptr;
+    if (!ctx.contains("canvases")) {
+        return nullptr;
+    }
     auto& arr = ctx["canvases"];
     return cvs_index < arr.size() ? &arr[cvs_index] : nullptr;
 }
 
 ojson* fdl_framing_decision::node() const {
-    if (!owner) return nullptr;
+    if (!owner) {
+        return nullptr;
+    }
     auto& data = owner->doc.data();
-    if (!data.contains("contexts")) return nullptr;
+    if (!data.contains("contexts")) {
+        return nullptr;
+    }
     auto& ctxs = data["contexts"];
-    if (ctx_index >= ctxs.size()) return nullptr;
+    if (ctx_index >= ctxs.size()) {
+        return nullptr;
+    }
     auto& ctx = ctxs[ctx_index];
-    if (!ctx.contains("canvases")) return nullptr;
+    if (!ctx.contains("canvases")) {
+        return nullptr;
+    }
     auto& cvss = ctx["canvases"];
-    if (cvs_index >= cvss.size()) return nullptr;
+    if (cvs_index >= cvss.size()) {
+        return nullptr;
+    }
     auto& cvs = cvss[cvs_index];
-    if (!cvs.contains("framing_decisions")) return nullptr;
+    if (!cvs.contains("framing_decisions")) {
+        return nullptr;
+    }
     auto& arr = cvs["framing_decisions"];
     return fd_index < arr.size() ? &arr[fd_index] : nullptr;
 }

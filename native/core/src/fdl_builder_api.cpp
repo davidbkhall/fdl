@@ -23,19 +23,25 @@ extern "C" {
 // -----------------------------------------------------------------------
 
 void fdl_doc_set_uuid(fdl_doc_t* doc, const char* uuid) {
-    if (!doc || !uuid) return;
+    if (!doc || !uuid) {
+        return;
+    }
     doc_lock lock(doc);
     doc->doc.data().insert_or_assign("uuid", uuid);
 }
 
 void fdl_doc_set_fdl_creator(fdl_doc_t* doc, const char* creator) {
-    if (!doc || !creator) return;
+    if (!doc || !creator) {
+        return;
+    }
     doc_lock lock(doc);
     doc->doc.data().insert_or_assign("fdl_creator", creator);
 }
 
 void fdl_doc_set_default_framing_intent(fdl_doc_t* doc, const char* fi_id) {
-    if (!doc) return;
+    if (!doc) {
+        return;
+    }
     doc_lock lock(doc);
     if (fi_id) {
         doc->doc.data().insert_or_assign("default_framing_intent", fi_id);
@@ -43,7 +49,9 @@ void fdl_doc_set_default_framing_intent(fdl_doc_t* doc, const char* fi_id) {
 }
 
 void fdl_doc_set_version(fdl_doc_t* doc, int major, int minor) {
-    if (!doc) return;
+    if (!doc) {
+        return;
+    }
     doc_lock lock(doc);
     doc->doc.data().insert_or_assign("version", fdl::detail::make_version(major, minor));
 }
@@ -58,14 +66,17 @@ fdl_doc_t* fdl_doc_create_with_header(
     int version_minor,
     const char* fdl_creator,
     const char* default_framing_intent) {
-    if (!uuid || !fdl_creator) return nullptr;
+    if (!uuid || !fdl_creator) {
+        return nullptr;
+    }
 
     auto* doc = new (std::nothrow) fdl_doc{};
-    if (!doc) return nullptr;
+    if (!doc) {
+        return nullptr;
+    }
 
     doc->doc = fdl::detail::Document(
-        fdl::detail::make_root(uuid, version_major, version_minor,
-                               fdl_creator, default_framing_intent));
+        fdl::detail::make_root(uuid, version_major, version_minor, fdl_creator, default_framing_intent));
     return doc;
 }
 
@@ -74,13 +85,10 @@ fdl_doc_t* fdl_doc_create_with_header(
 // -----------------------------------------------------------------------
 
 fdl_framing_intent_t* fdl_doc_add_framing_intent(
-    fdl_doc_t* doc,
-    const char* id,
-    const char* label,
-    int64_t aspect_w,
-    int64_t aspect_h,
-    double protection) {
-    if (!doc || !id) return nullptr;
+    fdl_doc_t* doc, const char* id, const char* label, int64_t aspect_w, int64_t aspect_h, double protection) {
+    if (!doc || !id) {
+        return nullptr;
+    }
 
     doc_lock lock(doc);
     auto& data = doc->doc.data();
@@ -101,11 +109,10 @@ fdl_framing_intent_t* fdl_doc_add_framing_intent(
     return ptr;
 }
 
-fdl_context_t* fdl_doc_add_context(
-    fdl_doc_t* doc,
-    const char* label,
-    const char* context_creator) {
-    if (!doc) return nullptr;
+fdl_context_t* fdl_doc_add_context(fdl_doc_t* doc, const char* label, const char* context_creator) {
+    if (!doc) {
+        return nullptr;
+    }
 
     doc_lock lock(doc);
     auto& data = doc->doc.data();
@@ -134,11 +141,15 @@ fdl_canvas_t* fdl_context_add_canvas(
     int64_t dim_w,
     int64_t dim_h,
     double squeeze) {
-    if (!ctx || !id || !source_canvas_id) return nullptr;
+    if (!ctx || !id || !source_canvas_id) {
+        return nullptr;
+    }
 
     doc_lock lock(ctx->owner);
     auto* n = ctx->node();
-    if (!n) return nullptr;
+    if (!n) {
+        return nullptr;
+    }
 
     if (!n->contains("canvases")) {
         n->insert_or_assign("canvases", ojson(jsoncons::json_array_arg));
@@ -158,46 +169,47 @@ fdl_canvas_t* fdl_context_add_canvas(
     return ptr;
 }
 
-void fdl_canvas_set_effective_dimensions(
-    fdl_canvas_t* canvas,
-    fdl_dimensions_i64_t dims,
-    fdl_point_f64_t anchor) {
-    if (!canvas) return;
+void fdl_canvas_set_effective_dimensions(fdl_canvas_t* canvas, fdl_dimensions_i64_t dims, fdl_point_f64_t anchor) {
+    if (!canvas) {
+        return;
+    }
 
     doc_lock lock(canvas->owner);
     auto* n = canvas->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
-    n->insert_or_assign("effective_dimensions",
-        fdl::detail::make_dimensions_int(dims.width, dims.height));
-    n->insert_or_assign("effective_anchor_point",
-        fdl::detail::make_point_float(anchor.x, anchor.y));
+    n->insert_or_assign("effective_dimensions", fdl::detail::make_dimensions_int(dims.width, dims.height));
+    n->insert_or_assign("effective_anchor_point", fdl::detail::make_point_float(anchor.x, anchor.y));
 }
 
-void fdl_canvas_set_photosite_dimensions(
-    fdl_canvas_t* canvas,
-    fdl_dimensions_i64_t dims) {
-    if (!canvas) return;
+void fdl_canvas_set_photosite_dimensions(fdl_canvas_t* canvas, fdl_dimensions_i64_t dims) {
+    if (!canvas) {
+        return;
+    }
 
     doc_lock lock(canvas->owner);
     auto* n = canvas->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
-    n->insert_or_assign("photosite_dimensions",
-        fdl::detail::make_dimensions_int(dims.width, dims.height));
+    n->insert_or_assign("photosite_dimensions", fdl::detail::make_dimensions_int(dims.width, dims.height));
 }
 
-void fdl_canvas_set_physical_dimensions(
-    fdl_canvas_t* canvas,
-    fdl_dimensions_f64_t dims) {
-    if (!canvas) return;
+void fdl_canvas_set_physical_dimensions(fdl_canvas_t* canvas, fdl_dimensions_f64_t dims) {
+    if (!canvas) {
+        return;
+    }
 
     doc_lock lock(canvas->owner);
     auto* n = canvas->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
-    n->insert_or_assign("physical_dimensions",
-        fdl::detail::make_dimensions_float(dims.width, dims.height));
+    n->insert_or_assign("physical_dimensions", fdl::detail::make_dimensions_float(dims.width, dims.height));
 }
 
 fdl_framing_decision_t* fdl_canvas_add_framing_decision(
@@ -209,18 +221,21 @@ fdl_framing_decision_t* fdl_canvas_add_framing_decision(
     double dim_h,
     double anchor_x,
     double anchor_y) {
-    if (!canvas || !id || !framing_intent_id) return nullptr;
+    if (!canvas || !id || !framing_intent_id) {
+        return nullptr;
+    }
 
     doc_lock lock(canvas->owner);
     auto* n = canvas->node();
-    if (!n) return nullptr;
+    if (!n) {
+        return nullptr;
+    }
 
     if (!n->contains("framing_decisions")) {
         n->insert_or_assign("framing_decisions", ojson(jsoncons::json_array_arg));
     }
 
-    auto fd = fdl::detail::make_framing_decision(
-        id, label, framing_intent_id, dim_w, dim_h, anchor_x, anchor_y);
+    auto fd = fdl::detail::make_framing_decision(id, label, framing_intent_id, dim_w, dim_h, anchor_x, anchor_y);
     (*n)["framing_decisions"].push_back(std::move(fd));
 
     uint32_t fd_index = static_cast<uint32_t>((*n)["framing_decisions"].size() - 1);
@@ -236,19 +251,19 @@ fdl_framing_decision_t* fdl_canvas_add_framing_decision(
 }
 
 void fdl_framing_decision_set_protection(
-    fdl_framing_decision_t* fd,
-    fdl_dimensions_f64_t dims,
-    fdl_point_f64_t anchor) {
-    if (!fd) return;
+    fdl_framing_decision_t* fd, fdl_dimensions_f64_t dims, fdl_point_f64_t anchor) {
+    if (!fd) {
+        return;
+    }
 
     doc_lock lock(fd->owner);
     auto* n = fd->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
-    n->insert_or_assign("protection_dimensions",
-        fdl::detail::make_dimensions_float(dims.width, dims.height));
-    n->insert_or_assign("protection_anchor_point",
-        fdl::detail::make_point_float(anchor.x, anchor.y));
+    n->insert_or_assign("protection_dimensions", fdl::detail::make_dimensions_float(dims.width, dims.height));
+    n->insert_or_assign("protection_anchor_point", fdl::detail::make_point_float(anchor.x, anchor.y));
 }
 
 // -----------------------------------------------------------------------
@@ -256,12 +271,20 @@ void fdl_framing_decision_set_protection(
 // -----------------------------------------------------------------------
 
 fdl_canvas_template_t* fdl_doc_add_canvas_template(
-    fdl_doc_t* doc, const char* id, const char* label,
-    int64_t target_w, int64_t target_h, double target_squeeze,
-    fdl_geometry_path_t fit_source, fdl_fit_method_t fit_method,
-    fdl_halign_t halign, fdl_valign_t valign,
+    fdl_doc_t* doc,
+    const char* id,
+    const char* label,
+    int64_t target_w,
+    int64_t target_h,
+    double target_squeeze,
+    fdl_geometry_path_t fit_source,
+    fdl_fit_method_t fit_method,
+    fdl_halign_t halign,
+    fdl_valign_t valign,
     fdl_round_strategy_t rounding) {
-    if (!doc || !id) return nullptr;
+    if (!doc || !id) {
+        return nullptr;
+    }
 
     doc_lock lock(doc);
     auto& data = doc->doc.data();
@@ -270,8 +293,7 @@ fdl_canvas_template_t* fdl_doc_add_canvas_template(
     }
 
     auto ct = fdl::detail::make_canvas_template(
-        id, label, target_w, target_h, target_squeeze,
-        fit_source, fit_method, halign, valign, rounding);
+        id, label, target_w, target_h, target_squeeze, fit_source, fit_method, halign, valign, rounding);
     data["canvas_templates"].push_back(std::move(ct));
 
     uint32_t index = static_cast<uint32_t>(data["canvas_templates"].size() - 1);
@@ -284,37 +306,44 @@ fdl_canvas_template_t* fdl_doc_add_canvas_template(
     return ptr;
 }
 
-void fdl_canvas_template_set_preserve_from_source_canvas(
-    fdl_canvas_template_t* ct, fdl_geometry_path_t path) {
-    if (!ct) return;
+void fdl_canvas_template_set_preserve_from_source_canvas(fdl_canvas_template_t* ct, fdl_geometry_path_t path) {
+    if (!ct) {
+        return;
+    }
 
     doc_lock lock(ct->owner);
     auto* n = ct->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
-    n->insert_or_assign("preserve_from_source_canvas",
-        fdl::detail::geometry_path_to_string(path));
+    n->insert_or_assign("preserve_from_source_canvas", fdl::detail::geometry_path_to_string(path));
 }
 
-void fdl_canvas_template_set_maximum_dimensions(
-    fdl_canvas_template_t* ct, fdl_dimensions_i64_t dims) {
-    if (!ct) return;
+void fdl_canvas_template_set_maximum_dimensions(fdl_canvas_template_t* ct, fdl_dimensions_i64_t dims) {
+    if (!ct) {
+        return;
+    }
 
     doc_lock lock(ct->owner);
     auto* n = ct->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
-    n->insert_or_assign("maximum_dimensions",
-        fdl::detail::make_dimensions_int(dims.width, dims.height));
+    n->insert_or_assign("maximum_dimensions", fdl::detail::make_dimensions_int(dims.width, dims.height));
 }
 
-void fdl_canvas_template_set_pad_to_maximum(
-    fdl_canvas_template_t* ct, int pad) {
-    if (!ct) return;
+void fdl_canvas_template_set_pad_to_maximum(fdl_canvas_template_t* ct, int pad) {
+    if (!ct) {
+        return;
+    }
 
     doc_lock lock(ct->owner);
     auto* n = ct->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
     n->insert_or_assign("pad_to_maximum", pad != 0);
 }
@@ -323,27 +352,30 @@ void fdl_canvas_template_set_pad_to_maximum(
 // FramingIntent setters
 // -----------------------------------------------------------------------
 
-void fdl_framing_intent_set_aspect_ratio(
-    fdl_framing_intent_t* fi,
-    fdl_dimensions_i64_t dims) {
-    if (!fi) return;
+void fdl_framing_intent_set_aspect_ratio(fdl_framing_intent_t* fi, fdl_dimensions_i64_t dims) {
+    if (!fi) {
+        return;
+    }
 
     doc_lock lock(fi->owner);
     auto* n = fi->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
-    n->insert_or_assign("aspect_ratio",
-        fdl::detail::make_dimensions_int(dims.width, dims.height));
+    n->insert_or_assign("aspect_ratio", fdl::detail::make_dimensions_int(dims.width, dims.height));
 }
 
-void fdl_framing_intent_set_protection(
-    fdl_framing_intent_t* fi,
-    double protection) {
-    if (!fi) return;
+void fdl_framing_intent_set_protection(fdl_framing_intent_t* fi, double protection) {
+    if (!fi) {
+        return;
+    }
 
     doc_lock lock(fi->owner);
     auto* n = fi->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
     n->insert_or_assign("protection", protection);
 }
@@ -352,54 +384,61 @@ void fdl_framing_intent_set_protection(
 // Canvas setters
 // -----------------------------------------------------------------------
 
-void fdl_canvas_set_dimensions(
-    fdl_canvas_t* canvas,
-    fdl_dimensions_i64_t dims) {
-    if (!canvas) return;
+void fdl_canvas_set_dimensions(fdl_canvas_t* canvas, fdl_dimensions_i64_t dims) {
+    if (!canvas) {
+        return;
+    }
 
     doc_lock lock(canvas->owner);
     auto* n = canvas->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
-    n->insert_or_assign("dimensions",
-        fdl::detail::make_dimensions_int(dims.width, dims.height));
+    n->insert_or_assign("dimensions", fdl::detail::make_dimensions_int(dims.width, dims.height));
 }
 
-void fdl_canvas_set_anamorphic_squeeze(
-    fdl_canvas_t* canvas,
-    double squeeze) {
-    if (!canvas) return;
+void fdl_canvas_set_anamorphic_squeeze(fdl_canvas_t* canvas, double squeeze) {
+    if (!canvas) {
+        return;
+    }
 
     doc_lock lock(canvas->owner);
     auto* n = canvas->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
     n->insert_or_assign("anamorphic_squeeze", squeeze);
 }
 
-void fdl_canvas_set_effective_dims_only(
-    fdl_canvas_t* canvas,
-    fdl_dimensions_i64_t dims) {
-    if (!canvas) return;
+void fdl_canvas_set_effective_dims_only(fdl_canvas_t* canvas, fdl_dimensions_i64_t dims) {
+    if (!canvas) {
+        return;
+    }
 
     doc_lock lock(canvas->owner);
     auto* n = canvas->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
-    n->insert_or_assign("effective_dimensions",
-        fdl::detail::make_dimensions_int(dims.width, dims.height));
+    n->insert_or_assign("effective_dimensions", fdl::detail::make_dimensions_int(dims.width, dims.height));
     if (!n->contains("effective_anchor_point")) {
-        n->insert_or_assign("effective_anchor_point",
-            fdl::detail::make_point_float(0.0, 0.0));
+        n->insert_or_assign("effective_anchor_point", fdl::detail::make_point_float(0.0, 0.0));
     }
 }
 
 void fdl_canvas_remove_effective(fdl_canvas_t* canvas) {
-    if (!canvas) return;
+    if (!canvas) {
+        return;
+    }
 
     doc_lock lock(canvas->owner);
     auto* n = canvas->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
     n->erase("effective_dimensions");
     n->erase("effective_anchor_point");
@@ -409,64 +448,72 @@ void fdl_canvas_remove_effective(fdl_canvas_t* canvas) {
 // FramingDecision individual setters
 // -----------------------------------------------------------------------
 
-void fdl_framing_decision_set_dimensions(
-    fdl_framing_decision_t* fd,
-    fdl_dimensions_f64_t dims) {
-    if (!fd) return;
+void fdl_framing_decision_set_dimensions(fdl_framing_decision_t* fd, fdl_dimensions_f64_t dims) {
+    if (!fd) {
+        return;
+    }
 
     doc_lock lock(fd->owner);
     auto* n = fd->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
-    n->insert_or_assign("dimensions",
-        fdl::detail::make_dimensions_float(dims.width, dims.height));
+    n->insert_or_assign("dimensions", fdl::detail::make_dimensions_float(dims.width, dims.height));
 }
 
-void fdl_framing_decision_set_anchor_point(
-    fdl_framing_decision_t* fd,
-    fdl_point_f64_t point) {
-    if (!fd) return;
+void fdl_framing_decision_set_anchor_point(fdl_framing_decision_t* fd, fdl_point_f64_t point) {
+    if (!fd) {
+        return;
+    }
 
     doc_lock lock(fd->owner);
     auto* n = fd->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
-    n->insert_or_assign("anchor_point",
-        fdl::detail::make_point_float(point.x, point.y));
+    n->insert_or_assign("anchor_point", fdl::detail::make_point_float(point.x, point.y));
 }
 
-void fdl_framing_decision_set_protection_dimensions(
-    fdl_framing_decision_t* fd,
-    fdl_dimensions_f64_t dims) {
-    if (!fd) return;
+void fdl_framing_decision_set_protection_dimensions(fdl_framing_decision_t* fd, fdl_dimensions_f64_t dims) {
+    if (!fd) {
+        return;
+    }
 
     doc_lock lock(fd->owner);
     auto* n = fd->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
-    n->insert_or_assign("protection_dimensions",
-        fdl::detail::make_dimensions_float(dims.width, dims.height));
+    n->insert_or_assign("protection_dimensions", fdl::detail::make_dimensions_float(dims.width, dims.height));
 }
 
-void fdl_framing_decision_set_protection_anchor_point(
-    fdl_framing_decision_t* fd,
-    fdl_point_f64_t point) {
-    if (!fd) return;
+void fdl_framing_decision_set_protection_anchor_point(fdl_framing_decision_t* fd, fdl_point_f64_t point) {
+    if (!fd) {
+        return;
+    }
 
     doc_lock lock(fd->owner);
     auto* n = fd->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
-    n->insert_or_assign("protection_anchor_point",
-        fdl::detail::make_point_float(point.x, point.y));
+    n->insert_or_assign("protection_anchor_point", fdl::detail::make_point_float(point.x, point.y));
 }
 
 void fdl_framing_decision_remove_protection(fdl_framing_decision_t* fd) {
-    if (!fd) return;
+    if (!fd) {
+        return;
+    }
 
     doc_lock lock(fd->owner);
     auto* n = fd->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
     n->erase("protection_dimensions");
     n->erase("protection_anchor_point");
@@ -493,21 +540,21 @@ const char* fdl_clip_id_validate_json(const char* json_str, size_t json_len) {
     }
 
     if (obj.contains("file") && obj.contains("sequence")) {
-        return fdl_strdup(
-            "Both file and sequence attributes are provided, only one is allowed.");
+        return fdl_strdup("Both file and sequence attributes are provided, only one is allowed.");
     }
 
     return nullptr;
 }
 
-const char* fdl_context_set_clip_id_json(
-    fdl_context_t* ctx, const char* json_str, size_t json_len) {
+const char* fdl_context_set_clip_id_json(fdl_context_t* ctx, const char* json_str, size_t json_len) {
     if (!ctx) {
         return fdl_strdup("context handle is NULL");
     }
 
     const char* err = fdl_clip_id_validate_json(json_str, json_len);
-    if (err) return err;
+    if (err) {
+        return err;
+    }
 
     ojson obj;
     try {
@@ -518,18 +565,24 @@ const char* fdl_context_set_clip_id_json(
 
     doc_lock lock(ctx->owner);
     auto* n = ctx->node();
-    if (!n) return fdl_strdup("context handle is invalid");
+    if (!n) {
+        return fdl_strdup("context handle is invalid");
+    }
 
     n->insert_or_assign("clip_id", std::move(obj));
     return nullptr;
 }
 
 void fdl_context_remove_clip_id(fdl_context_t* ctx) {
-    if (!ctx) return;
+    if (!ctx) {
+        return;
+    }
 
     doc_lock lock(ctx->owner);
     auto* n = ctx->node();
-    if (!n) return;
+    if (!n) {
+        return;
+    }
 
     n->erase("clip_id");
 }

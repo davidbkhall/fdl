@@ -4,8 +4,8 @@
  * @file fdl_rounding.cpp
  * @brief FDL rounding functions (round, round_dimensions, round_point) using banker's rounding.
  */
-#include "fdl/fdl_core.h"
 #include "fdl_rounding.h"
+#include "fdl/fdl_core.h"
 
 #include <cmath>
 #include <cstdlib>
@@ -41,10 +41,8 @@ int64_t fdl_round(double value, fdl_rounding_even_t even, fdl_rounding_mode_t mo
             if (v % 2 != 0) {
                 int64_t up = v + 1;
                 int64_t down = v - 1;
-                v = (std::abs(static_cast<double>(up) - value) <=
-                     std::abs(static_cast<double>(down) - value))
-                        ? up
-                        : down;
+                v = (std::abs(static_cast<double>(up) - value) <= std::abs(static_cast<double>(down) - value)) ? up
+                                                                                                               : down;
             }
         }
     }
@@ -53,23 +51,12 @@ int64_t fdl_round(double value, fdl_rounding_even_t even, fdl_rounding_mode_t mo
 }
 
 fdl_dimensions_f64_t fdl_round_dimensions(
-    fdl_dimensions_f64_t dims,
-    fdl_rounding_even_t even,
-    fdl_rounding_mode_t mode
-) {
+    fdl_dimensions_f64_t dims, fdl_rounding_even_t even, fdl_rounding_mode_t mode) {
     return {
         static_cast<double>(fdl_round(dims.width, even, mode)),
-        static_cast<double>(fdl_round(dims.height, even, mode))
-    };
+        static_cast<double>(fdl_round(dims.height, even, mode))};
 }
 
-fdl_point_f64_t fdl_round_point(
-    fdl_point_f64_t point,
-    fdl_rounding_even_t even,
-    fdl_rounding_mode_t mode
-) {
-    return {
-        static_cast<double>(fdl_round(point.x, even, mode)),
-        static_cast<double>(fdl_round(point.y, even, mode))
-    };
+fdl_point_f64_t fdl_round_point(fdl_point_f64_t point, fdl_rounding_even_t even, fdl_rounding_mode_t mode) {
+    return {static_cast<double>(fdl_round(point.x, even, mode)), static_cast<double>(fdl_round(point.y, even, mode))};
 }

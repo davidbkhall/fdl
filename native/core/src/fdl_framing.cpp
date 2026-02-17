@@ -16,8 +16,8 @@
 
 /** @brief Forward declaration for rounding function from fdl_core. */
 extern "C" {
-    fdl_dimensions_f64_t fdl_round_dimensions(fdl_dimensions_f64_t dims,
-        fdl_rounding_even_t even, fdl_rounding_mode_t mode);
+fdl_dimensions_f64_t fdl_round_dimensions(
+    fdl_dimensions_f64_t dims, fdl_rounding_even_t even, fdl_rounding_mode_t mode);
 }
 
 namespace fdl::detail {
@@ -34,8 +34,7 @@ fdl_from_intent_result_t compute_framing_from_intent(
     result.has_protection = 0;
 
     // Compare aspect ratios
-    double intent_aspect = static_cast<double>(aspect_ratio.width) /
-                           static_cast<double>(aspect_ratio.height);
+    double intent_aspect = static_cast<double>(aspect_ratio.width) / static_cast<double>(aspect_ratio.height);
     double canvas_aspect = working_dims.width / working_dims.height;
 
     double width, height;
@@ -64,10 +63,7 @@ fdl_from_intent_result_t compute_framing_from_intent(
     }
 
     // Apply protection factor and round
-    fdl_dimensions_f64_t dims = {
-        width * (1.0 - protection),
-        height * (1.0 - protection)
-    };
+    fdl_dimensions_f64_t dims = {width * (1.0 - protection), height * (1.0 - protection)};
     result.dimensions = fdl_round_dimensions(dims, rounding.even, rounding.mode);
 
     // Center framing decision anchor within canvas

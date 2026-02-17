@@ -21,7 +21,7 @@ using ojson = jsoncons::ojson;
 
 /** Result of schema + semantic validation. */
 struct ValidationResult {
-    std::vector<std::string> errors;  /**< Error messages (empty = valid). */
+    std::vector<std::string> errors; /**< Error messages (empty = valid). */
 };
 
 /**

@@ -5,8 +5,8 @@
  * test_facade_mutation.py to verify feature parity.
  */
 
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include "fdl/fdl.hpp"
 
@@ -114,8 +114,8 @@ TEST_CASE("DimensionsInt wrapper", "[raii][value_types][dimensions]") {
 
     SECTION("explicit bool") {
         REQUIRE(static_cast<bool>(fdl::DimensionsInt(1, 1)));
-        REQUIRE(static_cast<bool>(fdl::DimensionsInt(1, 0)));   // one nonzero → true
-        REQUIRE(static_cast<bool>(fdl::DimensionsInt(0, 1)));   // one nonzero → true
+        REQUIRE(static_cast<bool>(fdl::DimensionsInt(1, 0))); // one nonzero → true
+        REQUIRE(static_cast<bool>(fdl::DimensionsInt(0, 1))); // one nonzero → true
         REQUIRE_FALSE(static_cast<bool>(fdl::DimensionsInt(0, 0)));
     }
 
@@ -189,8 +189,8 @@ TEST_CASE("DimensionsFloat wrapper", "[raii][value_types][dimensions]") {
     }
 
     SECTION("clamp_to_dims") {
-        auto [clamped, delta] = fdl::DimensionsFloat(3840.0, 2160.0)
-            .clamp_to_dims(fdl::DimensionsFloat(1920.0, 1080.0));
+        auto [clamped, delta] =
+            fdl::DimensionsFloat(3840.0, 2160.0).clamp_to_dims(fdl::DimensionsFloat(1920.0, 1080.0));
         REQUIRE(clamped.width() == Approx(1920.0));
         REQUIRE(clamped.height() == Approx(1080.0));
     }
@@ -208,8 +208,8 @@ TEST_CASE("DimensionsFloat wrapper", "[raii][value_types][dimensions]") {
 
     SECTION("explicit bool") {
         REQUIRE(static_cast<bool>(fdl::DimensionsFloat(1.0, 1.0)));
-        REQUIRE(static_cast<bool>(fdl::DimensionsFloat(1.0, 0.0)));   // one nonzero → true
-        REQUIRE(static_cast<bool>(fdl::DimensionsFloat(0.0, 1.0)));   // one nonzero → true
+        REQUIRE(static_cast<bool>(fdl::DimensionsFloat(1.0, 0.0))); // one nonzero → true
+        REQUIRE(static_cast<bool>(fdl::DimensionsFloat(0.0, 1.0))); // one nonzero → true
         REQUIRE_FALSE(static_cast<bool>(fdl::DimensionsFloat(0.0, 0.0)));
     }
 
@@ -330,15 +330,11 @@ TEST_CASE("fdl::round", "[raii][free_functions][rounding]") {
 
 TEST_CASE("fdl::calculate_scale_factor", "[raii][free_functions][pipeline]") {
     auto sf = fdl::calculate_scale_factor(
-        fdl::DimensionsFloat(3840.0, 2160.0),
-        fdl::DimensionsFloat(1920.0, 1080.0),
-        FDL_FIT_METHOD_WIDTH);
+        fdl::DimensionsFloat(3840.0, 2160.0), fdl::DimensionsFloat(1920.0, 1080.0), FDL_FIT_METHOD_WIDTH);
     REQUIRE(sf == Approx(0.5));
 
     auto sf2 = fdl::calculate_scale_factor(
-        fdl::DimensionsFloat(3840.0, 2160.0),
-        fdl::DimensionsFloat(1920.0, 1080.0),
-        FDL_FIT_METHOD_HEIGHT);
+        fdl::DimensionsFloat(3840.0, 2160.0), fdl::DimensionsFloat(1920.0, 1080.0), FDL_FIT_METHOD_HEIGHT);
     REQUIRE(sf2 == Approx(0.5));
 }
 
@@ -615,8 +611,7 @@ TEST_CASE("Serialization parity", "[raii][facade][serialization]") {
 
 TEST_CASE("FDL create from scratch", "[raii][facade][doc][create]") {
     SECTION("empty document") {
-        auto doc = fdl::FDL::create(
-            "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", 2, 0, "test");
+        auto doc = fdl::FDL::create("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", 2, 0, "test");
         REQUIRE(doc.uuid() == "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
         REQUIRE(doc.fdl_creator() == "test");
         REQUIRE(doc.version_major() == 2);
@@ -627,8 +622,7 @@ TEST_CASE("FDL create from scratch", "[raii][facade][doc][create]") {
     }
 
     SECTION("with default framing intent") {
-        auto doc = fdl::FDL::create(
-            "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", 2, 0, "test", "FI_01");
+        auto doc = fdl::FDL::create("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", 2, 0, "test", "FI_01");
         REQUIRE(doc.default_framing_intent() == "FI_01");
     }
 }
@@ -664,9 +658,7 @@ TEST_CASE("Builder: add_framing_intent", "[raii][facade][builder]") {
     auto doc = fdl::FDL::create("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", 2, 0, "test");
 
     SECTION("single framing intent") {
-        auto fi = doc.add_framing_intent(
-            "FI_01", "Default",
-            fdl_dimensions_i64_t{16, 9}, 0.0);
+        auto fi = doc.add_framing_intent("FI_01", "Default", fdl_dimensions_i64_t{16, 9}, 0.0);
         REQUIRE(fi.id() == "FI_01");
         REQUIRE(fi.label() == "Default");
         fdl::DimensionsInt ar = fi.aspect_ratio();
@@ -713,9 +705,7 @@ TEST_CASE("Builder: add_context", "[raii][facade][builder]") {
 TEST_CASE("Builder: add_canvas", "[raii][facade][builder]") {
     auto doc = fdl::FDL::create("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", 2, 0, "test");
     auto ctx = doc.add_context("Source");
-    auto canvas = ctx.add_canvas(
-        "CV_01", "Source Canvas", "CV_01",
-        fdl_dimensions_i64_t{3840, 2160}, 1.0);
+    auto canvas = ctx.add_canvas("CV_01", "Source Canvas", "CV_01", fdl_dimensions_i64_t{3840, 2160}, 1.0);
 
     REQUIRE(canvas.id() == "CV_01");
     REQUIRE(canvas.label() == "Source Canvas");
@@ -735,11 +725,9 @@ TEST_CASE("Builder: add_framing_decision", "[raii][facade][builder]") {
     auto doc = fdl::FDL::create("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", 2, 0, "test");
     doc.add_framing_intent("FI_01", "Default", fdl_dimensions_i64_t{16, 9}, 0.0);
     auto ctx = doc.add_context("Source");
-    auto canvas = ctx.add_canvas("CV_01", "Source Canvas", "CV_01",
-        fdl_dimensions_i64_t{3840, 2160}, 1.0);
+    auto canvas = ctx.add_canvas("CV_01", "Source Canvas", "CV_01", fdl_dimensions_i64_t{3840, 2160}, 1.0);
     auto fd = canvas.add_framing_decision(
-        "CV_01-FI_01", "Default FD", "FI_01",
-        fdl_dimensions_f64_t{3840.0, 2160.0}, fdl_point_f64_t{0.0, 0.0});
+        "CV_01-FI_01", "Default FD", "FI_01", fdl_dimensions_f64_t{3840.0, 2160.0}, fdl_point_f64_t{0.0, 0.0});
 
     REQUIRE(fd.id() == "CV_01-FI_01");
     REQUIRE(fd.label() == "Default FD");
@@ -761,16 +749,13 @@ TEST_CASE("Compound setters", "[raii][facade][setters]") {
     auto doc = fdl::FDL::create("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", 2, 0, "test");
     doc.add_framing_intent("FI_01", "Default", fdl_dimensions_i64_t{16, 9}, 0.05);
     auto ctx = doc.add_context("Source");
-    auto canvas = ctx.add_canvas("CV_01", "Source", "CV_01",
-        fdl_dimensions_i64_t{3840, 2160}, 1.0);
+    auto canvas = ctx.add_canvas("CV_01", "Source", "CV_01", fdl_dimensions_i64_t{3840, 2160}, 1.0);
 
     SECTION("set_effective") {
         REQUIRE_FALSE(canvas.has_effective_dimensions());
         REQUIRE_FALSE(canvas.has_effective_anchor_point());
 
-        canvas.set_effective(
-            fdl_dimensions_i64_t{3000, 1688},
-            fdl_point_f64_t{420.0, 236.0});
+        canvas.set_effective(fdl_dimensions_i64_t{3000, 1688}, fdl_point_f64_t{420.0, 236.0});
 
         REQUIRE(canvas.has_effective_dimensions());
         fdl::DimensionsInt eff_dims = canvas.effective_dimensions().value();
@@ -784,14 +769,11 @@ TEST_CASE("Compound setters", "[raii][facade][setters]") {
 
     SECTION("set_protection") {
         auto fd = canvas.add_framing_decision(
-            "CV_01-FI_01", "Default FD", "FI_01",
-            fdl_dimensions_f64_t{3840.0, 2160.0}, fdl_point_f64_t{0.0, 0.0});
+            "CV_01-FI_01", "Default FD", "FI_01", fdl_dimensions_f64_t{3840.0, 2160.0}, fdl_point_f64_t{0.0, 0.0});
 
         REQUIRE_FALSE(fd.has_protection_dimensions());
 
-        fd.set_protection(
-            fdl_dimensions_f64_t{4032.0, 2268.0},
-            fdl_point_f64_t{-96.0, -54.0});
+        fd.set_protection(fdl_dimensions_f64_t{4032.0, 2268.0}, fdl_point_f64_t{-96.0, -54.0});
 
         REQUIRE(fd.has_protection_dimensions());
         fdl::DimensionsFloat prot_dims = fd.protection_dimensions().value();
@@ -858,7 +840,8 @@ TEST_CASE("CanvasTemplate builders", "[raii][facade][canvas_template]") {
 
     SECTION("add canvas template") {
         auto ct = doc.add_canvas_template(
-            "CT_01", "HD Delivery",
+            "CT_01",
+            "HD Delivery",
             fdl_dimensions_i64_t{1920, 1080},
             1.0,
             FDL_GEOMETRY_PATH_CANVAS_DIMENSIONS,
@@ -878,7 +861,8 @@ TEST_CASE("CanvasTemplate builders", "[raii][facade][canvas_template]") {
 
     SECTION("optional properties") {
         auto ct = doc.add_canvas_template(
-            "CT_01", "HD Delivery",
+            "CT_01",
+            "HD Delivery",
             fdl_dimensions_i64_t{1920, 1080},
             1.0,
             FDL_GEOMETRY_PATH_CANVAS_DIMENSIONS,
@@ -909,26 +893,24 @@ TEST_CASE("CanvasTemplate builders", "[raii][facade][canvas_template]") {
 // -----------------------------------------------------------------------
 
 TEST_CASE("CanvasTemplate apply", "[raii][facade][canvas_template][apply]") {
-    auto doc = fdl::FDL::create(
-        "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", 2, 0, "test", "FI_01");
+    auto doc = fdl::FDL::create("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", 2, 0, "test", "FI_01");
     doc.add_framing_intent("FI_01", "Default", fdl_dimensions_i64_t{16, 9}, 0.0);
     auto ctx = doc.add_context("Source", "test");
-    auto canvas = ctx.add_canvas("CV_01", "Source Canvas", "CV_01",
-        fdl_dimensions_i64_t{3840, 2160}, 1.0);
+    auto canvas = ctx.add_canvas("CV_01", "Source Canvas", "CV_01", fdl_dimensions_i64_t{3840, 2160}, 1.0);
     auto fd = canvas.add_framing_decision(
-        "CV_01-FI_01", "Default FD", "FI_01",
-        fdl_dimensions_f64_t{3840.0, 2160.0}, fdl_point_f64_t{0.0, 0.0});
+        "CV_01-FI_01", "Default FD", "FI_01", fdl_dimensions_f64_t{3840.0, 2160.0}, fdl_point_f64_t{0.0, 0.0});
     auto ct = doc.add_canvas_template(
-        "CT_01", "HD Delivery",
-        fdl_dimensions_i64_t{1920, 1080}, 1.0,
-        FDL_GEOMETRY_PATH_CANVAS_DIMENSIONS, FDL_FIT_METHOD_WIDTH,
-        FDL_HALIGN_CENTER, FDL_VALIGN_CENTER,
+        "CT_01",
+        "HD Delivery",
+        fdl_dimensions_i64_t{1920, 1080},
+        1.0,
+        FDL_GEOMETRY_PATH_CANVAS_DIMENSIONS,
+        FDL_FIT_METHOD_WIDTH,
+        FDL_HALIGN_CENTER,
+        FDL_VALIGN_CENTER,
         fdl_round_strategy_t{FDL_ROUNDING_EVEN_EVEN, FDL_ROUNDING_MODE_ROUND});
 
-    auto result = ct.apply(
-        canvas, fd,
-        "CV_02", "HD FD",
-        "Source", "test");
+    auto result = ct.apply(canvas, fd, "CV_02", "HD FD", "Source", "test");
 
     REQUIRE(result.scale_factor == Approx(0.5));
     REQUIRE(static_cast<bool>(result.fdl));
@@ -945,12 +927,10 @@ TEST_CASE("FramingDecision from_framing_intent", "[raii][facade][framing]") {
     auto doc = fdl::FDL::create("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", 2, 0, "test");
     doc.add_framing_intent("FI_01", "Default", fdl_dimensions_i64_t{16, 9}, 0.0);
     auto ctx = doc.add_context("Source");
-    auto canvas = ctx.add_canvas("CV_01", "Source Canvas", "CV_01",
-        fdl_dimensions_i64_t{3840, 2160}, 1.0);
+    auto canvas = ctx.add_canvas("CV_01", "Source Canvas", "CV_01", fdl_dimensions_i64_t{3840, 2160}, 1.0);
     // Create FD with placeholder dims/anchor (will be overwritten)
     auto fd = canvas.add_framing_decision(
-        "CV_01-FI_01", "Default FD", "FI_01",
-        fdl_dimensions_f64_t{0.0, 0.0}, fdl_point_f64_t{0.0, 0.0});
+        "CV_01-FI_01", "Default FD", "FI_01", fdl_dimensions_f64_t{0.0, 0.0}, fdl_point_f64_t{0.0, 0.0});
 
     auto fi = doc.framing_intent_at(0);
     fdl_round_strategy_t rounding = {FDL_ROUNDING_EVEN_EVEN, FDL_ROUNDING_MODE_ROUND};
@@ -968,15 +948,12 @@ TEST_CASE("FramingDecision from_framing_intent", "[raii][facade][framing]") {
 // -----------------------------------------------------------------------
 
 TEST_CASE("as_json after mutation", "[raii][facade][serialization]") {
-    auto doc = fdl::FDL::create(
-        "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", 2, 0, "test", "FI_01");
+    auto doc = fdl::FDL::create("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", 2, 0, "test", "FI_01");
     doc.add_framing_intent("FI_01", "Default", fdl_dimensions_i64_t{16, 9}, 0.0);
     auto ctx = doc.add_context("Source", "test");
-    auto canvas = ctx.add_canvas("CV_01", "Source Canvas", "CV_01",
-        fdl_dimensions_i64_t{3840, 2160}, 1.0);
+    auto canvas = ctx.add_canvas("CV_01", "Source Canvas", "CV_01", fdl_dimensions_i64_t{3840, 2160}, 1.0);
     canvas.add_framing_decision(
-        "CV_01-FI_01", "Default FD", "FI_01",
-        fdl_dimensions_f64_t{3840.0, 2160.0}, fdl_point_f64_t{0.0, 0.0});
+        "CV_01-FI_01", "Default FD", "FI_01", fdl_dimensions_f64_t{3840.0, 2160.0}, fdl_point_f64_t{0.0, 0.0});
 
     auto json = doc.as_json(2);
     REQUIRE(json.find("\"uuid\"") != std::string::npos);

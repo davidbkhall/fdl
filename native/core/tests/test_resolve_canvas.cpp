@@ -12,12 +12,12 @@
 // Both have a framing decision with label "Main FI".
 static fdl_doc_t* build_test_doc(
     fdl_context_t** out_ctx,
-    fdl_canvas_t** out_cvs1, fdl_framing_decision_t** out_fd1,
-    fdl_canvas_t** out_cvs2, fdl_framing_decision_t** out_fd2) {
+    fdl_canvas_t** out_cvs1,
+    fdl_framing_decision_t** out_fd1,
+    fdl_canvas_t** out_cvs2,
+    fdl_framing_decision_t** out_fd2) {
 
-    auto* doc = fdl_doc_create_with_header(
-        "00000000-0000-0000-0000-000000000001",
-        2, 0, "test", nullptr);
+    auto* doc = fdl_doc_create_with_header("00000000-0000-0000-0000-000000000001", 2, 0, "test", nullptr);
     REQUIRE(doc != nullptr);
 
     fdl_doc_add_framing_intent(doc, "fi_main", "Main FI", 16, 9, 0.0);
@@ -26,23 +26,17 @@ static fdl_doc_t* build_test_doc(
     REQUIRE(ctx != nullptr);
 
     // Canvas 1 -source canvas (id == source_canvas_id)
-    auto* cvs1 = fdl_context_add_canvas(ctx, "cvs1", "Canvas 1920x1080",
-                                         "cvs1", 1920, 1080, 1.0);
+    auto* cvs1 = fdl_context_add_canvas(ctx, "cvs1", "Canvas 1920x1080", "cvs1", 1920, 1080, 1.0);
     REQUIRE(cvs1 != nullptr);
 
-    auto* fd1 = fdl_canvas_add_framing_decision(cvs1,
-        "cvs1-fi_main", "Main FI", "fi_main",
-        1920.0, 1080.0, 0.0, 0.0);
+    auto* fd1 = fdl_canvas_add_framing_decision(cvs1, "cvs1-fi_main", "Main FI", "fi_main", 1920.0, 1080.0, 0.0, 0.0);
     REQUIRE(fd1 != nullptr);
 
     // Canvas 2 -derived canvas (source_canvas_id = "cvs1")
-    auto* cvs2 = fdl_context_add_canvas(ctx, "cvs2", "Canvas 3840x2160",
-                                         "cvs1", 3840, 2160, 1.0);
+    auto* cvs2 = fdl_context_add_canvas(ctx, "cvs2", "Canvas 3840x2160", "cvs1", 3840, 2160, 1.0);
     REQUIRE(cvs2 != nullptr);
 
-    auto* fd2 = fdl_canvas_add_framing_decision(cvs2,
-        "cvs2-fi_main", "Main FI", "fi_main",
-        3840.0, 2160.0, 0.0, 0.0);
+    auto* fd2 = fdl_canvas_add_framing_decision(cvs2, "cvs2-fi_main", "Main FI", "fi_main", 3840.0, 2160.0, 0.0, 0.0);
     REQUIRE(fd2 != nullptr);
 
     *out_ctx = ctx;

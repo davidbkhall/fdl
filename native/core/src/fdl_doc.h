@@ -80,9 +80,9 @@ private:
 
 /** Opaque handle definition — shared across ABI translation units. */
 struct fdl_doc {
-    fdl::detail::Document doc;   /**< Document data tree. */
-    fdl_handle_cache handles;    /**< Cache of sub-object handles. */
-    mutable std::mutex mtx;      /**< Per-document mutex for thread safety. */
+    fdl::detail::Document doc; /**< Document data tree. */
+    fdl_handle_cache handles;  /**< Cache of sub-object handles. */
+    mutable std::mutex mtx;    /**< Per-document mutex for thread safety. */
 };
 
 /**
@@ -92,14 +92,16 @@ struct fdl_doc {
  * Safe with const handles because the mutex is mutable.
  */
 struct doc_lock {
-    std::unique_lock<std::mutex> lock_;  /**< Held lock (empty if doc was null). */
+    std::unique_lock<std::mutex> lock_; /**< Held lock (empty if doc was null). */
 
     /**
      * @brief Acquire the document's mutex.
      * @param doc  Document to lock (may be NULL, in which case no lock is acquired).
      */
     explicit doc_lock(const fdl_doc* doc) {
-        if (doc) lock_ = std::unique_lock<std::mutex>(doc->mtx);
+        if (doc) {
+            lock_ = std::unique_lock<std::mutex>(doc->mtx);
+        }
     }
 };
 

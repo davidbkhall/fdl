@@ -17,49 +17,57 @@ namespace fdl::detail {
 
 /** @brief Canonical key order for the FDL root object. */
 static const std::vector<std::string> ROOT_KEYS = {
-    "uuid", "version", "fdl_creator", "default_framing_intent",
-    "framing_intents", "contexts", "canvas_templates"
-};
+    "uuid", "version", "fdl_creator", "default_framing_intent", "framing_intents", "contexts", "canvas_templates"};
 
 /** @brief Canonical key order for the version object. */
 static const std::vector<std::string> VERSION_KEYS = {"major", "minor"};
 
 /** @brief Canonical key order for context objects. */
-static const std::vector<std::string> CONTEXT_KEYS = {
-    "label", "context_creator", "clip_id", "canvases"
-};
+static const std::vector<std::string> CONTEXT_KEYS = {"label", "context_creator", "clip_id", "canvases"};
 
 /** @brief Canonical key order for clip_id objects. */
-static const std::vector<std::string> CLIP_ID_KEYS = {
-    "clip_name", "file", "sequence"
-};
+static const std::vector<std::string> CLIP_ID_KEYS = {"clip_name", "file", "sequence"};
 
 /** @brief Canonical key order for canvas objects. */
 static const std::vector<std::string> CANVAS_KEYS = {
-    "label", "id", "source_canvas_id", "dimensions",
-    "effective_dimensions", "effective_anchor_point",
-    "photosite_dimensions", "physical_dimensions",
-    "anamorphic_squeeze", "framing_decisions"
-};
+    "label",
+    "id",
+    "source_canvas_id",
+    "dimensions",
+    "effective_dimensions",
+    "effective_anchor_point",
+    "photosite_dimensions",
+    "physical_dimensions",
+    "anamorphic_squeeze",
+    "framing_decisions"};
 
 /** @brief Canonical key order for framing decision objects. */
 static const std::vector<std::string> FRAMING_DECISION_KEYS = {
-    "label", "id", "framing_intent_id", "dimensions",
-    "anchor_point", "protection_dimensions", "protection_anchor_point"
-};
+    "label",
+    "id",
+    "framing_intent_id",
+    "dimensions",
+    "anchor_point",
+    "protection_dimensions",
+    "protection_anchor_point"};
 
 /** @brief Canonical key order for framing intent objects. */
-static const std::vector<std::string> FRAMING_INTENT_KEYS = {
-    "label", "id", "aspect_ratio", "protection"
-};
+static const std::vector<std::string> FRAMING_INTENT_KEYS = {"label", "id", "aspect_ratio", "protection"};
 
 /** @brief Canonical key order for canvas template objects. */
 static const std::vector<std::string> CANVAS_TEMPLATE_KEYS = {
-    "label", "id", "target_dimensions", "target_anamorphic_squeeze",
-    "fit_source", "fit_method", "alignment_method_vertical",
-    "alignment_method_horizontal", "preserve_from_source_canvas",
-    "maximum_dimensions", "pad_to_maximum", "round"
-};
+    "label",
+    "id",
+    "target_dimensions",
+    "target_anamorphic_squeeze",
+    "fit_source",
+    "fit_method",
+    "alignment_method_vertical",
+    "alignment_method_horizontal",
+    "preserve_from_source_canvas",
+    "maximum_dimensions",
+    "pad_to_maximum",
+    "round"};
 
 /** @brief Canonical key order for dimensions objects. */
 static const std::vector<std::string> DIMENSIONS_KEYS = {"width", "height"};
@@ -78,20 +86,38 @@ static const std::vector<std::string> ROUND_STRATEGY_KEYS = {"even", "mode"};
  * @return Type hint string for the child, or empty if unknown.
  */
 static std::string child_type_hint(const std::string& /*parent_type*/, const std::string& key) {
-    if (key == "version") return "version";
-    if (key == "clip_id") return "clip_id";
-    if (key == "dimensions" || key == "effective_dimensions" ||
-        key == "photosite_dimensions" || key == "physical_dimensions" ||
-        key == "target_dimensions" || key == "maximum_dimensions" ||
-        key == "protection_dimensions" || key == "aspect_ratio") return "dimensions";
-    if (key == "anchor_point" || key == "effective_anchor_point" ||
-        key == "protection_anchor_point") return "point";
-    if (key == "round") return "round_strategy";
-    if (key == "framing_intents") return "framing_intent_array";
-    if (key == "contexts") return "context_array";
-    if (key == "canvas_templates") return "canvas_template_array";
-    if (key == "canvases") return "canvas_array";
-    if (key == "framing_decisions") return "framing_decision_array";
+    if (key == "version") {
+        return "version";
+    }
+    if (key == "clip_id") {
+        return "clip_id";
+    }
+    if (key == "dimensions" || key == "effective_dimensions" || key == "photosite_dimensions" ||
+        key == "physical_dimensions" || key == "target_dimensions" || key == "maximum_dimensions" ||
+        key == "protection_dimensions" || key == "aspect_ratio") {
+        return "dimensions";
+    }
+    if (key == "anchor_point" || key == "effective_anchor_point" || key == "protection_anchor_point") {
+        return "point";
+    }
+    if (key == "round") {
+        return "round_strategy";
+    }
+    if (key == "framing_intents") {
+        return "framing_intent_array";
+    }
+    if (key == "contexts") {
+        return "context_array";
+    }
+    if (key == "canvas_templates") {
+        return "canvas_template_array";
+    }
+    if (key == "canvases") {
+        return "canvas_array";
+    }
+    if (key == "framing_decisions") {
+        return "framing_decision_array";
+    }
     return "";
 }
 
@@ -120,21 +146,35 @@ ojson strip_nulls(const ojson& val) {
 }
 
 ojson reorder_object(const ojson& obj, const std::string& type_hint) {
-    if (!obj.is_object()) return obj;
+    if (!obj.is_object()) {
+        return obj;
+    }
 
     // Select key order based on type
     const std::vector<std::string>* key_order = nullptr;
-    if (type_hint == "root") key_order = &ROOT_KEYS;
-    else if (type_hint == "version") key_order = &VERSION_KEYS;
-    else if (type_hint == "context") key_order = &CONTEXT_KEYS;
-    else if (type_hint == "clip_id") key_order = &CLIP_ID_KEYS;
-    else if (type_hint == "canvas") key_order = &CANVAS_KEYS;
-    else if (type_hint == "framing_decision") key_order = &FRAMING_DECISION_KEYS;
-    else if (type_hint == "framing_intent") key_order = &FRAMING_INTENT_KEYS;
-    else if (type_hint == "canvas_template") key_order = &CANVAS_TEMPLATE_KEYS;
-    else if (type_hint == "dimensions") key_order = &DIMENSIONS_KEYS;
-    else if (type_hint == "point") key_order = &POINT_KEYS;
-    else if (type_hint == "round_strategy") key_order = &ROUND_STRATEGY_KEYS;
+    if (type_hint == "root") {
+        key_order = &ROOT_KEYS;
+    } else if (type_hint == "version") {
+        key_order = &VERSION_KEYS;
+    } else if (type_hint == "context") {
+        key_order = &CONTEXT_KEYS;
+    } else if (type_hint == "clip_id") {
+        key_order = &CLIP_ID_KEYS;
+    } else if (type_hint == "canvas") {
+        key_order = &CANVAS_KEYS;
+    } else if (type_hint == "framing_decision") {
+        key_order = &FRAMING_DECISION_KEYS;
+    } else if (type_hint == "framing_intent") {
+        key_order = &FRAMING_INTENT_KEYS;
+    } else if (type_hint == "canvas_template") {
+        key_order = &CANVAS_TEMPLATE_KEYS;
+    } else if (type_hint == "dimensions") {
+        key_order = &DIMENSIONS_KEYS;
+    } else if (type_hint == "point") {
+        key_order = &POINT_KEYS;
+    } else if (type_hint == "round_strategy") {
+        key_order = &ROUND_STRATEGY_KEYS;
+    }
 
     ojson result(jsoncons::json_object_arg);
 
@@ -150,11 +190,17 @@ ojson reorder_object(const ojson& obj, const std::string& type_hint) {
                 } else if (val.is_array()) {
                     // Determine element type from array type hint
                     std::string elem_type;
-                    if (c_hint == "framing_intent_array") elem_type = "framing_intent";
-                    else if (c_hint == "context_array") elem_type = "context";
-                    else if (c_hint == "canvas_template_array") elem_type = "canvas_template";
-                    else if (c_hint == "canvas_array") elem_type = "canvas";
-                    else if (c_hint == "framing_decision_array") elem_type = "framing_decision";
+                    if (c_hint == "framing_intent_array") {
+                        elem_type = "framing_intent";
+                    } else if (c_hint == "context_array") {
+                        elem_type = "context";
+                    } else if (c_hint == "canvas_template_array") {
+                        elem_type = "canvas_template";
+                    } else if (c_hint == "canvas_array") {
+                        elem_type = "canvas";
+                    } else if (c_hint == "framing_decision_array") {
+                        elem_type = "framing_decision";
+                    }
 
                     ojson arr(jsoncons::json_array_arg);
                     for (const auto& elem : val.array_range()) {
@@ -185,7 +231,9 @@ ojson reorder_object(const ojson& obj, const std::string& type_hint) {
 }
 
 char* node_to_canonical_json(const ojson* node, const std::string& type_hint, int indent) {
-    if (!node) return nullptr;
+    if (!node) {
+        return nullptr;
+    }
     ojson cleaned = strip_nulls(*node);
     ojson ordered = reorder_object(cleaned, type_hint);
     std::string buffer;

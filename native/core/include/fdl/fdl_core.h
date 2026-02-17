@@ -27,9 +27,9 @@ extern "C" {
 
 /** ABI version triple for runtime compatibility checks. */
 typedef struct fdl_abi_version_t {
-    uint32_t major;  /**< Breaking changes increment this. */
-    uint32_t minor;  /**< Backwards-compatible additions increment this. */
-    uint32_t patch;  /**< Bug-fix releases increment this. */
+    uint32_t major; /**< Breaking changes increment this. */
+    uint32_t minor; /**< Backwards-compatible additions increment this. */
+    uint32_t patch; /**< Bug-fix releases increment this. */
 } fdl_abi_version_t;
 
 /**
@@ -45,46 +45,46 @@ FDL_API fdl_abi_version_t fdl_abi_version(void);
 
 /** Canvas dimensions in integer pixels. */
 typedef struct fdl_dimensions_i64_t {
-    int64_t width;   /**< Width in pixels. */
-    int64_t height;  /**< Height in pixels. */
+    int64_t width;  /**< Width in pixels. */
+    int64_t height; /**< Height in pixels. */
 } fdl_dimensions_i64_t;
 
 /** Floating-point dimensions (used during computation). */
 typedef struct fdl_dimensions_f64_t {
-    double width;   /**< Width (may be fractional during intermediate calculations). */
-    double height;  /**< Height (may be fractional during intermediate calculations). */
+    double width;  /**< Width (may be fractional during intermediate calculations). */
+    double height; /**< Height (may be fractional during intermediate calculations). */
 } fdl_dimensions_f64_t;
 
 /** 2D point in floating-point coordinates. */
 typedef struct fdl_point_f64_t {
-    double x;  /**< Horizontal position (pixels from left edge). */
-    double y;  /**< Vertical position (pixels from top edge). */
+    double x; /**< Horizontal position (pixels from left edge). */
+    double y; /**< Vertical position (pixels from top edge). */
 } fdl_point_f64_t;
 
 /** Axis-aligned rectangle (x, y origin + width, height). */
 typedef struct fdl_rect_t {
-    double x;       /**< Left edge x-coordinate. */
-    double y;       /**< Top edge y-coordinate. */
-    double width;   /**< Rectangle width. */
-    double height;  /**< Rectangle height. */
+    double x;      /**< Left edge x-coordinate. */
+    double y;      /**< Top edge y-coordinate. */
+    double width;  /**< Rectangle width. */
+    double height; /**< Rectangle height. */
 } fdl_rect_t;
 
 /** File sequence within a clip_id (image sequence on disk). */
 typedef struct fdl_file_sequence_t {
-    const char* value;  /**< Sequence pattern string (strdup'd, caller frees with fdl_clip_id_free). */
-    const char* idx;    /**< Index variable name, single character (strdup'd, caller frees). */
-    int64_t min;        /**< First frame number in the sequence. */
-    int64_t max;        /**< Last frame number in the sequence. */
+    const char* value; /**< Sequence pattern string (strdup'd, caller frees with fdl_clip_id_free). */
+    const char* idx;   /**< Index variable name, single character (strdup'd, caller frees). */
+    int64_t min;       /**< First frame number in the sequence. */
+    int64_t max;       /**< Last frame number in the sequence. */
 } fdl_file_sequence_t;
 
 /** Clip identification — associates a context with source media.
  *  A clip_id has either a file OR a sequence, never both. */
 typedef struct fdl_clip_id_t {
-    const char* clip_name;         /**< Clip name identifier (strdup'd, caller frees). */
-    int has_file;                  /**< 1 if @c file is populated, 0 otherwise. */
-    const char* file;              /**< File path (strdup'd, caller frees). NULL if !has_file. */
-    int has_sequence;              /**< 1 if @c sequence is populated, 0 otherwise. */
-    fdl_file_sequence_t sequence;  /**< File sequence data. Valid only if has_sequence. */
+    const char* clip_name;        /**< Clip name identifier (strdup'd, caller frees). */
+    int has_file;                 /**< 1 if @c file is populated, 0 otherwise. */
+    const char* file;             /**< File path (strdup'd, caller frees). NULL if !has_file. */
+    int has_sequence;             /**< 1 if @c sequence is populated, 0 otherwise. */
+    fdl_file_sequence_t sequence; /**< File sequence data. Valid only if has_sequence. */
 } fdl_clip_id_t;
 
 /* -----------------------------------------------------------------------
@@ -93,40 +93,40 @@ typedef struct fdl_clip_id_t {
 
 /** Rounding mode — direction to round fractional pixel values. */
 typedef uint32_t fdl_rounding_mode_t;
-#define FDL_ROUNDING_MODE_UP    0  /**< Always round up (ceiling). */
-#define FDL_ROUNDING_MODE_DOWN  1  /**< Always round down (floor). */
-#define FDL_ROUNDING_MODE_ROUND 2  /**< Round to nearest (half-to-even). */
+#define FDL_ROUNDING_MODE_UP 0    /**< Always round up (ceiling). */
+#define FDL_ROUNDING_MODE_DOWN 1  /**< Always round down (floor). */
+#define FDL_ROUNDING_MODE_ROUND 2 /**< Round to nearest (half-to-even). */
 
 /** Rounding even — whether to snap results to even numbers. */
 typedef uint32_t fdl_rounding_even_t;
-#define FDL_ROUNDING_EVEN_WHOLE 0  /**< No even constraint (round to nearest integer). */
-#define FDL_ROUNDING_EVEN_EVEN  1  /**< Snap to nearest even integer after rounding. */
+#define FDL_ROUNDING_EVEN_WHOLE 0 /**< No even constraint (round to nearest integer). */
+#define FDL_ROUNDING_EVEN_EVEN 1  /**< Snap to nearest even integer after rounding. */
 
 /** Geometry path — selects a dimension layer within the FDL hierarchy. */
 typedef uint32_t fdl_geometry_path_t;
-#define FDL_GEOMETRY_PATH_CANVAS_DIMENSIONS            0  /**< Full canvas dimensions. */
-#define FDL_GEOMETRY_PATH_CANVAS_EFFECTIVE_DIMENSIONS   1  /**< Effective (active image) dimensions. */
-#define FDL_GEOMETRY_PATH_FRAMING_PROTECTION_DIMENSIONS 2  /**< Protection area dimensions. */
-#define FDL_GEOMETRY_PATH_FRAMING_DIMENSIONS            3  /**< Framing decision dimensions. */
+#define FDL_GEOMETRY_PATH_CANVAS_DIMENSIONS 0             /**< Full canvas dimensions. */
+#define FDL_GEOMETRY_PATH_CANVAS_EFFECTIVE_DIMENSIONS 1   /**< Effective (active image) dimensions. */
+#define FDL_GEOMETRY_PATH_FRAMING_PROTECTION_DIMENSIONS 2 /**< Protection area dimensions. */
+#define FDL_GEOMETRY_PATH_FRAMING_DIMENSIONS 3            /**< Framing decision dimensions. */
 
 /** Fit method — how source content is scaled into the target canvas. */
 typedef uint32_t fdl_fit_method_t;
-#define FDL_FIT_METHOD_WIDTH   0  /**< Scale to match target width. */
-#define FDL_FIT_METHOD_HEIGHT  1  /**< Scale to match target height. */
-#define FDL_FIT_METHOD_FIT_ALL 2  /**< Scale to fit entirely within target (letterbox/pillarbox). */
-#define FDL_FIT_METHOD_FILL    3  /**< Scale to fill target completely (may crop). */
+#define FDL_FIT_METHOD_WIDTH 0   /**< Scale to match target width. */
+#define FDL_FIT_METHOD_HEIGHT 1  /**< Scale to match target height. */
+#define FDL_FIT_METHOD_FIT_ALL 2 /**< Scale to fit entirely within target (letterbox/pillarbox). */
+#define FDL_FIT_METHOD_FILL 3    /**< Scale to fill target completely (may crop). */
 
 /** Horizontal alignment — how content is positioned horizontally. */
 typedef uint32_t fdl_halign_t;
-#define FDL_HALIGN_LEFT   0  /**< Align to left edge. */
-#define FDL_HALIGN_CENTER 1  /**< Center horizontally. */
-#define FDL_HALIGN_RIGHT  2  /**< Align to right edge. */
+#define FDL_HALIGN_LEFT 0   /**< Align to left edge. */
+#define FDL_HALIGN_CENTER 1 /**< Center horizontally. */
+#define FDL_HALIGN_RIGHT 2  /**< Align to right edge. */
 
 /** Vertical alignment — how content is positioned vertically. */
 typedef uint32_t fdl_valign_t;
-#define FDL_VALIGN_TOP    0  /**< Align to top edge. */
-#define FDL_VALIGN_CENTER 1  /**< Center vertically. */
-#define FDL_VALIGN_BOTTOM 2  /**< Align to bottom edge. */
+#define FDL_VALIGN_TOP 0    /**< Align to top edge. */
+#define FDL_VALIGN_CENTER 1 /**< Center vertically. */
+#define FDL_VALIGN_BOTTOM 2 /**< Align to bottom edge. */
 
 /* -----------------------------------------------------------------------
  * Composite types
@@ -135,28 +135,28 @@ typedef uint32_t fdl_valign_t;
 /** Geometry container for FDL template transformation processing.
  *  Holds 4 dimension layers + 3 anchor points through the pipeline. */
 typedef struct fdl_geometry_t {
-    fdl_dimensions_f64_t canvas_dims;       /**< Full canvas dimensions. */
-    fdl_dimensions_f64_t effective_dims;    /**< Effective (active image) dimensions. */
-    fdl_dimensions_f64_t protection_dims;   /**< Protection area dimensions. */
-    fdl_dimensions_f64_t framing_dims;      /**< Framing decision dimensions. */
-    fdl_point_f64_t      effective_anchor;  /**< Anchor point for effective area. */
-    fdl_point_f64_t      protection_anchor; /**< Anchor point for protection area. */
-    fdl_point_f64_t      framing_anchor;    /**< Anchor point for framing decision. */
+    fdl_dimensions_f64_t canvas_dims;     /**< Full canvas dimensions. */
+    fdl_dimensions_f64_t effective_dims;  /**< Effective (active image) dimensions. */
+    fdl_dimensions_f64_t protection_dims; /**< Protection area dimensions. */
+    fdl_dimensions_f64_t framing_dims;    /**< Framing decision dimensions. */
+    fdl_point_f64_t effective_anchor;     /**< Anchor point for effective area. */
+    fdl_point_f64_t protection_anchor;    /**< Anchor point for protection area. */
+    fdl_point_f64_t framing_anchor;       /**< Anchor point for framing decision. */
 } fdl_geometry_t;
 
 /** Rounding strategy combining even-snap and direction mode. */
 typedef struct fdl_round_strategy_t {
-    fdl_rounding_even_t even;  /**< Whether to snap to even integers. */
-    fdl_rounding_mode_t mode;  /**< Rounding direction (up, down, nearest). */
+    fdl_rounding_even_t even; /**< Whether to snap to even integers. */
+    fdl_rounding_mode_t mode; /**< Rounding direction (up, down, nearest). */
 } fdl_round_strategy_t;
 
 /** Result of computing a framing decision from a framing intent. */
 typedef struct fdl_from_intent_result_t {
-    fdl_dimensions_f64_t dimensions;                /**< Computed framing dimensions. */
-    fdl_point_f64_t      anchor_point;              /**< Computed anchor point. */
-    int                  has_protection;             /**< 1 if protection was computed, 0 otherwise. */
-    fdl_dimensions_f64_t protection_dimensions;     /**< Protection dimensions (valid if has_protection). */
-    fdl_point_f64_t      protection_anchor_point;   /**< Protection anchor (valid if has_protection). */
+    fdl_dimensions_f64_t dimensions;            /**< Computed framing dimensions. */
+    fdl_point_f64_t anchor_point;               /**< Computed anchor point. */
+    int has_protection;                         /**< 1 if protection was computed, 0 otherwise. */
+    fdl_dimensions_f64_t protection_dimensions; /**< Protection dimensions (valid if has_protection). */
+    fdl_point_f64_t protection_anchor_point;    /**< Protection anchor (valid if has_protection). */
 } fdl_from_intent_result_t;
 
 /* -----------------------------------------------------------------------
@@ -181,11 +181,8 @@ FDL_API int64_t fdl_round(double value, fdl_rounding_even_t even, fdl_rounding_m
  * @param mode  Rounding direction.
  * @return Rounded dimensions (both width and height rounded independently).
  */
-FDL_API fdl_dimensions_f64_t fdl_round_dimensions(
-    fdl_dimensions_f64_t dims,
-    fdl_rounding_even_t even,
-    fdl_rounding_mode_t mode
-);
+FDL_API fdl_dimensions_f64_t
+fdl_round_dimensions(fdl_dimensions_f64_t dims, fdl_rounding_even_t even, fdl_rounding_mode_t mode);
 
 /**
  * Round a point according to FDL rounding rules.
@@ -195,11 +192,7 @@ FDL_API fdl_dimensions_f64_t fdl_round_dimensions(
  * @param mode   Rounding direction.
  * @return Rounded point (both x and y rounded independently).
  */
-FDL_API fdl_point_f64_t fdl_round_point(
-    fdl_point_f64_t point,
-    fdl_rounding_even_t even,
-    fdl_rounding_mode_t mode
-);
+FDL_API fdl_point_f64_t fdl_round_point(fdl_point_f64_t point, fdl_rounding_even_t even, fdl_rounding_mode_t mode);
 
 /* -----------------------------------------------------------------------
  * Dimensions operations
@@ -215,10 +208,7 @@ FDL_API fdl_point_f64_t fdl_round_point(
  * @param squeeze  Anamorphic squeeze factor (e.g. 2.0 for 2x anamorphic).
  * @return Normalized dimensions.
  */
-FDL_API fdl_dimensions_f64_t fdl_dimensions_normalize(
-    fdl_dimensions_f64_t dims,
-    double squeeze
-);
+FDL_API fdl_dimensions_f64_t fdl_dimensions_normalize(fdl_dimensions_f64_t dims, double squeeze);
 
 /**
  * Scale normalized dimensions and apply target squeeze.
@@ -231,11 +221,8 @@ FDL_API fdl_dimensions_f64_t fdl_dimensions_normalize(
  * @param target_squeeze Target anamorphic squeeze to apply.
  * @return Scaled dimensions in target coordinate space.
  */
-FDL_API fdl_dimensions_f64_t fdl_dimensions_scale(
-    fdl_dimensions_f64_t dims,
-    double scale_factor,
-    double target_squeeze
-);
+FDL_API fdl_dimensions_f64_t
+fdl_dimensions_scale(fdl_dimensions_f64_t dims, double scale_factor, double target_squeeze);
 
 /**
  * Normalize and scale in one step.
@@ -249,11 +236,7 @@ FDL_API fdl_dimensions_f64_t fdl_dimensions_scale(
  * @return Transformed dimensions.
  */
 FDL_API fdl_dimensions_f64_t fdl_dimensions_normalize_and_scale(
-    fdl_dimensions_f64_t dims,
-    double input_squeeze,
-    double scale_factor,
-    double target_squeeze
-);
+    fdl_dimensions_f64_t dims, double input_squeeze, double scale_factor, double target_squeeze);
 
 /**
  * Subtract two dimensions: result = a - b.
@@ -262,10 +245,7 @@ FDL_API fdl_dimensions_f64_t fdl_dimensions_normalize_and_scale(
  * @param b  Subtrahend dimensions.
  * @return Component-wise difference (a.width - b.width, a.height - b.height).
  */
-FDL_API fdl_dimensions_f64_t fdl_dimensions_sub(
-    fdl_dimensions_f64_t a,
-    fdl_dimensions_f64_t b
-);
+FDL_API fdl_dimensions_f64_t fdl_dimensions_sub(fdl_dimensions_f64_t a, fdl_dimensions_f64_t b);
 
 /**
  * Check if dimensions are approximately equal within FDL tolerance.
@@ -276,10 +256,7 @@ FDL_API fdl_dimensions_f64_t fdl_dimensions_sub(
  * @param b  Second dimensions.
  * @return 1 if approximately equal, 0 otherwise.
  */
-FDL_API int fdl_dimensions_equal(
-    fdl_dimensions_f64_t a,
-    fdl_dimensions_f64_t b
-);
+FDL_API int fdl_dimensions_equal(fdl_dimensions_f64_t a, fdl_dimensions_f64_t b);
 
 /**
  * Check if a > b using OR logic (either width or height is greater).
@@ -326,10 +303,7 @@ FDL_API int fdl_dimensions_i64_is_zero(fdl_dimensions_i64_t dims);
  * @param squeeze  Anamorphic squeeze factor.
  * @return Float dimensions: width = width * squeeze, height unchanged.
  */
-FDL_API fdl_dimensions_f64_t fdl_dimensions_i64_normalize(
-    fdl_dimensions_i64_t dims,
-    double squeeze
-);
+FDL_API fdl_dimensions_f64_t fdl_dimensions_i64_normalize(fdl_dimensions_i64_t dims, double squeeze);
 
 /**
  * Convert float dimensions to int64 by truncation.
@@ -381,11 +355,7 @@ FDL_API fdl_point_f64_t fdl_point_normalize(fdl_point_f64_t point, double squeez
  * @param target_squeeze Target anamorphic squeeze.
  * @return Scaled point in target coordinate space.
  */
-FDL_API fdl_point_f64_t fdl_point_scale(
-    fdl_point_f64_t point,
-    double scale_factor,
-    double target_squeeze
-);
+FDL_API fdl_point_f64_t fdl_point_scale(fdl_point_f64_t point, double scale_factor, double target_squeeze);
 
 /**
  * Add two points: result = a + b.
@@ -426,13 +396,8 @@ FDL_API fdl_point_f64_t fdl_point_mul_scalar(fdl_point_f64_t a, double scalar);
  * @param has_max  1 to apply max_val, 0 to skip.
  * @return Clamped point.
  */
-FDL_API fdl_point_f64_t fdl_point_clamp(
-    fdl_point_f64_t point,
-    double min_val,
-    double max_val,
-    int has_min,
-    int has_max
-);
+FDL_API fdl_point_f64_t
+fdl_point_clamp(fdl_point_f64_t point, double min_val, double max_val, int has_min, int has_max);
 
 /**
  * Check if both x and y are zero.
@@ -451,12 +416,8 @@ FDL_API int fdl_point_is_zero(fdl_point_f64_t point);
  * @param target_squeeze Target anamorphic squeeze factor.
  * @return Transformed point.
  */
-FDL_API fdl_point_f64_t fdl_point_normalize_and_scale(
-    fdl_point_f64_t point,
-    double input_squeeze,
-    double scale_factor,
-    double target_squeeze
-);
+FDL_API fdl_point_f64_t
+fdl_point_normalize_and_scale(fdl_point_f64_t point, double input_squeeze, double scale_factor, double target_squeeze);
 
 /**
  * Check approximate equality within FDL tolerances.
@@ -509,9 +470,7 @@ FDL_API double fdl_fp_abs_tol(void);
  * @param anchor_offset  Offset applied to anchors during gap-filling.
  * @return Geometry with gaps filled.
  */
-FDL_API fdl_geometry_t fdl_geometry_fill_hierarchy_gaps(
-    fdl_geometry_t geo,
-    fdl_point_f64_t anchor_offset);
+FDL_API fdl_geometry_t fdl_geometry_fill_hierarchy_gaps(fdl_geometry_t geo, fdl_point_f64_t anchor_offset);
 
 /**
  * Normalize and scale all 7 fields of the geometry.
@@ -524,11 +483,8 @@ FDL_API fdl_geometry_t fdl_geometry_fill_hierarchy_gaps(
  * @param target_squeeze  Target anamorphic squeeze factor.
  * @return Transformed geometry.
  */
-FDL_API fdl_geometry_t fdl_geometry_normalize_and_scale(
-    fdl_geometry_t geo,
-    double source_squeeze,
-    double scale_factor,
-    double target_squeeze);
+FDL_API fdl_geometry_t
+fdl_geometry_normalize_and_scale(fdl_geometry_t geo, double source_squeeze, double scale_factor, double target_squeeze);
 
 /**
  * Round all 7 fields of the geometry.
@@ -537,9 +493,7 @@ FDL_API fdl_geometry_t fdl_geometry_normalize_and_scale(
  * @param strategy  Rounding strategy (even + mode).
  * @return Rounded geometry.
  */
-FDL_API fdl_geometry_t fdl_geometry_round(
-    fdl_geometry_t geo,
-    fdl_round_strategy_t strategy);
+FDL_API fdl_geometry_t fdl_geometry_round(fdl_geometry_t geo, fdl_round_strategy_t strategy);
 
 /**
  * Apply offset to all anchors, clamping to canvas bounds.
@@ -573,11 +527,8 @@ FDL_API fdl_geometry_t fdl_geometry_apply_offset(
  * @param theo_fram  Theoretical framing anchor.
  * @return Cropped geometry.
  */
-FDL_API fdl_geometry_t fdl_geometry_crop(
-    fdl_geometry_t geo,
-    fdl_point_f64_t theo_eff,
-    fdl_point_f64_t theo_prot,
-    fdl_point_f64_t theo_fram);
+FDL_API fdl_geometry_t
+fdl_geometry_crop(fdl_geometry_t geo, fdl_point_f64_t theo_eff, fdl_point_f64_t theo_prot, fdl_point_f64_t theo_fram);
 
 /**
  * Extract dimensions and anchor from geometry by path.
@@ -589,10 +540,7 @@ FDL_API fdl_geometry_t fdl_geometry_crop(
  * @return 0 on success, -1 on invalid path.
  */
 FDL_API int fdl_geometry_get_dims_anchor_from_path(
-    const fdl_geometry_t* geo,
-    fdl_geometry_path_t path,
-    fdl_dimensions_f64_t* out_dims,
-    fdl_point_f64_t* out_anchor);
+    const fdl_geometry_t* geo, fdl_geometry_path_t path, fdl_dimensions_f64_t* out_dims, fdl_point_f64_t* out_anchor);
 
 /* -----------------------------------------------------------------------
  * Pipeline helper functions
@@ -610,9 +558,7 @@ FDL_API int fdl_geometry_get_dims_anchor_from_path(
  * @return Scale factor (always > 0).
  */
 FDL_API double fdl_calculate_scale_factor(
-    fdl_dimensions_f64_t fit_norm,
-    fdl_dimensions_f64_t target_norm,
-    fdl_fit_method_t fit_method);
+    fdl_dimensions_f64_t fit_norm, fdl_dimensions_f64_t target_norm, fdl_fit_method_t fit_method);
 
 /**
  * Determine output canvas size for a single axis.
@@ -626,11 +572,7 @@ FDL_API double fdl_calculate_scale_factor(
  * @param pad_to_max   1 to pad output to max_size, 0 otherwise.
  * @return Final output size for this axis.
  */
-FDL_API double fdl_output_size_for_axis(
-    double canvas_size,
-    double max_size,
-    int has_max,
-    int pad_to_max);
+FDL_API double fdl_output_size_for_axis(double canvas_size, double max_size, int has_max, int pad_to_max);
 
 /**
  * Calculate content translation shift for a single axis.
@@ -666,10 +608,8 @@ FDL_API double fdl_alignment_shift(
  * @param out_delta   [out] Amount clamped per axis (dims - result), as a point.
  * @return Clamped dimensions (each axis independently capped at clamp_dims).
  */
-FDL_API fdl_dimensions_f64_t fdl_dimensions_clamp_to_dims(
-    fdl_dimensions_f64_t dims,
-    fdl_dimensions_f64_t clamp_dims,
-    fdl_point_f64_t* out_delta);
+FDL_API fdl_dimensions_f64_t
+fdl_dimensions_clamp_to_dims(fdl_dimensions_f64_t dims, fdl_dimensions_f64_t clamp_dims, fdl_point_f64_t* out_delta);
 
 /* -----------------------------------------------------------------------
  * Framing from intent
@@ -728,15 +668,15 @@ typedef struct fdl_doc fdl_doc_t;
 
 /** Opaque handles to FDL sub-objects (index-based, stable across mutations). */
 typedef struct fdl_context fdl_context_t;
-typedef struct fdl_canvas fdl_canvas_t;             /**< Opaque handle to a canvas. */
-typedef struct fdl_framing_decision fdl_framing_decision_t;  /**< Opaque handle to a framing decision. */
-typedef struct fdl_framing_intent fdl_framing_intent_t;      /**< Opaque handle to a framing intent. */
-typedef struct fdl_canvas_template fdl_canvas_template_t;    /**< Opaque handle to a canvas template. */
+typedef struct fdl_canvas fdl_canvas_t;                     /**< Opaque handle to a canvas. */
+typedef struct fdl_framing_decision fdl_framing_decision_t; /**< Opaque handle to a framing decision. */
+typedef struct fdl_framing_intent fdl_framing_intent_t;     /**< Opaque handle to a framing intent. */
+typedef struct fdl_canvas_template fdl_canvas_template_t;   /**< Opaque handle to a canvas template. */
 
 /** Result of parsing JSON into an FDL document. */
 typedef struct fdl_parse_result_t {
-    fdl_doc_t* doc;      /**< non-NULL on success */
-    const char* error;   /**< non-NULL on failure (free with fdl_free) */
+    fdl_doc_t* doc;    /**< non-NULL on success */
+    const char* error; /**< non-NULL on failure (free with fdl_free) */
 } fdl_parse_result_t;
 
 /**
@@ -1344,14 +1284,14 @@ FDL_API int fdl_framing_decision_get_protection_rect(const fdl_framing_decision_
 
 /** Result of applying a canvas template. */
 typedef struct fdl_template_result_t {
-    fdl_doc_t*           output_fdl;          /**< Output FDL (caller owns, free with fdl_doc_free or fdl_template_result_free) */
-    double               scale_factor;        /**< Computed scale factor */
-    fdl_dimensions_f64_t scaled_bounding_box;  /**< Scaled bounding box before crop */
-    fdl_point_f64_t      content_translation; /**< Content translation (shift) */
-    const char*          context_label;       /**< Label of the new context (caller frees with fdl_free) */
-    const char*          canvas_id;           /**< ID of the new canvas (caller frees with fdl_free) */
-    const char*          framing_decision_id; /**< ID of the new framing decision (caller frees with fdl_free) */
-    const char*          error;               /**< Error message on failure (free with fdl_free) */
+    fdl_doc_t* output_fdl; /**< Output FDL (caller owns, free with fdl_doc_free or fdl_template_result_free) */
+    double scale_factor;   /**< Computed scale factor */
+    fdl_dimensions_f64_t scaled_bounding_box; /**< Scaled bounding box before crop */
+    fdl_point_f64_t content_translation;      /**< Content translation (shift) */
+    const char* context_label;                /**< Label of the new context (caller frees with fdl_free) */
+    const char* canvas_id;                    /**< ID of the new canvas (caller frees with fdl_free) */
+    const char* framing_decision_id;          /**< ID of the new framing decision (caller frees with fdl_free) */
+    const char* error;                        /**< Error message on failure (free with fdl_free) */
 } fdl_template_result_t;
 
 /**
@@ -1394,10 +1334,10 @@ FDL_API void fdl_template_result_free(fdl_template_result_t* result);
 
 /** Result of resolving a canvas for given input dimensions. */
 typedef struct fdl_resolve_canvas_result_t {
-    fdl_canvas_t*            canvas;            /**< Resolved canvas (non-owning, do NOT free). */
-    fdl_framing_decision_t*  framing_decision;  /**< Resolved framing decision (non-owning, do NOT free). */
-    int                      was_resolved;      /**< 1 if a different canvas was found, 0 if original matched. */
-    const char*              error;             /**< Error message on failure (caller frees with fdl_free). */
+    fdl_canvas_t* canvas;                     /**< Resolved canvas (non-owning, do NOT free). */
+    fdl_framing_decision_t* framing_decision; /**< Resolved framing decision (non-owning, do NOT free). */
+    int was_resolved;                         /**< 1 if a different canvas was found, 0 if original matched. */
+    const char* error;                        /**< Error message on failure (caller frees with fdl_free). */
 } fdl_resolve_canvas_result_t;
 
 /**
@@ -1417,10 +1357,7 @@ typedef struct fdl_resolve_canvas_result_t {
  *         must be freed with fdl_free().
  */
 FDL_API fdl_resolve_canvas_result_t fdl_context_resolve_canvas_for_dimensions(
-    fdl_context_t* ctx,
-    fdl_dimensions_f64_t input_dims,
-    fdl_canvas_t* canvas,
-    fdl_framing_decision_t* framing);
+    fdl_context_t* ctx, fdl_dimensions_f64_t input_dims, fdl_canvas_t* canvas, fdl_framing_decision_t* framing);
 
 /* -----------------------------------------------------------------------
  * Document builder — create and mutate FDL documents
@@ -1437,8 +1374,11 @@ FDL_API fdl_resolve_canvas_result_t fdl_context_resolve_canvas_for_dimensions(
  * @return New document handle. Caller owns — free with fdl_doc_free().
  */
 FDL_API fdl_doc_t* fdl_doc_create_with_header(
-    const char* uuid, int version_major, int version_minor,
-    const char* fdl_creator, const char* default_framing_intent);
+    const char* uuid,
+    int version_major,
+    int version_minor,
+    const char* fdl_creator,
+    const char* default_framing_intent);
 
 /** Set the UUID on a document.
  * @param doc   Document handle.
@@ -1473,8 +1413,7 @@ FDL_API void fdl_doc_set_version(fdl_doc_t* doc, int major, int minor);
  * @return Handle to the new framing intent (owned by doc).
  */
 FDL_API fdl_framing_intent_t* fdl_doc_add_framing_intent(
-    fdl_doc_t* doc, const char* id, const char* label,
-    int64_t aspect_w, int64_t aspect_h, double protection);
+    fdl_doc_t* doc, const char* id, const char* label, int64_t aspect_w, int64_t aspect_h, double protection);
 
 /**
  * Add a context to the document.
@@ -1484,8 +1423,7 @@ FDL_API fdl_framing_intent_t* fdl_doc_add_framing_intent(
  * @param context_creator  Creator identifier string.
  * @return Handle to the new context (owned by doc).
  */
-FDL_API fdl_context_t* fdl_doc_add_context(
-    fdl_doc_t* doc, const char* label, const char* context_creator);
+FDL_API fdl_context_t* fdl_doc_add_context(fdl_doc_t* doc, const char* label, const char* context_creator);
 
 /**
  * Add a canvas to a context.
@@ -1500,9 +1438,13 @@ FDL_API fdl_context_t* fdl_doc_add_context(
  * @return Handle to the new canvas (owned by doc).
  */
 FDL_API fdl_canvas_t* fdl_context_add_canvas(
-    fdl_context_t* ctx, const char* id, const char* label,
+    fdl_context_t* ctx,
+    const char* id,
+    const char* label,
     const char* source_canvas_id,
-    int64_t dim_w, int64_t dim_h, double squeeze);
+    int64_t dim_w,
+    int64_t dim_h,
+    double squeeze);
 
 /**
  * Set effective dimensions and anchor on a canvas.
@@ -1520,8 +1462,7 @@ FDL_API void fdl_canvas_set_effective_dimensions(
  * @param canvas  Canvas handle.
  * @param dims    Photosite (sensor) dimensions.
  */
-FDL_API void fdl_canvas_set_photosite_dimensions(
-    fdl_canvas_t* canvas, fdl_dimensions_i64_t dims);
+FDL_API void fdl_canvas_set_photosite_dimensions(fdl_canvas_t* canvas, fdl_dimensions_i64_t dims);
 
 /**
  * Set physical dimensions on a canvas.
@@ -1529,8 +1470,7 @@ FDL_API void fdl_canvas_set_photosite_dimensions(
  * @param canvas  Canvas handle.
  * @param dims    Physical dimensions (e.g. millimeters on sensor).
  */
-FDL_API void fdl_canvas_set_physical_dimensions(
-    fdl_canvas_t* canvas, fdl_dimensions_f64_t dims);
+FDL_API void fdl_canvas_set_physical_dimensions(fdl_canvas_t* canvas, fdl_dimensions_f64_t dims);
 
 /**
  * Add a framing decision to a canvas.
@@ -1546,10 +1486,14 @@ FDL_API void fdl_canvas_set_physical_dimensions(
  * @return Handle to the new framing decision (owned by doc).
  */
 FDL_API fdl_framing_decision_t* fdl_canvas_add_framing_decision(
-    fdl_canvas_t* canvas, const char* id, const char* label,
+    fdl_canvas_t* canvas,
+    const char* id,
+    const char* label,
     const char* framing_intent_id,
-    double dim_w, double dim_h,
-    double anchor_x, double anchor_y);
+    double dim_w,
+    double dim_h,
+    double anchor_x,
+    double anchor_y);
 
 /**
  * Add a canvas template to the document.
@@ -1568,10 +1512,16 @@ FDL_API fdl_framing_decision_t* fdl_canvas_add_framing_decision(
  * @return Handle to the new canvas template (owned by doc).
  */
 FDL_API fdl_canvas_template_t* fdl_doc_add_canvas_template(
-    fdl_doc_t* doc, const char* id, const char* label,
-    int64_t target_w, int64_t target_h, double target_squeeze,
-    fdl_geometry_path_t fit_source, fdl_fit_method_t fit_method,
-    fdl_halign_t halign, fdl_valign_t valign,
+    fdl_doc_t* doc,
+    const char* id,
+    const char* label,
+    int64_t target_w,
+    int64_t target_h,
+    double target_squeeze,
+    fdl_geometry_path_t fit_source,
+    fdl_fit_method_t fit_method,
+    fdl_halign_t halign,
+    fdl_valign_t valign,
     fdl_round_strategy_t rounding);
 
 /**
@@ -1580,8 +1530,7 @@ FDL_API fdl_canvas_template_t* fdl_doc_add_canvas_template(
  * @param ct    Canvas template handle.
  * @param path  Geometry path to preserve from the source canvas.
  */
-FDL_API void fdl_canvas_template_set_preserve_from_source_canvas(
-    fdl_canvas_template_t* ct, fdl_geometry_path_t path);
+FDL_API void fdl_canvas_template_set_preserve_from_source_canvas(fdl_canvas_template_t* ct, fdl_geometry_path_t path);
 
 /**
  * Set maximum_dimensions on a canvas template.
@@ -1589,8 +1538,7 @@ FDL_API void fdl_canvas_template_set_preserve_from_source_canvas(
  * @param ct    Canvas template handle.
  * @param dims  Maximum allowed output dimensions.
  */
-FDL_API void fdl_canvas_template_set_maximum_dimensions(
-    fdl_canvas_template_t* ct, fdl_dimensions_i64_t dims);
+FDL_API void fdl_canvas_template_set_maximum_dimensions(fdl_canvas_template_t* ct, fdl_dimensions_i64_t dims);
 
 /**
  * Set pad_to_maximum flag on a canvas template.
@@ -1598,8 +1546,7 @@ FDL_API void fdl_canvas_template_set_maximum_dimensions(
  * @param ct   Canvas template handle.
  * @param pad  1 to pad output to maximum dimensions, 0 otherwise.
  */
-FDL_API void fdl_canvas_template_set_pad_to_maximum(
-    fdl_canvas_template_t* ct, int pad);
+FDL_API void fdl_canvas_template_set_pad_to_maximum(fdl_canvas_template_t* ct, int pad);
 
 /**
  * Set protection dimensions and anchor on a framing decision.
@@ -1617,8 +1564,7 @@ FDL_API void fdl_framing_decision_set_protection(
  * @param fi    Framing intent handle.
  * @param dims  Aspect ratio as integer width:height (e.g. {16, 9}).
  */
-FDL_API void fdl_framing_intent_set_aspect_ratio(
-    fdl_framing_intent_t* fi, fdl_dimensions_i64_t dims);
+FDL_API void fdl_framing_intent_set_aspect_ratio(fdl_framing_intent_t* fi, fdl_dimensions_i64_t dims);
 
 /**
  * Set protection factor on a framing intent.
@@ -1626,8 +1572,7 @@ FDL_API void fdl_framing_intent_set_aspect_ratio(
  * @param fi          Framing intent handle.
  * @param protection  Protection factor (0.0 for no protection).
  */
-FDL_API void fdl_framing_intent_set_protection(
-    fdl_framing_intent_t* fi, double protection);
+FDL_API void fdl_framing_intent_set_protection(fdl_framing_intent_t* fi, double protection);
 
 /**
  * Set dimensions on a canvas.
@@ -1635,8 +1580,7 @@ FDL_API void fdl_framing_intent_set_protection(
  * @param canvas  Canvas handle.
  * @param dims    New canvas dimensions.
  */
-FDL_API void fdl_canvas_set_dimensions(
-    fdl_canvas_t* canvas, fdl_dimensions_i64_t dims);
+FDL_API void fdl_canvas_set_dimensions(fdl_canvas_t* canvas, fdl_dimensions_i64_t dims);
 
 /**
  * Set anamorphic squeeze on a canvas.
@@ -1644,8 +1588,7 @@ FDL_API void fdl_canvas_set_dimensions(
  * @param canvas   Canvas handle.
  * @param squeeze  New anamorphic squeeze factor.
  */
-FDL_API void fdl_canvas_set_anamorphic_squeeze(
-    fdl_canvas_t* canvas, double squeeze);
+FDL_API void fdl_canvas_set_anamorphic_squeeze(fdl_canvas_t* canvas, double squeeze);
 
 /**
  * Set effective dimensions on a canvas.
@@ -1655,8 +1598,7 @@ FDL_API void fdl_canvas_set_anamorphic_squeeze(
  * @param canvas  Canvas handle.
  * @param dims    Effective dimensions.
  */
-FDL_API void fdl_canvas_set_effective_dims_only(
-    fdl_canvas_t* canvas, fdl_dimensions_i64_t dims);
+FDL_API void fdl_canvas_set_effective_dims_only(fdl_canvas_t* canvas, fdl_dimensions_i64_t dims);
 
 /**
  * Remove effective dimensions and anchor from a canvas.
@@ -1671,8 +1613,7 @@ FDL_API void fdl_canvas_remove_effective(fdl_canvas_t* canvas);
  * @param fd    Framing decision handle.
  * @param dims  New framing dimensions.
  */
-FDL_API void fdl_framing_decision_set_dimensions(
-    fdl_framing_decision_t* fd, fdl_dimensions_f64_t dims);
+FDL_API void fdl_framing_decision_set_dimensions(fdl_framing_decision_t* fd, fdl_dimensions_f64_t dims);
 
 /**
  * Set anchor point on a framing decision.
@@ -1680,8 +1621,7 @@ FDL_API void fdl_framing_decision_set_dimensions(
  * @param fd     Framing decision handle.
  * @param point  New anchor point.
  */
-FDL_API void fdl_framing_decision_set_anchor_point(
-    fdl_framing_decision_t* fd, fdl_point_f64_t point);
+FDL_API void fdl_framing_decision_set_anchor_point(fdl_framing_decision_t* fd, fdl_point_f64_t point);
 
 /**
  * Set protection dimensions on a framing decision (without changing anchor).
@@ -1689,8 +1629,7 @@ FDL_API void fdl_framing_decision_set_anchor_point(
  * @param fd    Framing decision handle.
  * @param dims  New protection dimensions.
  */
-FDL_API void fdl_framing_decision_set_protection_dimensions(
-    fdl_framing_decision_t* fd, fdl_dimensions_f64_t dims);
+FDL_API void fdl_framing_decision_set_protection_dimensions(fdl_framing_decision_t* fd, fdl_dimensions_f64_t dims);
 
 /**
  * Set protection anchor point on a framing decision (without changing dimensions).
@@ -1698,8 +1637,7 @@ FDL_API void fdl_framing_decision_set_protection_dimensions(
  * @param fd     Framing decision handle.
  * @param point  New protection anchor point.
  */
-FDL_API void fdl_framing_decision_set_protection_anchor_point(
-    fdl_framing_decision_t* fd, fdl_point_f64_t point);
+FDL_API void fdl_framing_decision_set_protection_anchor_point(fdl_framing_decision_t* fd, fdl_point_f64_t point);
 
 /**
  * Remove protection dimensions and anchor from a framing decision.
@@ -1724,10 +1662,7 @@ FDL_API void fdl_framing_decision_remove_protection(fdl_framing_decision_t* fd);
  * @param v_align  Vertical alignment (TOP, CENTER, or BOTTOM).
  */
 FDL_API void fdl_framing_decision_adjust_anchor(
-    fdl_framing_decision_t* fd,
-    const fdl_canvas_t* canvas,
-    fdl_halign_t h_align,
-    fdl_valign_t v_align);
+    fdl_framing_decision_t* fd, const fdl_canvas_t* canvas, fdl_halign_t h_align, fdl_valign_t v_align);
 
 /**
  * Adjust protection_anchor_point on a framing decision based on alignment within canvas.
@@ -1741,10 +1676,7 @@ FDL_API void fdl_framing_decision_adjust_anchor(
  * @param v_align  Vertical alignment.
  */
 FDL_API void fdl_framing_decision_adjust_protection_anchor(
-    fdl_framing_decision_t* fd,
-    const fdl_canvas_t* canvas,
-    fdl_halign_t h_align,
-    fdl_valign_t v_align);
+    fdl_framing_decision_t* fd, const fdl_canvas_t* canvas, fdl_halign_t h_align, fdl_valign_t v_align);
 
 /**
  * Populate a framing decision from a canvas and framing intent.
@@ -1774,8 +1706,7 @@ FDL_API void fdl_framing_decision_populate_from_intent(
  * @return NULL on success, or heap-allocated error string on failure.
  *         Caller frees error with fdl_free().
  */
-FDL_API const char* fdl_context_set_clip_id_json(
-    fdl_context_t* ctx, const char* json_str, size_t json_len);
+FDL_API const char* fdl_context_set_clip_id_json(fdl_context_t* ctx, const char* json_str, size_t json_len);
 
 /**
  * Remove clip_id from a context. Safe to call if not present.
@@ -1792,8 +1723,7 @@ FDL_API void fdl_context_remove_clip_id(fdl_context_t* ctx);
  * @return NULL if valid, or heap-allocated error string on failure.
  *         Caller frees error with fdl_free().
  */
-FDL_API const char* fdl_clip_id_validate_json(
-    const char* json_str, size_t json_len);
+FDL_API const char* fdl_clip_id_validate_json(const char* json_str, size_t json_len);
 
 /* -----------------------------------------------------------------------
  * Validation (schema + semantic)

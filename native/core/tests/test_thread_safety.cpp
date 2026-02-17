@@ -13,36 +13,30 @@
 
 static void run_in_parallel(int num_threads, std::function<void(int)> fn) {
     std::vector<std::thread> threads;
-    for (int i = 0; i < num_threads; ++i)
+    for (int i = 0; i < num_threads; ++i) {
         threads.emplace_back(fn, i);
-    for (auto& t : threads) t.join();
+    }
+    for (auto& t : threads) {
+        t.join();
+    }
 }
 
 // Build a complete FDL document for testing
 static fdl_doc_t* make_test_doc() {
-    auto* doc = fdl_doc_create_with_header(
-        "11111111-1111-1111-1111-111111111111",
-        2, 0, "thread-test", "FI_239");
+    auto* doc = fdl_doc_create_with_header("11111111-1111-1111-1111-111111111111", 2, 0, "thread-test", "FI_239");
 
     fdl_doc_add_framing_intent(doc, "FI_239", "2.39:1", 239, 100, 0.1);
     fdl_doc_add_framing_intent(doc, "FI_178", "1.78:1", 178, 100, 0.0);
 
     auto* ctx = fdl_doc_add_context(doc, "Camera Original", "test-creator");
-    auto* cvs = fdl_context_add_canvas(ctx, "CVS_OPEN_GATE", "Open Gate", "CVS_OPEN_GATE",
-        4096, 3072, 1.0);
+    auto* cvs = fdl_context_add_canvas(ctx, "CVS_OPEN_GATE", "Open Gate", "CVS_OPEN_GATE", 4096, 3072, 1.0);
 
-    fdl_canvas_set_effective_dimensions(cvs,
-        {3840, 2160}, {128.0, 456.0});
+    fdl_canvas_set_effective_dimensions(cvs, {3840, 2160}, {128.0, 456.0});
 
-    fdl_canvas_add_framing_decision(cvs,
-        "FD_239", "2.39 FD", "FI_239",
-        3840.0, 1607.0, 0.0, 276.5);
+    fdl_canvas_add_framing_decision(cvs, "FD_239", "2.39 FD", "FI_239", 3840.0, 1607.0, 0.0, 276.5);
 
-    auto* fd2 = fdl_canvas_add_framing_decision(cvs,
-        "FD_178", "1.78 FD", "FI_178",
-        3840.0, 2160.0, 0.0, 0.0);
-    fdl_framing_decision_set_protection(fd2,
-        {4000.0, 2250.0}, {-80.0, -45.0});
+    auto* fd2 = fdl_canvas_add_framing_decision(cvs, "FD_178", "1.78 FD", "FI_178", 3840.0, 2160.0, 0.0, 0.0);
+    fdl_framing_decision_set_protection(fd2, {4000.0, 2250.0}, {-80.0, -45.0});
 
     return doc;
 }
@@ -89,37 +83,52 @@ TEST_CASE("Concurrent reads on same document", "[thread]") {
         for (int iter = 0; iter < 100; ++iter) {
             // Read doc-level properties
             const char* uuid = fdl_doc_get_uuid(doc);
-            if (!uuid || std::string(uuid) != "11111111-1111-1111-1111-111111111111")
+            if (!uuid || std::string(uuid) != "11111111-1111-1111-1111-111111111111") {
                 errors.fetch_add(1);
+            }
 
             const char* creator = fdl_doc_get_fdl_creator(doc);
-            if (!creator || std::string(creator) != "thread-test")
+            if (!creator || std::string(creator) != "thread-test") {
                 errors.fetch_add(1);
+            }
 
             // Read context properties
             auto* ctx = fdl_doc_context_at(doc, 0);
-            if (!ctx) { errors.fetch_add(1); continue; }
-            const char* ctx_label = fdl_context_get_label(ctx);
-            if (!ctx_label || std::string(ctx_label) != "Camera Original")
+            if (!ctx) {
                 errors.fetch_add(1);
+                continue;
+            }
+            const char* ctx_label = fdl_context_get_label(ctx);
+            if (!ctx_label || std::string(ctx_label) != "Camera Original") {
+                errors.fetch_add(1);
+            }
 
             // Read canvas properties
             auto* cvs = fdl_context_canvas_at(ctx, 0);
-            if (!cvs) { errors.fetch_add(1); continue; }
-            auto dims = fdl_canvas_get_dimensions(cvs);
-            if (dims.width != 4096 || dims.height != 3072)
+            if (!cvs) {
                 errors.fetch_add(1);
+                continue;
+            }
+            auto dims = fdl_canvas_get_dimensions(cvs);
+            if (dims.width != 4096 || dims.height != 3072) {
+                errors.fetch_add(1);
+            }
 
             // Read FD properties
             auto* fd = fdl_canvas_framing_decision_at(cvs, 0);
-            if (!fd) { errors.fetch_add(1); continue; }
-            auto fd_dims = fdl_framing_decision_get_dimensions(fd);
-            if (fd_dims.width != 3840.0 || fd_dims.height != 1607.0)
+            if (!fd) {
                 errors.fetch_add(1);
+                continue;
+            }
+            auto fd_dims = fdl_framing_decision_get_dimensions(fd);
+            if (fd_dims.width != 3840.0 || fd_dims.height != 1607.0) {
+                errors.fetch_add(1);
+            }
 
             auto anchor = fdl_framing_decision_get_anchor_point(fd);
-            if (anchor.x != 0.0 || anchor.y != 276.5)
+            if (anchor.x != 0.0 || anchor.y != 276.5) {
                 errors.fetch_add(1);
+            }
         }
     });
 
@@ -141,17 +150,22 @@ TEST_CASE("Concurrent reads on independent documents", "[thread]") {
     run_in_parallel(8, [&](int) {
         for (int iter = 0; iter < 50; ++iter) {
             auto pr = fdl_doc_parse_json(json_str.c_str(), json_str.size());
-            if (!pr.doc) { errors.fetch_add(1); continue; }
+            if (!pr.doc) {
+                errors.fetch_add(1);
+                continue;
+            }
 
             const char* uuid = fdl_doc_get_uuid(pr.doc);
-            if (!uuid || std::string(uuid) != "11111111-1111-1111-1111-111111111111")
+            if (!uuid || std::string(uuid) != "11111111-1111-1111-1111-111111111111") {
                 errors.fetch_add(1);
+            }
 
             auto* ctx = fdl_doc_context_at(pr.doc, 0);
             auto* cvs = fdl_context_canvas_at(ctx, 0);
             auto dims = fdl_canvas_get_dimensions(cvs);
-            if (dims.width != 4096 || dims.height != 3072)
+            if (dims.width != 4096 || dims.height != 3072) {
                 errors.fetch_add(1);
+            }
 
             fdl_doc_free(pr.doc);
         }
@@ -169,35 +183,49 @@ TEST_CASE("Concurrent read + write on same document", "[thread]") {
     auto reader = [&](int) {
         for (int iter = 0; iter < 100; ++iter) {
             auto* ctx = fdl_doc_context_at(doc, 0);
-            if (!ctx) continue;
+            if (!ctx) {
+                continue;
+            }
             auto* cvs = fdl_context_canvas_at(ctx, 0);
-            if (!cvs) continue;
+            if (!cvs) {
+                continue;
+            }
 
             auto dims = fdl_canvas_get_dimensions(cvs);
             // Dimensions must be valid (either original or modified)
-            if (dims.width <= 0 || dims.height <= 0)
+            if (dims.width <= 0 || dims.height <= 0) {
                 errors.fetch_add(1);
+            }
 
             const char* uuid = fdl_doc_get_uuid(doc);
-            if (!uuid) errors.fetch_add(1);
+            if (!uuid) {
+                errors.fetch_add(1);
+            }
         }
     };
 
     auto writer = [&](int thread_id) {
         for (int iter = 0; iter < 50; ++iter) {
-            std::string new_uuid = "22222222-2222-2222-2222-" +
-                std::to_string(thread_id) + std::to_string(iter);
+            std::string new_uuid = "22222222-2222-2222-2222-" + std::to_string(thread_id) + std::to_string(iter);
             // Pad to valid UUID length
-            while (new_uuid.size() < 36) new_uuid += "0";
+            while (new_uuid.size() < 36) {
+                new_uuid += "0";
+            }
             fdl_doc_set_uuid(doc, new_uuid.c_str());
             writes_done.fetch_add(1);
         }
     };
 
     std::vector<std::thread> threads;
-    for (int i = 0; i < 4; ++i) threads.emplace_back(reader, i);
-    for (int i = 0; i < 2; ++i) threads.emplace_back(writer, i);
-    for (auto& t : threads) t.join();
+    for (int i = 0; i < 4; ++i) {
+        threads.emplace_back(reader, i);
+    }
+    for (int i = 0; i < 2; ++i) {
+        threads.emplace_back(writer, i);
+    }
+    for (auto& t : threads) {
+        t.join();
+    }
 
     REQUIRE(errors.load() == 0);
     REQUIRE(writes_done.load() == 100);
@@ -224,10 +252,8 @@ TEST_CASE("Handle stability after collection mutation", "[thread]") {
     fdl_doc_add_context(doc, "New Context 2", "creator");
     fdl_doc_add_framing_intent(doc, "FI_NEW", "New FI", 16, 9, 0.0);
 
-    auto* cvs_new = fdl_context_add_canvas(ctx0, "CVS_NEW", "New Canvas", "CVS_NEW",
-        1920, 1080, 1.0);
-    fdl_canvas_add_framing_decision(cvs0, "FD_NEW", "New FD", "FI_239",
-        1920.0, 803.0, 0.0, 138.5);
+    auto* cvs_new = fdl_context_add_canvas(ctx0, "CVS_NEW", "New Canvas", "CVS_NEW", 1920, 1080, 1.0);
+    fdl_canvas_add_framing_decision(cvs0, "FD_NEW", "New FD", "FI_239", 1920.0, 803.0, 0.0, 138.5);
 
     // Verify original handles still resolve correctly via node()
     REQUIRE(std::string(fdl_context_get_label(ctx0)) == orig_ctx_label);
@@ -289,11 +315,17 @@ TEST_CASE("Concurrent template apply", "[thread]") {
     auto* doc = make_test_doc();
 
     // Add a canvas template
-    auto* ct = fdl_doc_add_canvas_template(doc,
-        "CT_HD", "HD", 1920, 1080, 1.0,
+    auto* ct = fdl_doc_add_canvas_template(
+        doc,
+        "CT_HD",
+        "HD",
+        1920,
+        1080,
+        1.0,
         FDL_GEOMETRY_PATH_FRAMING_DIMENSIONS,
         FDL_FIT_METHOD_WIDTH,
-        FDL_HALIGN_CENTER, FDL_VALIGN_CENTER,
+        FDL_HALIGN_CENTER,
+        FDL_VALIGN_CENTER,
         {FDL_ROUNDING_EVEN_WHOLE, FDL_ROUNDING_MODE_ROUND});
 
     auto* ctx = fdl_doc_context_at(doc, 0);
@@ -305,8 +337,7 @@ TEST_CASE("Concurrent template apply", "[thread]") {
     // 4 threads each apply the template, producing independent output docs
     run_in_parallel(4, [&](int thread_id) {
         std::string new_id = "OUT_" + std::to_string(thread_id);
-        auto result = fdl_apply_canvas_template(ct, cvs, fd,
-            new_id.c_str(), "Test FD", "Camera Original", "test");
+        auto result = fdl_apply_canvas_template(ct, cvs, fd, new_id.c_str(), "Test FD", "Camera Original", "test");
 
         if (result.error) {
             errors.fetch_add(1);
@@ -320,13 +351,19 @@ TEST_CASE("Concurrent template apply", "[thread]") {
 
         // Verify output is valid
         auto out_ctx_count = fdl_doc_contexts_count(result.output_fdl);
-        if (out_ctx_count != 1) errors.fetch_add(1);
+        if (out_ctx_count != 1) {
+            errors.fetch_add(1);
+        }
 
         auto* out_ctx = fdl_doc_context_at(result.output_fdl, 0);
         auto out_cvs_count = fdl_context_canvases_count(out_ctx);
-        if (out_cvs_count != 2) errors.fetch_add(1);
+        if (out_cvs_count != 2) {
+            errors.fetch_add(1);
+        }
 
-        if (result.scale_factor <= 0.0) errors.fetch_add(1);
+        if (result.scale_factor <= 0.0) {
+            errors.fetch_add(1);
+        }
 
         fdl_template_result_free(&result);
     });
@@ -341,24 +378,29 @@ TEST_CASE("Stress test: parse-mutate-serialize cycle", "[thread]") {
     run_in_parallel(8, [&](int thread_id) {
         for (int iter = 0; iter < 50; ++iter) {
             // Create fresh doc
-            std::string uuid = "aaaaaaaa-bbbb-cccc-dddd-" +
-                std::to_string(thread_id) + std::to_string(iter);
-            while (uuid.size() < 36) uuid += "0";
+            std::string uuid = "aaaaaaaa-bbbb-cccc-dddd-" + std::to_string(thread_id) + std::to_string(iter);
+            while (uuid.size() < 36) {
+                uuid += "0";
+            }
 
-            auto* doc = fdl_doc_create_with_header(
-                uuid.c_str(), 2, 0, "stress-test", nullptr);
-            if (!doc) { errors.fetch_add(1); continue; }
+            auto* doc = fdl_doc_create_with_header(uuid.c_str(), 2, 0, "stress-test", nullptr);
+            if (!doc) {
+                errors.fetch_add(1);
+                continue;
+            }
 
             // Add content
             auto* ctx = fdl_doc_add_context(doc, "Ctx", "creator");
-            auto* cvs = fdl_context_add_canvas(ctx,
-                "CVS", "Canvas", "CVS", 1920, 1080, 1.0);
-            fdl_canvas_add_framing_decision(cvs,
-                "FD", "FD", "FI", 1920.0, 1080.0, 0.0, 0.0);
+            auto* cvs = fdl_context_add_canvas(ctx, "CVS", "Canvas", "CVS", 1920, 1080, 1.0);
+            fdl_canvas_add_framing_decision(cvs, "FD", "FD", "FI", 1920.0, 1080.0, 0.0, 0.0);
 
             // Serialize
             char* json = fdl_doc_to_json(doc, 0);
-            if (!json) { errors.fetch_add(1); fdl_doc_free(doc); continue; }
+            if (!json) {
+                errors.fetch_add(1);
+                fdl_doc_free(doc);
+                continue;
+            }
 
             // Re-parse to verify
             auto pr = fdl_doc_parse_json(json, strlen(json));
@@ -366,14 +408,18 @@ TEST_CASE("Stress test: parse-mutate-serialize cycle", "[thread]") {
 
             if (!pr.doc) {
                 errors.fetch_add(1);
-                if (pr.error) fdl_free(const_cast<char*>(pr.error));
+                if (pr.error) {
+                    fdl_free(const_cast<char*>(pr.error));
+                }
                 fdl_doc_free(doc);
                 continue;
             }
 
             // Verify content survived round-trip
             auto ctx_count = fdl_doc_contexts_count(pr.doc);
-            if (ctx_count != 1) errors.fetch_add(1);
+            if (ctx_count != 1) {
+                errors.fetch_add(1);
+            }
 
             fdl_doc_free(pr.doc);
             fdl_doc_free(doc);

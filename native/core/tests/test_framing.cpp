@@ -4,9 +4,9 @@
 
 #include "fdl/fdl_core.h"
 
-#include <jsoncons/json.hpp>
 #include <cmath>
 #include <fstream>
+#include <jsoncons/json.hpp>
 #include <string>
 
 using ojson = jsoncons::ojson;
@@ -30,27 +30,25 @@ TEST_CASE("compute_framing_from_intent matches Python golden vectors", "[framing
         SECTION(label) {
             // Parse inputs
             fdl_dimensions_f64_t canvas_dims = {
-                v["canvas_dims"]["width"].as<double>(),
-                v["canvas_dims"]["height"].as<double>()
-            };
+                v["canvas_dims"]["width"].as<double>(), v["canvas_dims"]["height"].as<double>()};
             fdl_dimensions_f64_t working_dims = {
-                v["working_dims"]["width"].as<double>(),
-                v["working_dims"]["height"].as<double>()
-            };
+                v["working_dims"]["width"].as<double>(), v["working_dims"]["height"].as<double>()};
             double squeeze = v["squeeze"].as<double>();
             fdl_dimensions_i64_t aspect_ratio = {
-                v["aspect_ratio"]["width"].as<int64_t>(),
-                v["aspect_ratio"]["height"].as<int64_t>()
-            };
+                v["aspect_ratio"]["width"].as<int64_t>(), v["aspect_ratio"]["height"].as<int64_t>()};
             double protection = v["protection"].as<double>();
 
             fdl_round_strategy_t rounding;
             auto even_str = v["rounding"]["even"].as<std::string>();
             auto mode_str = v["rounding"]["mode"].as<std::string>();
             rounding.even = (even_str == "even") ? FDL_ROUNDING_EVEN_EVEN : FDL_ROUNDING_EVEN_WHOLE;
-            if (mode_str == "up") rounding.mode = FDL_ROUNDING_MODE_UP;
-            else if (mode_str == "down") rounding.mode = FDL_ROUNDING_MODE_DOWN;
-            else rounding.mode = FDL_ROUNDING_MODE_ROUND;
+            if (mode_str == "up") {
+                rounding.mode = FDL_ROUNDING_MODE_UP;
+            } else if (mode_str == "down") {
+                rounding.mode = FDL_ROUNDING_MODE_DOWN;
+            } else {
+                rounding.mode = FDL_ROUNDING_MODE_ROUND;
+            }
 
             // Parse expected
             const auto& exp = v["expected"];
@@ -61,8 +59,8 @@ TEST_CASE("compute_framing_from_intent matches Python golden vectors", "[framing
             bool exp_has_prot = exp["has_protection"].as<bool>();
 
             // Run
-            auto result = fdl_compute_framing_from_intent(
-                canvas_dims, working_dims, squeeze, aspect_ratio, protection, rounding);
+            auto result =
+                fdl_compute_framing_from_intent(canvas_dims, working_dims, squeeze, aspect_ratio, protection, rounding);
 
             // Verify dimensions and anchor
             REQUIRE(close_enough(result.dimensions.width, exp_dim_w));

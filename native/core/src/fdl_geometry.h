@@ -24,9 +24,7 @@ namespace fdl::detail {
  * @param anchor_offset  Offset to subtract from all anchors.
  * @return Geometry with gaps filled and anchors adjusted.
  */
-fdl_geometry_t geometry_fill_hierarchy_gaps(
-    fdl_geometry_t geo,
-    fdl_point_f64_t anchor_offset);
+fdl_geometry_t geometry_fill_hierarchy_gaps(fdl_geometry_t geo, fdl_point_f64_t anchor_offset);
 
 /**
  * @brief Normalize and scale all 7 fields (4 dimensions + 3 anchors) of the geometry.
@@ -37,10 +35,7 @@ fdl_geometry_t geometry_fill_hierarchy_gaps(
  * @return Normalized and scaled geometry.
  */
 fdl_geometry_t geometry_normalize_and_scale(
-    fdl_geometry_t geo,
-    double source_squeeze,
-    double scale_factor,
-    double target_squeeze);
+    fdl_geometry_t geo, double source_squeeze, double scale_factor, double target_squeeze);
 
 /**
  * @brief Round all 7 fields of the geometry using the given strategy.
@@ -48,9 +43,7 @@ fdl_geometry_t geometry_normalize_and_scale(
  * @param strategy  Rounding strategy (even + mode).
  * @return Geometry with all fields rounded.
  */
-fdl_geometry_t geometry_round(
-    fdl_geometry_t geo,
-    fdl_round_strategy_t strategy);
+fdl_geometry_t geometry_round(fdl_geometry_t geo, fdl_round_strategy_t strategy);
 
 /**
  * @brief Apply offset to all anchors, clamping to canvas bounds.
@@ -83,10 +76,7 @@ fdl_geometry_t geometry_apply_offset(
  * @return Geometry with dimensions cropped to visible area.
  */
 fdl_geometry_t geometry_crop(
-    fdl_geometry_t geo,
-    fdl_point_f64_t theo_eff,
-    fdl_point_f64_t theo_prot,
-    fdl_point_f64_t theo_fram);
+    fdl_geometry_t geo, fdl_point_f64_t theo_eff, fdl_point_f64_t theo_prot, fdl_point_f64_t theo_fram);
 
 /**
  * @brief Extract dimensions and anchor from geometry by path.
@@ -97,10 +87,7 @@ fdl_geometry_t geometry_crop(
  * @return 0 on success, -1 on invalid path.
  */
 int geometry_get_dims_anchor_from_path(
-    const fdl_geometry_t* geo,
-    fdl_geometry_path_t path,
-    fdl_dimensions_f64_t* out_dims,
-    fdl_point_f64_t* out_anchor);
+    const fdl_geometry_t* geo, fdl_geometry_path_t path, fdl_dimensions_f64_t* out_dims, fdl_point_f64_t* out_anchor);
 
 } // namespace fdl::detail
 

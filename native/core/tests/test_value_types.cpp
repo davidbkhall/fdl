@@ -42,124 +42,55 @@ TEST_CASE("Dimensions math matches Python golden vectors", "[value_types][dimens
         CAPTURE(i, op);
 
         if (op == "normalize") {
-            fdl_dimensions_f64_t dims = {
-                v["input"]["width"].as<double>(),
-                v["input"]["height"].as<double>()
-            };
+            fdl_dimensions_f64_t dims = {v["input"]["width"].as<double>(), v["input"]["height"].as<double>()};
             double squeeze = v["params"]["squeeze"].as<double>();
-            fdl_dimensions_f64_t expected = {
-                v["expected"]["width"].as<double>(),
-                v["expected"]["height"].as<double>()
-            };
+            fdl_dimensions_f64_t expected = {v["expected"]["width"].as<double>(), v["expected"]["height"].as<double>()};
             require_dims_close(fdl_dimensions_normalize(dims, squeeze), expected);
-        }
-        else if (op == "scale") {
-            fdl_dimensions_f64_t dims = {
-                v["input"]["width"].as<double>(),
-                v["input"]["height"].as<double>()
-            };
+        } else if (op == "scale") {
+            fdl_dimensions_f64_t dims = {v["input"]["width"].as<double>(), v["input"]["height"].as<double>()};
             double sf = v["params"]["scale_factor"].as<double>();
             double tsq = v["params"]["target_squeeze"].as<double>();
-            fdl_dimensions_f64_t expected = {
-                v["expected"]["width"].as<double>(),
-                v["expected"]["height"].as<double>()
-            };
+            fdl_dimensions_f64_t expected = {v["expected"]["width"].as<double>(), v["expected"]["height"].as<double>()};
             require_dims_close(fdl_dimensions_scale(dims, sf, tsq), expected);
-        }
-        else if (op == "normalize_and_scale") {
-            fdl_dimensions_f64_t dims = {
-                v["input"]["width"].as<double>(),
-                v["input"]["height"].as<double>()
-            };
+        } else if (op == "normalize_and_scale") {
+            fdl_dimensions_f64_t dims = {v["input"]["width"].as<double>(), v["input"]["height"].as<double>()};
             double isq = v["params"]["input_squeeze"].as<double>();
             double sf = v["params"]["scale_factor"].as<double>();
             double tsq = v["params"]["target_squeeze"].as<double>();
-            fdl_dimensions_f64_t expected = {
-                v["expected"]["width"].as<double>(),
-                v["expected"]["height"].as<double>()
-            };
+            fdl_dimensions_f64_t expected = {v["expected"]["width"].as<double>(), v["expected"]["height"].as<double>()};
             require_dims_close(fdl_dimensions_normalize_and_scale(dims, isq, sf, tsq), expected);
-        }
-        else if (op == "sub") {
-            fdl_dimensions_f64_t a = {
-                v["input"]["a"]["width"].as<double>(),
-                v["input"]["a"]["height"].as<double>()
-            };
-            fdl_dimensions_f64_t b = {
-                v["input"]["b"]["width"].as<double>(),
-                v["input"]["b"]["height"].as<double>()
-            };
-            fdl_dimensions_f64_t expected = {
-                v["expected"]["width"].as<double>(),
-                v["expected"]["height"].as<double>()
-            };
+        } else if (op == "sub") {
+            fdl_dimensions_f64_t a = {v["input"]["a"]["width"].as<double>(), v["input"]["a"]["height"].as<double>()};
+            fdl_dimensions_f64_t b = {v["input"]["b"]["width"].as<double>(), v["input"]["b"]["height"].as<double>()};
+            fdl_dimensions_f64_t expected = {v["expected"]["width"].as<double>(), v["expected"]["height"].as<double>()};
             require_dims_close(fdl_dimensions_sub(a, b), expected);
-        }
-        else if (op == "is_zero") {
-            fdl_dimensions_f64_t dims = {
-                v["input"]["width"].as<double>(),
-                v["input"]["height"].as<double>()
-            };
+        } else if (op == "is_zero") {
+            fdl_dimensions_f64_t dims = {v["input"]["width"].as<double>(), v["input"]["height"].as<double>()};
             bool expected = v["expected"].as<bool>();
             REQUIRE(fdl_dimensions_is_zero(dims) == (expected ? 1 : 0));
-        }
-        else if (op == "equal") {
-            fdl_dimensions_f64_t a = {
-                v["input"]["a"]["width"].as<double>(),
-                v["input"]["a"]["height"].as<double>()
-            };
-            fdl_dimensions_f64_t b = {
-                v["input"]["b"]["width"].as<double>(),
-                v["input"]["b"]["height"].as<double>()
-            };
+        } else if (op == "equal") {
+            fdl_dimensions_f64_t a = {v["input"]["a"]["width"].as<double>(), v["input"]["a"]["height"].as<double>()};
+            fdl_dimensions_f64_t b = {v["input"]["b"]["width"].as<double>(), v["input"]["b"]["height"].as<double>()};
             bool expected = v["expected"].as<bool>();
             REQUIRE(fdl_dimensions_equal(a, b) == (expected ? 1 : 0));
-        }
-        else if (op == "gt_i64") {
-            fdl_dimensions_i64_t a = {
-                v["input"]["a"]["width"].as<int64_t>(),
-                v["input"]["a"]["height"].as<int64_t>()
-            };
-            fdl_dimensions_i64_t b = {
-                v["input"]["b"]["width"].as<int64_t>(),
-                v["input"]["b"]["height"].as<int64_t>()
-            };
+        } else if (op == "gt_i64") {
+            fdl_dimensions_i64_t a = {v["input"]["a"]["width"].as<int64_t>(), v["input"]["a"]["height"].as<int64_t>()};
+            fdl_dimensions_i64_t b = {v["input"]["b"]["width"].as<int64_t>(), v["input"]["b"]["height"].as<int64_t>()};
             bool expected = v["expected"].as<bool>();
             REQUIRE(fdl_dimensions_i64_gt(a, b) == (expected ? 1 : 0));
-        }
-        else if (op == "lt_i64") {
-            fdl_dimensions_i64_t a = {
-                v["input"]["a"]["width"].as<int64_t>(),
-                v["input"]["a"]["height"].as<int64_t>()
-            };
-            fdl_dimensions_i64_t b = {
-                v["input"]["b"]["width"].as<int64_t>(),
-                v["input"]["b"]["height"].as<int64_t>()
-            };
+        } else if (op == "lt_i64") {
+            fdl_dimensions_i64_t a = {v["input"]["a"]["width"].as<int64_t>(), v["input"]["a"]["height"].as<int64_t>()};
+            fdl_dimensions_i64_t b = {v["input"]["b"]["width"].as<int64_t>(), v["input"]["b"]["height"].as<int64_t>()};
             bool expected = v["expected"].as<bool>();
             REQUIRE(fdl_dimensions_i64_lt(a, b) == (expected ? 1 : 0));
-        }
-        else if (op == "gt_f64") {
-            fdl_dimensions_f64_t a = {
-                v["input"]["a"]["width"].as<double>(),
-                v["input"]["a"]["height"].as<double>()
-            };
-            fdl_dimensions_f64_t b = {
-                v["input"]["b"]["width"].as<double>(),
-                v["input"]["b"]["height"].as<double>()
-            };
+        } else if (op == "gt_f64") {
+            fdl_dimensions_f64_t a = {v["input"]["a"]["width"].as<double>(), v["input"]["a"]["height"].as<double>()};
+            fdl_dimensions_f64_t b = {v["input"]["b"]["width"].as<double>(), v["input"]["b"]["height"].as<double>()};
             bool expected = v["expected"].as<bool>();
             REQUIRE(fdl_dimensions_f64_gt(a, b) == (expected ? 1 : 0));
-        }
-        else if (op == "lt_f64") {
-            fdl_dimensions_f64_t a = {
-                v["input"]["a"]["width"].as<double>(),
-                v["input"]["a"]["height"].as<double>()
-            };
-            fdl_dimensions_f64_t b = {
-                v["input"]["b"]["width"].as<double>(),
-                v["input"]["b"]["height"].as<double>()
-            };
+        } else if (op == "lt_f64") {
+            fdl_dimensions_f64_t a = {v["input"]["a"]["width"].as<double>(), v["input"]["a"]["height"].as<double>()};
+            fdl_dimensions_f64_t b = {v["input"]["b"]["width"].as<double>(), v["input"]["b"]["height"].as<double>()};
             bool expected = v["expected"].as<bool>();
             REQUIRE(fdl_dimensions_f64_lt(a, b) == (expected ? 1 : 0));
         }
@@ -184,108 +115,47 @@ TEST_CASE("Point math matches Python golden vectors", "[value_types][points]") {
         CAPTURE(i, op);
 
         if (op == "normalize") {
-            fdl_point_f64_t point = {
-                v["input"]["x"].as<double>(),
-                v["input"]["y"].as<double>()
-            };
+            fdl_point_f64_t point = {v["input"]["x"].as<double>(), v["input"]["y"].as<double>()};
             double squeeze = v["params"]["squeeze"].as<double>();
-            fdl_point_f64_t expected = {
-                v["expected"]["x"].as<double>(),
-                v["expected"]["y"].as<double>()
-            };
+            fdl_point_f64_t expected = {v["expected"]["x"].as<double>(), v["expected"]["y"].as<double>()};
             require_point_close(fdl_point_normalize(point, squeeze), expected);
-        }
-        else if (op == "scale") {
-            fdl_point_f64_t point = {
-                v["input"]["x"].as<double>(),
-                v["input"]["y"].as<double>()
-            };
+        } else if (op == "scale") {
+            fdl_point_f64_t point = {v["input"]["x"].as<double>(), v["input"]["y"].as<double>()};
             double sf = v["params"]["scale_factor"].as<double>();
             double tsq = v["params"]["target_squeeze"].as<double>();
-            fdl_point_f64_t expected = {
-                v["expected"]["x"].as<double>(),
-                v["expected"]["y"].as<double>()
-            };
+            fdl_point_f64_t expected = {v["expected"]["x"].as<double>(), v["expected"]["y"].as<double>()};
             require_point_close(fdl_point_scale(point, sf, tsq), expected);
-        }
-        else if (op == "add") {
-            fdl_point_f64_t a = {
-                v["input"]["a"]["x"].as<double>(),
-                v["input"]["a"]["y"].as<double>()
-            };
-            fdl_point_f64_t b = {
-                v["input"]["b"]["x"].as<double>(),
-                v["input"]["b"]["y"].as<double>()
-            };
-            fdl_point_f64_t expected = {
-                v["expected"]["x"].as<double>(),
-                v["expected"]["y"].as<double>()
-            };
+        } else if (op == "add") {
+            fdl_point_f64_t a = {v["input"]["a"]["x"].as<double>(), v["input"]["a"]["y"].as<double>()};
+            fdl_point_f64_t b = {v["input"]["b"]["x"].as<double>(), v["input"]["b"]["y"].as<double>()};
+            fdl_point_f64_t expected = {v["expected"]["x"].as<double>(), v["expected"]["y"].as<double>()};
             require_point_close(fdl_point_add(a, b), expected);
-        }
-        else if (op == "sub") {
-            fdl_point_f64_t a = {
-                v["input"]["a"]["x"].as<double>(),
-                v["input"]["a"]["y"].as<double>()
-            };
-            fdl_point_f64_t b = {
-                v["input"]["b"]["x"].as<double>(),
-                v["input"]["b"]["y"].as<double>()
-            };
-            fdl_point_f64_t expected = {
-                v["expected"]["x"].as<double>(),
-                v["expected"]["y"].as<double>()
-            };
+        } else if (op == "sub") {
+            fdl_point_f64_t a = {v["input"]["a"]["x"].as<double>(), v["input"]["a"]["y"].as<double>()};
+            fdl_point_f64_t b = {v["input"]["b"]["x"].as<double>(), v["input"]["b"]["y"].as<double>()};
+            fdl_point_f64_t expected = {v["expected"]["x"].as<double>(), v["expected"]["y"].as<double>()};
             require_point_close(fdl_point_sub(a, b), expected);
-        }
-        else if (op == "mul_scalar") {
-            fdl_point_f64_t point = {
-                v["input"]["x"].as<double>(),
-                v["input"]["y"].as<double>()
-            };
+        } else if (op == "mul_scalar") {
+            fdl_point_f64_t point = {v["input"]["x"].as<double>(), v["input"]["y"].as<double>()};
             double scalar = v["params"]["scalar"].as<double>();
-            fdl_point_f64_t expected = {
-                v["expected"]["x"].as<double>(),
-                v["expected"]["y"].as<double>()
-            };
+            fdl_point_f64_t expected = {v["expected"]["x"].as<double>(), v["expected"]["y"].as<double>()};
             require_point_close(fdl_point_mul_scalar(point, scalar), expected);
-        }
-        else if (op == "clamp") {
-            fdl_point_f64_t point = {
-                v["input"]["x"].as<double>(),
-                v["input"]["y"].as<double>()
-            };
+        } else if (op == "clamp") {
+            fdl_point_f64_t point = {v["input"]["x"].as<double>(), v["input"]["y"].as<double>()};
             double min_val = v["params"]["min_val"].as<double>();
             double max_val = v["params"]["max_val"].as<double>();
             int has_min = v["params"]["has_min"].as<bool>() ? 1 : 0;
             int has_max = v["params"]["has_max"].as<bool>() ? 1 : 0;
-            fdl_point_f64_t expected = {
-                v["expected"]["x"].as<double>(),
-                v["expected"]["y"].as<double>()
-            };
+            fdl_point_f64_t expected = {v["expected"]["x"].as<double>(), v["expected"]["y"].as<double>()};
             require_point_close(fdl_point_clamp(point, min_val, max_val, has_min, has_max), expected);
-        }
-        else if (op == "equal") {
-            fdl_point_f64_t a = {
-                v["input"]["a"]["x"].as<double>(),
-                v["input"]["a"]["y"].as<double>()
-            };
-            fdl_point_f64_t b = {
-                v["input"]["b"]["x"].as<double>(),
-                v["input"]["b"]["y"].as<double>()
-            };
+        } else if (op == "equal") {
+            fdl_point_f64_t a = {v["input"]["a"]["x"].as<double>(), v["input"]["a"]["y"].as<double>()};
+            fdl_point_f64_t b = {v["input"]["b"]["x"].as<double>(), v["input"]["b"]["y"].as<double>()};
             bool expected = v["expected"].as<bool>();
             REQUIRE(fdl_point_equal(a, b) == (expected ? 1 : 0));
-        }
-        else if (op == "lt") {
-            fdl_point_f64_t a = {
-                v["input"]["a"]["x"].as<double>(),
-                v["input"]["a"]["y"].as<double>()
-            };
-            fdl_point_f64_t b = {
-                v["input"]["b"]["x"].as<double>(),
-                v["input"]["b"]["y"].as<double>()
-            };
+        } else if (op == "lt") {
+            fdl_point_f64_t a = {v["input"]["a"]["x"].as<double>(), v["input"]["a"]["y"].as<double>()};
+            fdl_point_f64_t b = {v["input"]["b"]["x"].as<double>(), v["input"]["b"]["y"].as<double>()};
             bool expected = v["expected"].as<bool>();
             REQUIRE(fdl_point_f64_lt(a, b) == (expected ? 1 : 0));
         }

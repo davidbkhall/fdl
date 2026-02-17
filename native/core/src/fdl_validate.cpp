@@ -36,8 +36,8 @@ using CompiledSchema = jsoncons::jsonschema::json_schema<ojson>;
 static CompiledSchema compile_schema(const char* json_str) {
     auto schema_doc = ojson::parse(std::string_view(json_str));
     auto options = jsoncons::jsonschema::evaluation_options{}
-        .default_version(jsoncons::jsonschema::schema_version::draft202012())
-        .require_format_validation(true);
+                       .default_version(jsoncons::jsonschema::schema_version::draft202012())
+                       .require_format_validation(true);
     return jsoncons::jsonschema::make_json_schema(schema_doc, options);
 }
 
@@ -81,25 +81,28 @@ static void validate_schema(const ojson& fdl, std::vector<std::string>& errors) 
     int major = 2, minor = 0;
     if (fdl.contains("version") && fdl["version"].is_object()) {
         const auto& ver = fdl["version"];
-        if (ver.contains("major") && ver["major"].is_number())
+        if (ver.contains("major") && ver["major"].is_number()) {
             major = ver["major"].as<int>();
-        if (ver.contains("minor") && ver["minor"].is_number())
+        }
+        if (ver.contains("minor") && ver["minor"].is_number()) {
             minor = ver["minor"].as<int>();
+        }
     }
 
     const auto& registry = get_schema_registry();
     auto it = registry.find({major, minor});
     if (it == registry.end()) {
-        errors.push_back("Schema Error: /: No schema found for version "
-                         + std::to_string(major) + "." + std::to_string(minor));
+        errors.push_back(
+            "Schema Error: /: No schema found for version " + std::to_string(major) + "." + std::to_string(minor));
         return;
     }
 
-    auto reporter = [&errors](const jsoncons::jsonschema::validation_message& msg)
-        -> jsoncons::jsonschema::walk_result
-    {
+    auto reporter =
+        [&errors](const jsoncons::jsonschema::validation_message& msg) -> jsoncons::jsonschema::walk_result {
         std::string loc = msg.instance_location().string();
-        if (loc.empty()) loc = "/";
+        if (loc.empty()) {
+            loc = "/";
+        }
         errors.push_back("Schema Error: " + loc + ": " + msg.message());
         return jsoncons::jsonschema::walk_result::advance;
     };
@@ -190,8 +193,7 @@ static void validate_id_tree(const ojson& fdl, std::vector<std::string>& errors)
 
                         if (cv_ids.count(cv_id)) {
                             throw std::runtime_error(
-                                "Context (" + cx_label + ") > Canvas " + cv_id + " (" + cv_label + "): ID duplicated"
-                            );
+                                "Context (" + cx_label + ") > Canvas " + cv_id + " (" + cv_label + "): ID duplicated");
                         }
                         cv_ids.insert(cv_id);
 
@@ -201,28 +203,25 @@ static void validate_id_tree(const ojson& fdl, std::vector<std::string>& errors)
 
                                 if (fd_ids.count(fd_id)) {
                                     throw std::runtime_error(
-                                        "Context (" + cx_label + ") > Canvas " + cv_id +
-                                        " (" + cv_label + ") > Framing Decision " + fd_id + ": ID duplicated"
-                                    );
+                                        "Context (" + cx_label + ") > Canvas " + cv_id + " (" + cv_label +
+                                        ") > Framing Decision " + fd_id + ": ID duplicated");
                                 }
                                 fd_ids.insert(fd_id);
 
                                 auto fd_fi_id = fd["framing_intent_id"].as<std::string>();
                                 if (!fi_ids.count(fd_fi_id)) {
                                     throw std::runtime_error(
-                                        "Context (" + cx_label + ") > Canvas " + cv_id +
-                                        " (" + cv_label + ") > Framing Decision " + fd_id +
-                                        ": Framing Intent ID " + fd_fi_id + " not in framing_intents"
-                                    );
+                                        "Context (" + cx_label + ") > Canvas " + cv_id + " (" + cv_label +
+                                        ") > Framing Decision " + fd_id + ": Framing Intent ID " + fd_fi_id +
+                                        " not in framing_intents");
                                 }
 
                                 auto expected_fd_id = cv_id + "-" + fd_fi_id;
                                 if (fd_id != expected_fd_id) {
                                     throw std::runtime_error(
-                                        "Context (" + cx_label + ") > Canvas " + cv_id +
-                                        " (" + cv_label + ") > Framing Decision " + fd_id +
-                                        ": ID doesn't match expected " + expected_fd_id
-                                    );
+                                        "Context (" + cx_label + ") > Canvas " + cv_id + " (" + cv_label +
+                                        ") > Framing Decision " + fd_id + ": ID doesn't match expected " +
+                                        expected_fd_id);
                                 }
                             }
                         }
@@ -242,7 +241,9 @@ static void validate_id_tree(const ojson& fdl, std::vector<std::string>& errors)
             std::ostringstream oss;
             oss << "Source Canvas IDs [";
             for (size_t i = 0; i < unrecognised.size(); ++i) {
-                if (i > 0) oss << ", ";
+                if (i > 0) {
+                    oss << ", ";
+                }
                 oss << "'" << unrecognised[i] << "'";
             }
             oss << "] not in canvases";
@@ -308,7 +309,9 @@ struct DimAnchor {
  * @return The value at @p key, or ojson(0).
  */
 static ojson get_json_val(const ojson& obj, const std::string& key) {
-    if (obj.contains(key)) return obj[key];
+    if (obj.contains(key)) {
+        return obj[key];
+    }
     return ojson(0);
 }
 
@@ -355,21 +358,20 @@ static void fill_zero_anchor(DimAnchor& out) {
  * @param out     DimAnchor populated on success.
  * @return True if the requested level is present in the document.
  */
-static bool get_dims_and_anchor(
-    const std::string& path,
-    const ojson& canvas,
-    const ojson& fd,
-    DimAnchor& out
-) {
+static bool get_dims_and_anchor(const std::string& path, const ojson& canvas, const ojson& fd, DimAnchor& out) {
     out.path = path;
     if (path == PATH_CANVAS_DIMENSIONS) {
-        if (!canvas.contains("dimensions")) return false;
+        if (!canvas.contains("dimensions")) {
+            return false;
+        }
         fill_dims(out, canvas["dimensions"]);
         fill_zero_anchor(out);
         return true;
     }
     if (path == PATH_CANVAS_EFFECTIVE) {
-        if (!canvas.contains("effective_dimensions") || canvas["effective_dimensions"].is_null()) return false;
+        if (!canvas.contains("effective_dimensions") || canvas["effective_dimensions"].is_null()) {
+            return false;
+        }
         fill_dims(out, canvas["effective_dimensions"]);
         if (canvas.contains("effective_anchor_point") && !canvas["effective_anchor_point"].is_null()) {
             fill_anchor(out, canvas["effective_anchor_point"]);
@@ -379,7 +381,9 @@ static bool get_dims_and_anchor(
         return true;
     }
     if (path == PATH_FRAMING_PROTECTION) {
-        if (!fd.contains("protection_dimensions") || fd["protection_dimensions"].is_null()) return false;
+        if (!fd.contains("protection_dimensions") || fd["protection_dimensions"].is_null()) {
+            return false;
+        }
         fill_dims(out, fd["protection_dimensions"]);
         if (fd.contains("protection_anchor_point") && !fd["protection_anchor_point"].is_null()) {
             fill_anchor(out, fd["protection_anchor_point"]);
@@ -389,7 +393,9 @@ static bool get_dims_and_anchor(
         return true;
     }
     if (path == PATH_FRAMING_DIMENSIONS) {
-        if (!fd.contains("dimensions") || fd["dimensions"].is_null()) return false;
+        if (!fd.contains("dimensions") || fd["dimensions"].is_null()) {
+            return false;
+        }
         fill_dims(out, fd["dimensions"]);
         if (fd.contains("anchor_point") && !fd["anchor_point"].is_null()) {
             fill_anchor(out, fd["anchor_point"]);
@@ -443,18 +449,24 @@ static std::string format_json_num(const ojson& v) {
  */
 static void validate_dimension_hierarchy(const ojson& fdl, std::vector<std::string>& errors) {
     try {
-        if (!fdl.contains("contexts") || !fdl["contexts"].is_array()) return;
+        if (!fdl.contains("contexts") || !fdl["contexts"].is_array()) {
+            return;
+        }
 
         for (const auto& ctx : fdl["contexts"].array_range()) {
             auto ctx_label = get_str(ctx, "label", "(no label)");
 
-            if (!ctx.contains("canvases") || !ctx["canvases"].is_array()) continue;
+            if (!ctx.contains("canvases") || !ctx["canvases"].is_array()) {
+                continue;
+            }
             for (const auto& canvas : ctx["canvases"].array_range()) {
                 auto cv_id = get_str(canvas, "id", "(no id)");
                 auto cv_label = get_str(canvas, "label", "(no label)");
                 auto location = "Context (" + ctx_label + ") > Canvas " + cv_id + " (" + cv_label + ")";
 
-                if (!canvas.contains("framing_decisions") || !canvas["framing_decisions"].is_array()) continue;
+                if (!canvas.contains("framing_decisions") || !canvas["framing_decisions"].is_array()) {
+                    continue;
+                }
                 for (const auto& fd : canvas["framing_decisions"].array_range()) {
                     auto fd_id = get_str(fd, "id", "(no id)");
                     auto fd_location = location + " > FD " + fd_id;
@@ -479,23 +491,20 @@ static void validate_dimension_hierarchy(const ojson& fdl, std::vector<std::stri
                         // Dimensions: outer >= inner
                         if (inner.dim_w > outer.dim_w || inner.dim_h > outer.dim_h) {
                             throw std::runtime_error(
-                                fd_location + ": " + inner_name +
-                                " (" + format_json_num(inner.dim_w_json) + "x" + format_json_num(inner.dim_h_json) + ") exceeds " +
-                                outer_name +
-                                " (" + format_json_num(outer.dim_w_json) + "x" + format_json_num(outer.dim_h_json) + "). " +
-                                "Required hierarchy: " + outer_name + " >= " + inner_name
-                            );
+                                fd_location + ": " + inner_name + " (" + format_json_num(inner.dim_w_json) + "x" +
+                                format_json_num(inner.dim_h_json) + ") exceeds " + outer_name + " (" +
+                                format_json_num(outer.dim_w_json) + "x" + format_json_num(outer.dim_h_json) + "). " +
+                                "Required hierarchy: " + outer_name + " >= " + inner_name);
                         }
 
                         // Anchors: outer <= inner
                         if (inner.anchor_x < outer.anchor_x || inner.anchor_y < outer.anchor_y) {
                             throw std::runtime_error(
-                                fd_location + ": " + inner_name +
-                                " anchor (" + format_json_num(inner.anchor_x_json) + ", " + format_json_num(inner.anchor_y_json) + ") is outside " +
-                                outer_name +
-                                " anchor (" + format_json_num(outer.anchor_x_json) + ", " + format_json_num(outer.anchor_y_json) + "). " +
-                                "Required hierarchy: " + outer_name + " anchor <= " + inner_name + " anchor"
-                            );
+                                fd_location + ": " + inner_name + " anchor (" + format_json_num(inner.anchor_x_json) +
+                                ", " + format_json_num(inner.anchor_y_json) + ") is outside " + outer_name +
+                                " anchor (" + format_json_num(outer.anchor_x_json) + ", " +
+                                format_json_num(outer.anchor_y_json) + "). " + "Required hierarchy: " + outer_name +
+                                " anchor <= " + inner_name + " anchor");
                         }
                     }
                 }
@@ -517,12 +526,16 @@ static void validate_dimension_hierarchy(const ojson& fdl, std::vector<std::stri
  */
 static void validate_non_negative_anchors(const ojson& fdl, std::vector<std::string>& errors) {
     try {
-        if (!fdl.contains("contexts") || !fdl["contexts"].is_array()) return;
+        if (!fdl.contains("contexts") || !fdl["contexts"].is_array()) {
+            return;
+        }
 
         for (const auto& ctx : fdl["contexts"].array_range()) {
             auto ctx_label = get_str(ctx, "label", "(no label)");
 
-            if (!ctx.contains("canvases") || !ctx["canvases"].is_array()) continue;
+            if (!ctx.contains("canvases") || !ctx["canvases"].is_array()) {
+                continue;
+            }
             for (const auto& canvas : ctx["canvases"].array_range()) {
                 auto cv_id = get_str(canvas, "id", "(no id)");
                 auto cv_label = get_str(canvas, "label", "(no label)");
@@ -535,14 +548,15 @@ static void validate_non_negative_anchors(const ojson& fdl, std::vector<std::str
                     double y = get_num(eff, "y");
                     if (x < 0 || y < 0) {
                         throw std::runtime_error(
-                            location + ": effective_anchor_point (" +
-                            format_json_num(get_json_val(eff, "x")) + ", " + format_json_num(get_json_val(eff, "y")) +
-                            ") has negative values. Anchor coordinates must be >= 0."
-                        );
+                            location + ": effective_anchor_point (" + format_json_num(get_json_val(eff, "x")) + ", " +
+                            format_json_num(get_json_val(eff, "y")) +
+                            ") has negative values. Anchor coordinates must be >= 0.");
                     }
                 }
 
-                if (!canvas.contains("framing_decisions") || !canvas["framing_decisions"].is_array()) continue;
+                if (!canvas.contains("framing_decisions") || !canvas["framing_decisions"].is_array()) {
+                    continue;
+                }
                 for (const auto& fd : canvas["framing_decisions"].array_range()) {
                     auto fd_id = get_str(fd, "id", "(no id)");
                     auto fd_location = location + " > FD " + fd_id;
@@ -554,10 +568,9 @@ static void validate_non_negative_anchors(const ojson& fdl, std::vector<std::str
                         double y = get_num(anchor, "y");
                         if (x < 0 || y < 0) {
                             throw std::runtime_error(
-                                fd_location + ": anchor_point (" +
-                                format_json_num(get_json_val(anchor, "x")) + ", " + format_json_num(get_json_val(anchor, "y")) +
-                                ") has negative values. Anchor coordinates must be >= 0."
-                            );
+                                fd_location + ": anchor_point (" + format_json_num(get_json_val(anchor, "x")) + ", " +
+                                format_json_num(get_json_val(anchor, "y")) +
+                                ") has negative values. Anchor coordinates must be >= 0.");
                         }
                     }
 
@@ -568,10 +581,9 @@ static void validate_non_negative_anchors(const ojson& fdl, std::vector<std::str
                         double y = get_num(prot, "y");
                         if (x < 0 || y < 0) {
                             throw std::runtime_error(
-                                fd_location + ": protection_anchor_point (" +
-                                format_json_num(get_json_val(prot, "x")) + ", " + format_json_num(get_json_val(prot, "y")) +
-                                ") has negative values. Anchor coordinates must be >= 0."
-                            );
+                                fd_location + ": protection_anchor_point (" + format_json_num(get_json_val(prot, "x")) +
+                                ", " + format_json_num(get_json_val(prot, "y")) +
+                                ") has negative values. Anchor coordinates must be >= 0.");
                         }
                     }
                 }
@@ -593,12 +605,16 @@ static void validate_non_negative_anchors(const ojson& fdl, std::vector<std::str
  */
 static void validate_anchors_within_canvas(const ojson& fdl, std::vector<std::string>& errors) {
     try {
-        if (!fdl.contains("contexts") || !fdl["contexts"].is_array()) return;
+        if (!fdl.contains("contexts") || !fdl["contexts"].is_array()) {
+            return;
+        }
 
         for (const auto& ctx : fdl["contexts"].array_range()) {
             auto ctx_label = get_str(ctx, "label", "(no label)");
 
-            if (!ctx.contains("canvases") || !ctx["canvases"].is_array()) continue;
+            if (!ctx.contains("canvases") || !ctx["canvases"].is_array()) {
+                continue;
+            }
             for (const auto& canvas : ctx["canvases"].array_range()) {
                 auto cv_id = get_str(canvas, "id", "(no id)");
                 auto cv_label = get_str(canvas, "label", "(no label)");
@@ -617,16 +633,16 @@ static void validate_anchors_within_canvas(const ojson& fdl, std::vector<std::st
                     double y = get_num(eff, "y");
                     if (x > canvas_width || y > canvas_height) {
                         throw std::runtime_error(
-                            location + ": effective_anchor_point (" +
-                            format_json_num(get_json_val(eff, "x")) + ", " + format_json_num(get_json_val(eff, "y")) +
-                            ") exceeds canvas dimensions (" +
+                            location + ": effective_anchor_point (" + format_json_num(get_json_val(eff, "x")) + ", " +
+                            format_json_num(get_json_val(eff, "y")) + ") exceeds canvas dimensions (" +
                             format_json_num(cw_json) + "x" + format_json_num(ch_json) +
-                            "). Anchor coordinates must be within canvas bounds."
-                        );
+                            "). Anchor coordinates must be within canvas bounds.");
                     }
                 }
 
-                if (!canvas.contains("framing_decisions") || !canvas["framing_decisions"].is_array()) continue;
+                if (!canvas.contains("framing_decisions") || !canvas["framing_decisions"].is_array()) {
+                    continue;
+                }
                 for (const auto& fd : canvas["framing_decisions"].array_range()) {
                     auto fd_id = get_str(fd, "id", "(no id)");
                     auto fd_location = location + " > FD " + fd_id;
@@ -638,12 +654,10 @@ static void validate_anchors_within_canvas(const ojson& fdl, std::vector<std::st
                         double y = get_num(anchor, "y");
                         if (x > canvas_width || y > canvas_height) {
                             throw std::runtime_error(
-                                fd_location + ": anchor_point (" +
-                                format_json_num(get_json_val(anchor, "x")) + ", " + format_json_num(get_json_val(anchor, "y")) +
-                                ") exceeds canvas dimensions (" +
+                                fd_location + ": anchor_point (" + format_json_num(get_json_val(anchor, "x")) + ", " +
+                                format_json_num(get_json_val(anchor, "y")) + ") exceeds canvas dimensions (" +
                                 format_json_num(cw_json) + "x" + format_json_num(ch_json) +
-                                "). Anchor coordinates must be within canvas bounds."
-                            );
+                                "). Anchor coordinates must be within canvas bounds.");
                         }
                     }
 
@@ -654,12 +668,10 @@ static void validate_anchors_within_canvas(const ojson& fdl, std::vector<std::st
                         double y = get_num(prot, "y");
                         if (x > canvas_width || y > canvas_height) {
                             throw std::runtime_error(
-                                fd_location + ": protection_anchor_point (" +
-                                format_json_num(get_json_val(prot, "x")) + ", " + format_json_num(get_json_val(prot, "y")) +
-                                ") exceeds canvas dimensions (" +
+                                fd_location + ": protection_anchor_point (" + format_json_num(get_json_val(prot, "x")) +
+                                ", " + format_json_num(get_json_val(prot, "y")) + ") exceeds canvas dimensions (" +
                                 format_json_num(cw_json) + "x" + format_json_num(ch_json) +
-                                "). Anchor coordinates must be within canvas bounds."
-                            );
+                                "). Anchor coordinates must be within canvas bounds.");
                         }
                     }
                 }

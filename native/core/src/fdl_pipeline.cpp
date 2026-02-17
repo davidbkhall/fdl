@@ -11,9 +11,7 @@
 namespace fdl::detail {
 
 double calculate_scale_factor(
-    fdl_dimensions_f64_t fit_norm,
-    fdl_dimensions_f64_t target_norm,
-    fdl_fit_method_t fit_method) {
+    fdl_dimensions_f64_t fit_norm, fdl_dimensions_f64_t target_norm, fdl_fit_method_t fit_method) {
 
     double w_ratio = target_norm.width / fit_norm.width;
     double h_ratio = target_norm.height / fit_norm.height;
@@ -32,11 +30,7 @@ double calculate_scale_factor(
     }
 }
 
-double output_size_for_axis(
-    double canvas_size,
-    double max_size,
-    bool has_max,
-    bool pad_to_max) {
+double output_size_for_axis(double canvas_size, double max_size, bool has_max, bool pad_to_max) {
 
     if (has_max && pad_to_max) {
         return max_size;
@@ -86,9 +80,7 @@ double alignment_shift(
 }
 
 fdl_dimensions_f64_t dimensions_clamp_to_dims(
-    fdl_dimensions_f64_t dims,
-    fdl_dimensions_f64_t clamp_dims,
-    fdl_point_f64_t* out_delta) {
+    fdl_dimensions_f64_t dims, fdl_dimensions_f64_t clamp_dims, fdl_point_f64_t* out_delta) {
 
     double delta_w = std::min(0.0, clamp_dims.width - dims.width);
     double delta_h = std::min(0.0, clamp_dims.height - dims.height);

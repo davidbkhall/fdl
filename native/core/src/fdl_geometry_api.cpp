@@ -9,23 +9,16 @@
 
 extern "C" {
 
-fdl_geometry_t fdl_geometry_fill_hierarchy_gaps(
-    fdl_geometry_t geo,
-    fdl_point_f64_t anchor_offset) {
+fdl_geometry_t fdl_geometry_fill_hierarchy_gaps(fdl_geometry_t geo, fdl_point_f64_t anchor_offset) {
     return fdl::detail::geometry_fill_hierarchy_gaps(geo, anchor_offset);
 }
 
 fdl_geometry_t fdl_geometry_normalize_and_scale(
-    fdl_geometry_t geo,
-    double source_squeeze,
-    double scale_factor,
-    double target_squeeze) {
+    fdl_geometry_t geo, double source_squeeze, double scale_factor, double target_squeeze) {
     return fdl::detail::geometry_normalize_and_scale(geo, source_squeeze, scale_factor, target_squeeze);
 }
 
-fdl_geometry_t fdl_geometry_round(
-    fdl_geometry_t geo,
-    fdl_round_strategy_t strategy) {
+fdl_geometry_t fdl_geometry_round(fdl_geometry_t geo, fdl_round_strategy_t strategy) {
     return fdl::detail::geometry_round(geo, strategy);
 }
 
@@ -39,18 +32,12 @@ fdl_geometry_t fdl_geometry_apply_offset(
 }
 
 fdl_geometry_t fdl_geometry_crop(
-    fdl_geometry_t geo,
-    fdl_point_f64_t theo_eff,
-    fdl_point_f64_t theo_prot,
-    fdl_point_f64_t theo_fram) {
+    fdl_geometry_t geo, fdl_point_f64_t theo_eff, fdl_point_f64_t theo_prot, fdl_point_f64_t theo_fram) {
     return fdl::detail::geometry_crop(geo, theo_eff, theo_prot, theo_fram);
 }
 
 int fdl_geometry_get_dims_anchor_from_path(
-    const fdl_geometry_t* geo,
-    fdl_geometry_path_t path,
-    fdl_dimensions_f64_t* out_dims,
-    fdl_point_f64_t* out_anchor) {
+    const fdl_geometry_t* geo, fdl_geometry_path_t path, fdl_dimensions_f64_t* out_dims, fdl_point_f64_t* out_anchor) {
     return fdl::detail::geometry_get_dims_anchor_from_path(geo, path, out_dims, out_anchor);
 }
 
@@ -71,14 +58,18 @@ int fdl_resolve_geometry_layer(
         return 0;
     }
     case FDL_GEOMETRY_PATH_CANVAS_EFFECTIVE_DIMENSIONS: {
-        if (!fdl_canvas_has_effective_dimensions(canvas)) return 1;
+        if (!fdl_canvas_has_effective_dimensions(canvas)) {
+            return 1;
+        }
         auto d = fdl_canvas_get_effective_dimensions(canvas);
         *out_dims = {static_cast<double>(d.width), static_cast<double>(d.height)};
         *out_anchor = fdl_canvas_get_effective_anchor_point(canvas);
         return 0;
     }
     case FDL_GEOMETRY_PATH_FRAMING_PROTECTION_DIMENSIONS: {
-        if (!fdl_framing_decision_has_protection(framing)) return 1;
+        if (!fdl_framing_decision_has_protection(framing)) {
+            return 1;
+        }
         *out_dims = fdl_framing_decision_get_protection_dimensions(framing);
         *out_anchor = fdl_framing_decision_get_protection_anchor_point(framing);
         return 0;
@@ -107,7 +98,9 @@ fdl_rect_t fdl_canvas_get_rect(const fdl_canvas_t* canvas) {
 }
 
 int fdl_canvas_get_effective_rect(const fdl_canvas_t* canvas, fdl_rect_t* out_rect) {
-    if (!fdl_canvas_has_effective_dimensions(canvas)) return 0;
+    if (!fdl_canvas_has_effective_dimensions(canvas)) {
+        return 0;
+    }
     auto dims = fdl_canvas_get_effective_dimensions(canvas);
     auto pt = fdl_canvas_get_effective_anchor_point(canvas);
     *out_rect = fdl_make_rect(pt.x, pt.y, static_cast<double>(dims.width), static_cast<double>(dims.height));
@@ -121,7 +114,9 @@ fdl_rect_t fdl_framing_decision_get_rect(const fdl_framing_decision_t* fd) {
 }
 
 int fdl_framing_decision_get_protection_rect(const fdl_framing_decision_t* fd, fdl_rect_t* out_rect) {
-    if (!fdl_framing_decision_has_protection(fd)) return 0;
+    if (!fdl_framing_decision_has_protection(fd)) {
+        return 0;
+    }
     auto dims = fdl_framing_decision_get_protection_dimensions(fd);
     auto pt = fdl_framing_decision_get_protection_anchor_point(fd);
     *out_rect = fdl_make_rect(pt.x, pt.y, dims.width, dims.height);

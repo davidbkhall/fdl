@@ -19,8 +19,12 @@ static constexpr double kRelTol = 1e-9;
 /** @brief Absolute tolerance for floating-point comparison (matches Python math.isclose). */
 static constexpr double kAbsTol = 1e-6;
 
-double fdl_fp_rel_tol(void) { return kRelTol; }
-double fdl_fp_abs_tol(void) { return kAbsTol; }
+double fdl_fp_rel_tol(void) {
+    return kRelTol;
+}
+double fdl_fp_abs_tol(void) {
+    return kAbsTol;
+}
 
 /**
  * @brief Test whether two doubles are approximately equal.
@@ -46,23 +50,12 @@ fdl_dimensions_f64_t fdl_dimensions_normalize(fdl_dimensions_f64_t dims, double 
     return {dims.width * squeeze, dims.height};
 }
 
-fdl_dimensions_f64_t fdl_dimensions_scale(
-    fdl_dimensions_f64_t dims,
-    double scale_factor,
-    double target_squeeze
-) {
-    return {
-        (dims.width * scale_factor) / target_squeeze,
-        dims.height * scale_factor
-    };
+fdl_dimensions_f64_t fdl_dimensions_scale(fdl_dimensions_f64_t dims, double scale_factor, double target_squeeze) {
+    return {(dims.width * scale_factor) / target_squeeze, dims.height * scale_factor};
 }
 
 fdl_dimensions_f64_t fdl_dimensions_normalize_and_scale(
-    fdl_dimensions_f64_t dims,
-    double input_squeeze,
-    double scale_factor,
-    double target_squeeze
-) {
+    fdl_dimensions_f64_t dims, double input_squeeze, double scale_factor, double target_squeeze) {
     fdl_dimensions_f64_t normalized = fdl_dimensions_normalize(dims, input_squeeze);
     return fdl_dimensions_scale(normalized, scale_factor, target_squeeze);
 }
@@ -119,15 +112,8 @@ fdl_point_f64_t fdl_point_normalize(fdl_point_f64_t point, double squeeze) {
     return {point.x * squeeze, point.y};
 }
 
-fdl_point_f64_t fdl_point_scale(
-    fdl_point_f64_t point,
-    double scale_factor,
-    double target_squeeze
-) {
-    return {
-        (point.x * scale_factor) / target_squeeze,
-        point.y * scale_factor
-    };
+fdl_point_f64_t fdl_point_scale(fdl_point_f64_t point, double scale_factor, double target_squeeze) {
+    return {(point.x * scale_factor) / target_squeeze, point.y * scale_factor};
 }
 
 fdl_point_f64_t fdl_point_add(fdl_point_f64_t a, fdl_point_f64_t b) {
@@ -142,13 +128,7 @@ fdl_point_f64_t fdl_point_mul_scalar(fdl_point_f64_t a, double scalar) {
     return {a.x * scalar, a.y * scalar};
 }
 
-fdl_point_f64_t fdl_point_clamp(
-    fdl_point_f64_t point,
-    double min_val,
-    double max_val,
-    int has_min,
-    int has_max
-) {
+fdl_point_f64_t fdl_point_clamp(fdl_point_f64_t point, double min_val, double max_val, int has_min, int has_max) {
     double x = point.x;
     double y = point.y;
     if (has_min) {
@@ -167,11 +147,7 @@ int fdl_point_is_zero(fdl_point_f64_t point) {
 }
 
 fdl_point_f64_t fdl_point_normalize_and_scale(
-    fdl_point_f64_t point,
-    double input_squeeze,
-    double scale_factor,
-    double target_squeeze
-) {
+    fdl_point_f64_t point, double input_squeeze, double scale_factor, double target_squeeze) {
     fdl_point_f64_t normalized = fdl_point_normalize(point, input_squeeze);
     return fdl_point_scale(normalized, scale_factor, target_squeeze);
 }

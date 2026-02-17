@@ -29,12 +29,16 @@ fdl_validation_result_t* fdl_doc_validate(const fdl_doc_t* doc) {
 }
 
 uint32_t fdl_validation_result_error_count(const fdl_validation_result_t* result) {
-    if (!result) return 0;
+    if (!result) {
+        return 0;
+    }
     return static_cast<uint32_t>(result->result.errors.size());
 }
 
 const char* fdl_validation_result_error_at(const fdl_validation_result_t* result, uint32_t index) {
-    if (!result || index >= result->result.errors.size()) return nullptr;
+    if (!result || index >= result->result.errors.size()) {
+        return nullptr;
+    }
     return result->result.errors[index].c_str();
 }
 

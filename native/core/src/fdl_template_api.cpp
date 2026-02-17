@@ -20,12 +20,13 @@ fdl_template_result_t fdl_apply_canvas_template(
     const char* source_context_label,
     const char* context_creator) {
     return fdl::detail::apply_canvas_template(
-        tmpl, source_canvas, source_framing,
-        new_canvas_id, new_fd_name, source_context_label, context_creator);
+        tmpl, source_canvas, source_framing, new_canvas_id, new_fd_name, source_context_label, context_creator);
 }
 
 void fdl_template_result_free(fdl_template_result_t* result) {
-    if (!result) return;
+    if (!result) {
+        return;
+    }
     if (result->output_fdl) {
         fdl_doc_free(result->output_fdl);
         result->output_fdl = nullptr;

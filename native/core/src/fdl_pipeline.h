@@ -22,9 +22,7 @@ namespace fdl::detail {
  * @return Scale factor (always > 0).
  */
 double calculate_scale_factor(
-    fdl_dimensions_f64_t fit_norm,
-    fdl_dimensions_f64_t target_norm,
-    fdl_fit_method_t fit_method);
+    fdl_dimensions_f64_t fit_norm, fdl_dimensions_f64_t target_norm, fdl_fit_method_t fit_method);
 
 /**
  * @brief Determine output canvas size for a single axis.
@@ -34,11 +32,7 @@ double calculate_scale_factor(
  * @param pad_to_max   Whether to pad to maximum size.
  * @return Output size for this axis.
  */
-double output_size_for_axis(
-    double canvas_size,
-    double max_size,
-    bool has_max,
-    bool pad_to_max);
+double output_size_for_axis(double canvas_size, double max_size, bool has_max, bool pad_to_max);
 
 /**
  * @brief Calculate content translation shift for a single axis.
@@ -70,9 +64,7 @@ double alignment_shift(
  * @return Clamped dimensions.
  */
 fdl_dimensions_f64_t dimensions_clamp_to_dims(
-    fdl_dimensions_f64_t dims,
-    fdl_dimensions_f64_t clamp_dims,
-    fdl_point_f64_t* out_delta);
+    fdl_dimensions_f64_t dims, fdl_dimensions_f64_t clamp_dims, fdl_point_f64_t* out_delta);
 
 } // namespace fdl::detail
 

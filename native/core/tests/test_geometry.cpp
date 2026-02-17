@@ -4,9 +4,9 @@
 
 #include "fdl/fdl_core.h"
 
-#include <jsoncons/json.hpp>
 #include <cmath>
 #include <fstream>
+#include <jsoncons/json.hpp>
 #include <string>
 
 using ojson = jsoncons::ojson;
@@ -46,10 +46,8 @@ static bool point_close(fdl_point_f64_t a, fdl_point_f64_t b, double tol = 1e-6)
 }
 
 static bool geo_close(const fdl_geometry_t& a, const fdl_geometry_t& b, double tol = 1e-6) {
-    return dims_close(a.canvas_dims, b.canvas_dims, tol) &&
-           dims_close(a.effective_dims, b.effective_dims, tol) &&
-           dims_close(a.protection_dims, b.protection_dims, tol) &&
-           dims_close(a.framing_dims, b.framing_dims, tol) &&
+    return dims_close(a.canvas_dims, b.canvas_dims, tol) && dims_close(a.effective_dims, b.effective_dims, tol) &&
+           dims_close(a.protection_dims, b.protection_dims, tol) && dims_close(a.framing_dims, b.framing_dims, tol) &&
            point_close(a.effective_anchor, b.effective_anchor, tol) &&
            point_close(a.protection_anchor, b.protection_anchor, tol) &&
            point_close(a.framing_anchor, b.framing_anchor, tol);
@@ -106,9 +104,13 @@ TEST_CASE("Geometry round matches Python golden vectors", "[geometry][round]") {
 
             fdl_round_strategy_t strategy;
             strategy.even = (even_str == "even") ? FDL_ROUNDING_EVEN_EVEN : FDL_ROUNDING_EVEN_WHOLE;
-            if (mode_str == "up") strategy.mode = FDL_ROUNDING_MODE_UP;
-            else if (mode_str == "down") strategy.mode = FDL_ROUNDING_MODE_DOWN;
-            else strategy.mode = FDL_ROUNDING_MODE_ROUND;
+            if (mode_str == "up") {
+                strategy.mode = FDL_ROUNDING_MODE_UP;
+            } else if (mode_str == "down") {
+                strategy.mode = FDL_ROUNDING_MODE_DOWN;
+            } else {
+                strategy.mode = FDL_ROUNDING_MODE_ROUND;
+            }
 
             auto expected = parse_geometry(v["expected"]);
             auto result = fdl_geometry_round(geo, strategy);
@@ -176,10 +178,15 @@ TEST_CASE("Geometry get_dims_anchor_from_path matches Python golden vectors", "[
             auto expected_anchor = parse_point(v["expected_anchor"]);
 
             fdl_geometry_path_t path;
-            if (path_str == "canvas.dimensions") path = FDL_GEOMETRY_PATH_CANVAS_DIMENSIONS;
-            else if (path_str == "canvas.effective_dimensions") path = FDL_GEOMETRY_PATH_CANVAS_EFFECTIVE_DIMENSIONS;
-            else if (path_str == "framing_decision.protection_dimensions") path = FDL_GEOMETRY_PATH_FRAMING_PROTECTION_DIMENSIONS;
-            else path = FDL_GEOMETRY_PATH_FRAMING_DIMENSIONS;
+            if (path_str == "canvas.dimensions") {
+                path = FDL_GEOMETRY_PATH_CANVAS_DIMENSIONS;
+            } else if (path_str == "canvas.effective_dimensions") {
+                path = FDL_GEOMETRY_PATH_CANVAS_EFFECTIVE_DIMENSIONS;
+            } else if (path_str == "framing_decision.protection_dimensions") {
+                path = FDL_GEOMETRY_PATH_FRAMING_PROTECTION_DIMENSIONS;
+            } else {
+                path = FDL_GEOMETRY_PATH_FRAMING_DIMENSIONS;
+            }
 
             fdl_dimensions_f64_t out_dims;
             fdl_point_f64_t out_anchor;

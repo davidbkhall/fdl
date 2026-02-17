@@ -12,9 +12,9 @@
 #include <cstring>
 
 #ifdef _MSC_VER
-#define fdl_strdup _strdup  /**< MSVC-compatible strdup. */
+#define fdl_strdup _strdup /**< MSVC-compatible strdup. */
 #else
-#define fdl_strdup strdup   /**< POSIX strdup. */
+#define fdl_strdup strdup /**< POSIX strdup. */
 #endif
 
 #endif // FDL_COMPAT_H

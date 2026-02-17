@@ -4,9 +4,9 @@
 
 #include "fdl/fdl_core.h"
 
-#include <jsoncons/json.hpp>
 #include <cmath>
 #include <fstream>
+#include <jsoncons/json.hpp>
 #include <string>
 
 using ojson = jsoncons::ojson;
@@ -38,10 +38,15 @@ TEST_CASE("calculate_scale_factor matches Python golden vectors", "[pipeline][sc
             double expected = v["expected"].as<double>();
 
             fdl_fit_method_t method;
-            if (method_str == "width") method = FDL_FIT_METHOD_WIDTH;
-            else if (method_str == "height") method = FDL_FIT_METHOD_HEIGHT;
-            else if (method_str == "fit_all") method = FDL_FIT_METHOD_FIT_ALL;
-            else method = FDL_FIT_METHOD_FILL;
+            if (method_str == "width") {
+                method = FDL_FIT_METHOD_WIDTH;
+            } else if (method_str == "height") {
+                method = FDL_FIT_METHOD_HEIGHT;
+            } else if (method_str == "fit_all") {
+                method = FDL_FIT_METHOD_FIT_ALL;
+            } else {
+                method = FDL_FIT_METHOD_FILL;
+            }
 
             double result = fdl_calculate_scale_factor(fit, target, method);
 
@@ -88,8 +93,14 @@ TEST_CASE("alignment_shift matches Python golden vectors", "[pipeline][alignment
             double expected = v["expected"].as<double>();
 
             double result = fdl_alignment_shift(
-                fit_size, fit_anchor, output_size, canvas_size,
-                target_size, is_center ? 1 : 0, align_factor, pad ? 1 : 0);
+                fit_size,
+                fit_anchor,
+                output_size,
+                canvas_size,
+                target_size,
+                is_center ? 1 : 0,
+                align_factor,
+                pad ? 1 : 0);
 
             REQUIRE(close_enough(result, expected, 1e-6));
         }
