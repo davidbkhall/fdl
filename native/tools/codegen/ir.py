@@ -111,7 +111,7 @@ class IRMethodParam:
 class IRResultField:
     """A field in a multi-field result struct extraction."""
 
-    name: str  # Python field name (e.g. "doc")
+    name: str  # field name (e.g. "doc")
     source: str  # C struct field name (e.g. "output_doc")
     extract: str  # "handle", "scalar", "value_type", "string"
     wrap_class: str | None = None  # For extract=handle

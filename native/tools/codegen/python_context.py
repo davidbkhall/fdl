@@ -50,6 +50,9 @@ _C_FIELD_TYPES: dict[str, tuple[str, str, str]] = {
     "uint32_t": ("int", "0", "int"),
 }
 
+# Enum IDL short names — all enums are passed as str in Python VT methods
+_ENUM_SHORT_NAMES = {"rounding_even", "rounding_mode", "fit_method", "geometry_path", "halign", "valign"}
+
 
 def _resolve_vt_python_type(idl_type: str, idl: IDL, *, for_self_class: str = "") -> str:
     """Resolve an IDL type used in value type methods to a Python type string."""
@@ -67,8 +70,6 @@ def _resolve_vt_python_type(idl_type: str, idl: IDL, *, for_self_class: str = ""
     py = _py.TYPES.get(idl_type)
     if py:
         return py
-    # Check enum IDL short names — all enums are passed as str in Python
-    _ENUM_SHORT_NAMES = {"rounding_even", "rounding_mode", "fit_method", "geometry_path", "halign", "valign"}
     if idl_type in _ENUM_SHORT_NAMES:
         return "str"
     return idl_type
