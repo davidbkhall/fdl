@@ -152,7 +152,7 @@ class IRMethod:
 
 @dataclass
 class IRInitParam:
-    """A parameter for a kwargs __init__ method."""
+    """A parameter for a keyword-argument constructor."""
 
     name: str
     type_key: str  # Language-neutral key resolved by language adapters
@@ -162,7 +162,7 @@ class IRInitParam:
 
 @dataclass
 class IRInitPostSetter:
-    """A post-construction setter call in kwargs __init__."""
+    """A post-construction setter call."""
 
     kind: str  # "property" or "compound"
     property: str | None = None
@@ -174,7 +174,7 @@ class IRInitPostSetter:
 
 @dataclass
 class IRInit:
-    """Kwargs __init__ definition for a facade class."""
+    """Keyword-argument constructor definition for a facade class."""
 
     depth: int  # scaffolding depth: 1=doc->obj, 2=doc->ctx->obj, 3=doc->ctx->canvas->obj
     builder_method: str  # name of builder method on parent class

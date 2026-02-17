@@ -330,7 +330,7 @@ class AuxiliaryTypes:
 
 
 # -----------------------------------------------------------------------
-# Free functions (top-level Python functions wrapping C ABI)
+# Free functions (top-level functions wrapping C ABI)
 # -----------------------------------------------------------------------
 
 
@@ -348,7 +348,7 @@ class FreeFunctionDef:
     doc: str
     params: list[FreeFunctionParam]
     returns: str
-    module: str = "rounding"  # target Python module: "rounding" or "utils"
+    module: str = "rounding"  # target module grouping: "rounding" or "utils"
 
 
 # -----------------------------------------------------------------------
