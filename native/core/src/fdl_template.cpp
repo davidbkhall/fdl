@@ -1,5 +1,21 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_template.cpp
+ * @brief Canvas template application — the full transformation pipeline.
+ *
+ * Pipeline phases:
+ * 1. Read template parameters (fit method, alignment, max dims, rounding).
+ * 2. Validate that fit_source and preserve paths exist in the source data.
+ * 3. Populate source geometry from canvas/framing handles.
+ * 4. Fill hierarchy gaps and calculate anchor offsets.
+ * 5. Normalize, scale, and round the geometry.
+ * 6. Compute output canvas size (with optional max-dimension clamping).
+ * 7. Compute content translation shift (alignment within padded/cropped canvas).
+ * 8. Apply offsets to anchors (with clamping and theoretical tracking).
+ * 9. Crop dimensions to visible portion within canvas bounds.
+ * 10. Build the output FDL document with source copy + transformed canvas.
+ */
 #include "fdl_template.h"
 #include "fdl_compat.h"
 #include "fdl_doc.h"
@@ -10,27 +26,40 @@
 #include <cstring>
 #include <string>
 
-// PATH_HIERARCHY order (matches Python constants.py):
-// 0: canvas.dimensions
-// 1: canvas.effective_dimensions
-// 2: framing_decision.protection_dimensions
-// 3: framing_decision.dimensions
+/**
+ * @name Static helpers
+ * @{
+ */
 
-// Alignment factor: LEFT/TOP=0.0, CENTER=0.5, RIGHT/BOTTOM=1.0
+/**
+ * @brief Convert horizontal alignment enum to a 0.0-1.0 factor.
+ * @param align  Horizontal alignment enum value.
+ * @return 0.0 for left, 1.0 for right, 0.5 for center.
+ */
 static double alignment_factor_h(fdl_halign_t align) {
     if (align == FDL_HALIGN_LEFT) return 0.0;
     if (align == FDL_HALIGN_RIGHT) return 1.0;
     return 0.5;
 }
 
+/**
+ * @brief Convert vertical alignment enum to a 0.0-1.0 factor.
+ * @param align  Vertical alignment enum value.
+ * @return 0.0 for top, 1.0 for bottom, 0.5 for center.
+ */
 static double alignment_factor_v(fdl_valign_t align) {
     if (align == FDL_VALIGN_TOP) return 0.0;
     if (align == FDL_VALIGN_BOTTOM) return 1.0;
     return 0.5;
 }
 
-// Populate one layer of the geometry from source canvas/framing.
-// Delegates to fdl_resolve_geometry_layer for the actual handle reads.
+/**
+ * @brief Populate one layer of the geometry from source canvas/framing handles.
+ * @param geo      Geometry struct to populate (modified in place).
+ * @param path     Which layer to populate.
+ * @param canvas   Source canvas handle.
+ * @param framing  Source framing decision handle.
+ */
 static void populate_layer(
     fdl_geometry_t& geo,
     fdl_geometry_path_t path,
@@ -53,7 +82,13 @@ static void populate_layer(
     }
 }
 
-// Populate geometry starting from path and going to innermost layer
+/**
+ * @brief Populate geometry from @p start_path down to the innermost layer.
+ * @param geo         Geometry struct to populate (modified in place).
+ * @param start_path  First layer to populate; iteration continues to framing.
+ * @param canvas      Source canvas handle.
+ * @param framing     Source framing decision handle.
+ */
 static void populate_from_path(
     fdl_geometry_t& geo,
     fdl_geometry_path_t start_path,
@@ -65,11 +100,16 @@ static void populate_from_path(
     }
 }
 
-// Helper: safely copy a C string accessor result to std::string.
-// Returns empty string if the pointer is null.
+/**
+ * @brief Safely copy a C string accessor result to std::string (empty if null).
+ * @param s  Pointer to a C string, or nullptr.
+ * @return The string value, or an empty string if @p s is null.
+ */
 static std::string safe_copy(const char* s) {
     return s ? std::string(s) : std::string();
 }
+
+/** @} */ // end Static helpers
 
 namespace fdl::detail {
 

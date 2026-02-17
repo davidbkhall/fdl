@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_validate.cpp
+ * @brief Schema (Draft 2020-12) and semantic validation using embedded schema data.
+ */
 #include "fdl_validate.h"
 #include "fdl_schema_data.h"
 
@@ -19,9 +23,16 @@ namespace fdl::detail {
 // ---------------------------------------------------------------------------
 
 // Key: {major, minor} -> compiled schema for latest patch
+/** @brief Type alias for schema registry key. */
 using SchemaKey = std::pair<int, int>;
+/** @brief Type alias for a compiled JSON Schema object. */
 using CompiledSchema = jsoncons::jsonschema::json_schema<ojson>;
 
+/**
+ * @brief Compile a JSON Schema string into a reusable schema object.
+ * @param json_str  Raw JSON Schema text (Draft 2020-12).
+ * @return Compiled schema ready for validation.
+ */
 static CompiledSchema compile_schema(const char* json_str) {
     auto schema_doc = ojson::parse(std::string_view(json_str));
     auto options = jsoncons::jsonschema::evaluation_options{}
@@ -30,8 +41,10 @@ static CompiledSchema compile_schema(const char* json_str) {
     return jsoncons::jsonschema::make_json_schema(schema_doc, options);
 }
 
-// Build the registry on first use: for each (major, minor), keep the entry
-// with the highest patch version (matching Python's sorted glob + [-1]).
+/**
+ * @brief Return the lazily-built schema registry, keyed by (major, minor).
+ * @return Const reference to the map of compiled schemas.
+ */
 static const std::map<SchemaKey, CompiledSchema>& get_schema_registry() {
     static const auto registry = [] {
         // Group by (major, minor), pick latest patch
@@ -58,6 +71,11 @@ static const std::map<SchemaKey, CompiledSchema>& get_schema_registry() {
 // Schema validation
 // ---------------------------------------------------------------------------
 
+/**
+ * @brief Validate an FDL document against the appropriate JSON Schema.
+ * @param fdl     Parsed FDL document.
+ * @param errors  Output vector that receives any schema-level error strings.
+ */
 static void validate_schema(const ojson& fdl, std::vector<std::string>& errors) {
     // Extract version from document (default to 2.0 like Python)
     int major = 2, minor = 0;
@@ -93,6 +111,13 @@ static void validate_schema(const ojson& fdl, std::vector<std::string>& errors) 
 // Helper: get string with fallback
 // ---------------------------------------------------------------------------
 
+/**
+ * @brief Get a string value from a JSON object, returning a fallback if absent.
+ * @param obj       JSON object to query.
+ * @param key       Key to look up.
+ * @param fallback  Value returned when the key is missing or non-string.
+ * @return The string value or @p fallback.
+ */
 static std::string get_str(const ojson& obj, const std::string& key, const std::string& fallback = "") {
     if (obj.contains(key) && obj[key].is_string()) {
         return obj[key].as<std::string>();
@@ -100,6 +125,13 @@ static std::string get_str(const ojson& obj, const std::string& key, const std::
     return fallback;
 }
 
+/**
+ * @brief Get a numeric value from a JSON object, returning a fallback if absent.
+ * @param obj       JSON object to query.
+ * @param key       Key to look up.
+ * @param fallback  Value returned when the key is missing or non-numeric.
+ * @return The numeric value or @p fallback.
+ */
 static double get_num(const ojson& obj, const std::string& key, double fallback = 0.0) {
     if (obj.contains(key) && obj[key].is_number()) {
         return obj[key].as<double>();
@@ -111,6 +143,11 @@ static double get_num(const ojson& obj, const std::string& key, double fallback 
 // Validator 1: ID Tree
 // ---------------------------------------------------------------------------
 
+/**
+ * @brief Validate uniqueness and referential integrity of all IDs in the FDL.
+ * @param fdl     Parsed FDL document.
+ * @param errors  Output vector that receives any ID-tree error strings.
+ */
 static void validate_id_tree(const ojson& fdl, std::vector<std::string>& errors) {
     try {
         std::set<std::string> fi_ids;
@@ -234,12 +271,16 @@ static void validate_id_tree(const ojson& fdl, std::vector<std::string>& errors)
 // Validator 2: Dimension Hierarchy
 // ---------------------------------------------------------------------------
 
-// Path constants matching Python GeometryPath
+/** @brief Geometry path for canvas dimensions. */
 static const std::string PATH_CANVAS_DIMENSIONS = "canvas.dimensions";
+/** @brief Geometry path for canvas effective dimensions. */
 static const std::string PATH_CANVAS_EFFECTIVE = "canvas.effective_dimensions";
+/** @brief Geometry path for framing-decision protection dimensions. */
 static const std::string PATH_FRAMING_PROTECTION = "framing_decision.protection_dimensions";
+/** @brief Geometry path for framing-decision dimensions. */
 static const std::string PATH_FRAMING_DIMENSIONS = "framing_decision.dimensions";
 
+/** @brief Ordered hierarchy of geometry paths (outermost first). */
 static const std::vector<std::string> PATH_HIERARCHY = {
     PATH_CANVAS_DIMENSIONS,
     PATH_CANVAS_EFFECTIVE,
@@ -247,20 +288,35 @@ static const std::vector<std::string> PATH_HIERARCHY = {
     PATH_FRAMING_DIMENSIONS,
 };
 
+/** @brief Dimension + anchor pair for hierarchy validation. */
 struct DimAnchor {
-    std::string path;
-    double dim_w, dim_h;
-    double anchor_x, anchor_y;
-    // Original JSON values for formatting (integers print without .0)
-    ojson dim_w_json, dim_h_json;
-    ojson anchor_x_json, anchor_y_json;
+    std::string path;    /**< Geometry path that produced this entry. */
+    double dim_w;        /**< Width in pixels. */
+    double dim_h;        /**< Height in pixels. */
+    double anchor_x;     /**< Anchor X offset. */
+    double anchor_y;     /**< Anchor Y offset. */
+    ojson dim_w_json;    /**< Original JSON width for formatting. */
+    ojson dim_h_json;    /**< Original JSON height for formatting. */
+    ojson anchor_x_json; /**< Original JSON anchor X for formatting. */
+    ojson anchor_y_json; /**< Original JSON anchor Y for formatting. */
 };
 
+/**
+ * @brief Return a JSON value by key, or JSON 0 if absent.
+ * @param obj  JSON object to query.
+ * @param key  Key to look up.
+ * @return The value at @p key, or ojson(0).
+ */
 static ojson get_json_val(const ojson& obj, const std::string& key) {
     if (obj.contains(key)) return obj[key];
     return ojson(0);
 }
 
+/**
+ * @brief Populate width/height fields of a DimAnchor from a dimensions object.
+ * @param out   DimAnchor to fill.
+ * @param dims  JSON object containing "width" and "height".
+ */
 static void fill_dims(DimAnchor& out, const ojson& dims) {
     out.dim_w = get_num(dims, "width");
     out.dim_h = get_num(dims, "height");
@@ -268,6 +324,11 @@ static void fill_dims(DimAnchor& out, const ojson& dims) {
     out.dim_h_json = get_json_val(dims, "height");
 }
 
+/**
+ * @brief Populate anchor fields of a DimAnchor from an anchor-point object.
+ * @param out     DimAnchor to fill.
+ * @param anchor  JSON object containing "x" and "y".
+ */
 static void fill_anchor(DimAnchor& out, const ojson& anchor) {
     out.anchor_x = get_num(anchor, "x");
     out.anchor_y = get_num(anchor, "y");
@@ -275,6 +336,10 @@ static void fill_anchor(DimAnchor& out, const ojson& anchor) {
     out.anchor_y_json = get_json_val(anchor, "y");
 }
 
+/**
+ * @brief Set the anchor fields of a DimAnchor to zero.
+ * @param out  DimAnchor whose anchor fields are zeroed.
+ */
 static void fill_zero_anchor(DimAnchor& out) {
     out.anchor_x = 0;
     out.anchor_y = 0;
@@ -282,6 +347,14 @@ static void fill_zero_anchor(DimAnchor& out) {
     out.anchor_y_json = ojson(0);
 }
 
+/**
+ * @brief Extract dimensions and anchor for a given geometry path.
+ * @param path    One of the PATH_* constants identifying the geometry level.
+ * @param canvas  Canvas JSON object.
+ * @param fd      Framing-decision JSON object.
+ * @param out     DimAnchor populated on success.
+ * @return True if the requested level is present in the document.
+ */
 static bool get_dims_and_anchor(
     const std::string& path,
     const ojson& canvas,
@@ -328,7 +401,11 @@ static bool get_dims_and_anchor(
     return false;
 }
 
-// Replace "_" and "." with spaces, matching Python's path.replace("_", " ").replace(".", " ")
+/**
+ * @brief Format a geometry path for human-readable error messages.
+ * @param path  Dot-and-underscore-delimited path string.
+ * @return Path with underscores and dots replaced by spaces.
+ */
 static std::string format_path(const std::string& path) {
     std::string result = path;
     std::replace(result.begin(), result.end(), '_', ' ');
@@ -336,8 +413,11 @@ static std::string format_path(const std::string& path) {
     return result;
 }
 
-// Format a JSON number matching Python's default str() behavior:
-// integers print as "4096", floats print as "5000.0"
+/**
+ * @brief Format a JSON number to match Python str() output.
+ * @param v  JSON value (integer or float).
+ * @return String representation (e.g. "4096" or "5000.0").
+ */
 static std::string format_json_num(const ojson& v) {
     if (v.is_int64() || v.is_uint64()) {
         return std::to_string(v.as<int64_t>());
@@ -356,6 +436,11 @@ static std::string format_json_num(const ojson& v) {
     return s;
 }
 
+/**
+ * @brief Validate that dimensions and anchors respect the outer-to-inner hierarchy.
+ * @param fdl     Parsed FDL document.
+ * @param errors  Output vector that receives any hierarchy error strings.
+ */
 static void validate_dimension_hierarchy(const ojson& fdl, std::vector<std::string>& errors) {
     try {
         if (!fdl.contains("contexts") || !fdl["contexts"].is_array()) return;
@@ -425,6 +510,11 @@ static void validate_dimension_hierarchy(const ojson& fdl, std::vector<std::stri
 // Validator 3: Non-Negative Anchors
 // ---------------------------------------------------------------------------
 
+/**
+ * @brief Validate that all anchor coordinates are non-negative.
+ * @param fdl     Parsed FDL document.
+ * @param errors  Output vector that receives any negative-anchor error strings.
+ */
 static void validate_non_negative_anchors(const ojson& fdl, std::vector<std::string>& errors) {
     try {
         if (!fdl.contains("contexts") || !fdl["contexts"].is_array()) return;
@@ -496,6 +586,11 @@ static void validate_non_negative_anchors(const ojson& fdl, std::vector<std::str
 // Validator 4: Anchors Within Canvas
 // ---------------------------------------------------------------------------
 
+/**
+ * @brief Validate that all anchor points fall within canvas dimensions.
+ * @param fdl     Parsed FDL document.
+ * @param errors  Output vector that receives any out-of-bounds error strings.
+ */
 static void validate_anchors_within_canvas(const ojson& fdl, std::vector<std::string>& errors) {
     try {
         if (!fdl.contains("contexts") || !fdl["contexts"].is_array()) return;

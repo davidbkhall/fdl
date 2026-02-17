@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_framing_api.cpp
+ * @brief C ABI wrapper for framing-from-intent computation and related handle-based operations.
+ */
 #include "fdl/fdl_core.h"
 #include "fdl_builder.h"
 #include "fdl_doc.h"
@@ -18,7 +22,13 @@ fdl_from_intent_result_t fdl_compute_framing_from_intent(
         canvas_dims, working_dims, squeeze, aspect_ratio, protection, rounding);
 }
 
-// Helper: compute alignment offset for a single axis
+/**
+ * @brief Compute alignment offset for a single axis.
+ * @param container  Size of the containing dimension.
+ * @param content    Size of the content to align.
+ * @param align      Alignment enum value (0=left/top, 1=center, 2=right/bottom).
+ * @return Pixel offset to apply for the requested alignment.
+ */
 static double align_offset(double container, double content, uint32_t align) {
     // CENTER enum value is 1 for both halign and valign
     if (align == 1) return (container - content) / 2.0;

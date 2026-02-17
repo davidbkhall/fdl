@@ -1,8 +1,20 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_framing.cpp
+ * @brief Framing-from-intent computation — aspect ratio fitting with protection.
+ *
+ * Algorithm:
+ * 1. Compare intent aspect ratio with working (effective or canvas) aspect ratio.
+ * 2. If intent is wider: letterbox (fit to width, shrink height).
+ *    If intent is narrower: pillarbox (fit to height, shrink width).
+ * 3. If protection > 0, round to get protection dimensions, then shrink by
+ *    the protection factor to get final framing dimensions.
+ * 4. Center both framing and protection anchors within the full canvas.
+ */
 #include "fdl_framing.h"
 
-// Reuse existing rounding from fdl_core
+/** @brief Forward declaration for rounding function from fdl_core. */
 extern "C" {
     fdl_dimensions_f64_t fdl_round_dimensions(fdl_dimensions_f64_t dims,
         fdl_rounding_even_t even, fdl_rounding_mode_t mode);

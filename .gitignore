@@ -8,6 +8,9 @@ site/**
 native/core/build/
 native/core/cmake-build-*/
 
+# Doxygen generated docs
+native/core/docs/api/
+
 # Python build artifacts
 native/bindings/python/build/**
 native/bindings/python/fdl.egg-info/**

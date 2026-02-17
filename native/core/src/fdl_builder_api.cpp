@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_builder_api.cpp
+ * @brief C ABI wrappers for the document builder (create, add, set, remove operations).
+ */
 #include "fdl/fdl_core.h"
 #include "fdl_builder.h"
 #include "fdl_compat.h"

@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_value_types.cpp
+ * @brief Value-type operations: dimensions arithmetic, point arithmetic, floating-point comparison.
+ */
 #include "fdl/fdl_core.h"
 
 #include <algorithm>
@@ -10,14 +14,24 @@
 // Floating-point comparison constants
 // ---------------------------------------------------------------------------
 
+/** @brief Relative tolerance for floating-point comparison (matches Python math.isclose). */
 static constexpr double kRelTol = 1e-9;
+/** @brief Absolute tolerance for floating-point comparison (matches Python math.isclose). */
 static constexpr double kAbsTol = 1e-6;
 
 double fdl_fp_rel_tol(void) { return kRelTol; }
 double fdl_fp_abs_tol(void) { return kAbsTol; }
 
-// Match Python math.isclose(a, b, rel_tol=1e-9, abs_tol=1e-6):
-//   abs(a - b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+/**
+ * @brief Test whether two doubles are approximately equal.
+ *
+ * Matches Python math.isclose(a, b, rel_tol=1e-9, abs_tol=1e-6):
+ *   abs(a - b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+ *
+ * @param a  First value.
+ * @param b  Second value.
+ * @return True if the values are within tolerance.
+ */
 static bool fp_close(double a, double b) {
     double diff = std::abs(a - b);
     double tol = std::max(kRelTol * std::max(std::abs(a), std::abs(b)), kAbsTol);

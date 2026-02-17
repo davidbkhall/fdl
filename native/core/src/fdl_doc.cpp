@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_doc.cpp
+ * @brief Document class implementation -- parsing, header accessors, canonical serialization.
+ */
 #include "fdl_doc.h"
 
 #include "fdl_canonical.h"

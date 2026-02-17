@@ -1,13 +1,18 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_validate_api.cpp
+ * @brief C ABI wrappers for document validation.
+ */
 #include "fdl/fdl_core.h"
 #include "fdl_doc.h"
 #include "fdl_validate.h"
 
 #include <new>
 
+/** @brief Concrete type backing the opaque fdl_validation_result_t handle. */
 struct fdl_validation_result {
-    fdl::detail::ValidationResult result;
+    fdl::detail::ValidationResult result; /**< Wrapped validation result. */
 };
 
 extern "C" {

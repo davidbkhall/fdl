@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_pipeline.cpp
+ * @brief Pipeline helper implementations: scale factor, output sizing, alignment shift, dimension clamping.
+ */
 #include "fdl_pipeline.h"
 
 #include <algorithm>

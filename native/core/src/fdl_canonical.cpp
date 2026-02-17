@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_canonical.cpp
+ * @brief Canonical JSON serialization -- null stripping, key reordering per FDL spec, formatting.
+ */
 #include "fdl_canonical.h"
 #include "fdl_compat.h"
 
@@ -11,21 +15,26 @@ namespace fdl::detail {
 // Key ordering tables matching FDL canonical field order
 // -----------------------------------------------------------------------
 
+/** @brief Canonical key order for the FDL root object. */
 static const std::vector<std::string> ROOT_KEYS = {
     "uuid", "version", "fdl_creator", "default_framing_intent",
     "framing_intents", "contexts", "canvas_templates"
 };
 
+/** @brief Canonical key order for the version object. */
 static const std::vector<std::string> VERSION_KEYS = {"major", "minor"};
 
+/** @brief Canonical key order for context objects. */
 static const std::vector<std::string> CONTEXT_KEYS = {
     "label", "context_creator", "clip_id", "canvases"
 };
 
+/** @brief Canonical key order for clip_id objects. */
 static const std::vector<std::string> CLIP_ID_KEYS = {
     "clip_name", "file", "sequence"
 };
 
+/** @brief Canonical key order for canvas objects. */
 static const std::vector<std::string> CANVAS_KEYS = {
     "label", "id", "source_canvas_id", "dimensions",
     "effective_dimensions", "effective_anchor_point",
@@ -33,15 +42,18 @@ static const std::vector<std::string> CANVAS_KEYS = {
     "anamorphic_squeeze", "framing_decisions"
 };
 
+/** @brief Canonical key order for framing decision objects. */
 static const std::vector<std::string> FRAMING_DECISION_KEYS = {
     "label", "id", "framing_intent_id", "dimensions",
     "anchor_point", "protection_dimensions", "protection_anchor_point"
 };
 
+/** @brief Canonical key order for framing intent objects. */
 static const std::vector<std::string> FRAMING_INTENT_KEYS = {
     "label", "id", "aspect_ratio", "protection"
 };
 
+/** @brief Canonical key order for canvas template objects. */
 static const std::vector<std::string> CANVAS_TEMPLATE_KEYS = {
     "label", "id", "target_dimensions", "target_anamorphic_squeeze",
     "fit_source", "fit_method", "alignment_method_vertical",
@@ -49,15 +61,22 @@ static const std::vector<std::string> CANVAS_TEMPLATE_KEYS = {
     "maximum_dimensions", "pad_to_maximum", "round"
 };
 
+/** @brief Canonical key order for dimensions objects. */
 static const std::vector<std::string> DIMENSIONS_KEYS = {"width", "height"};
+/** @brief Canonical key order for point objects. */
 static const std::vector<std::string> POINT_KEYS = {"x", "y"};
+/** @brief Canonical key order for round strategy objects. */
 static const std::vector<std::string> ROUND_STRATEGY_KEYS = {"even", "mode"};
 
 // -----------------------------------------------------------------------
 // Helpers
 // -----------------------------------------------------------------------
 
-// Determine type hint for a child object based on key name
+/**
+ * @brief Determine type hint for a child object based on key name.
+ * @param key          Key name of the child field.
+ * @return Type hint string for the child, or empty if unknown.
+ */
 static std::string child_type_hint(const std::string& /*parent_type*/, const std::string& key) {
     if (key == "version") return "version";
     if (key == "clip_id") return "clip_id";

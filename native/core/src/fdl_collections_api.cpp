@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_collections_api.cpp
+ * @brief C ABI for collection traversal (count, at, find_by_id/label) and handle allocation.
+ */
 #include "fdl/fdl_core.h"
 #include "fdl_compat.h"
 #include "fdl_doc.h"

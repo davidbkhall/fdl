@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_handles.cpp
+ * @brief Handle node() resolution -- lazy index-based lookup into the document ojson tree.
+ */
 #include "fdl_handles.h"
 #include "fdl_doc.h"
 

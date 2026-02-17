@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_template_api.cpp
+ * @brief C ABI wrapper for canvas template application and result management.
+ */
 #include "fdl/fdl_core.h"
 #include "fdl_template.h"
 

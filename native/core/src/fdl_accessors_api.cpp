@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_accessors_api.cpp
+ * @brief C ABI field accessors with thread-local string buffering and per-document mutex locking.
+ */
 #include "fdl/fdl_core.h"
 #include "fdl_canonical.h"
 #include "fdl_compat.h"
@@ -12,32 +16,54 @@
 #include <string>
 #include <unordered_map>
 
+/** @brief Alias for ordered JSON type. */
 using ojson = jsoncons::ojson;
 
 // -----------------------------------------------------------------------
 // Helpers for reading typed fields from ojson nodes
 // -----------------------------------------------------------------------
 
-// Compound key for thread-local string buffer: (node address, field name).
-// This ensures that reading the same field from different nodes (e.g.,
-// canvas.label vs context.label) returns independent buffers.
+/** @brief Thread-local buffer cache key: node address + field name.
+ *
+ * This ensures that reading the same field from different nodes (e.g.,
+ * canvas.label vs context.label) returns independent buffers.
+ */
 struct StringBufKey {
-    uintptr_t node_addr;
-    std::string field;
+    uintptr_t node_addr;   /**< Address of the owning JSON node. */
+    std::string field;     /**< Field name within the node. */
+    /**
+     * @brief Equality comparison for hash-map lookup.
+     * @param o  The other key to compare against.
+     * @return True if both node address and field name match.
+     */
     bool operator==(const StringBufKey& o) const {
         return node_addr == o.node_addr && field == o.field;
     }
 };
 
+/** @brief Hash functor for StringBufKey. */
 struct StringBufKeyHash {
+    /**
+     * @brief Compute hash by combining node address and field name hashes.
+     * @param k  The key to hash.
+     * @return Combined hash value.
+     */
     size_t operator()(const StringBufKey& k) const {
         return std::hash<uintptr_t>{}(k.node_addr) ^
                (std::hash<std::string>{}(k.field) << 1);
     }
 };
 
-// Per-(node, key) thread-local buffer. Pointers are valid until the next
-// call for the SAME node AND SAME key on the SAME thread.
+/**
+ * @brief Get a string field from a JSON node, or return nullptr.
+ *
+ * Per-(node, key) thread-local buffer. Pointers are valid until the next
+ * call for the SAME node AND SAME key on the SAME thread.
+ *
+ * @param node  Pointer to the JSON node to read from.
+ * @param key   Field name to look up.
+ * @return Pointer to a thread-local C string, or nullptr if absent/non-string.
+ */
 static const char* get_string(const ojson* node, const char* key) {
     if (!node || !node->contains(key) || !(*node)[key].is_string()) return nullptr;
     static thread_local std::unordered_map<StringBufKey, std::string, StringBufKeyHash> bufs;
@@ -47,11 +73,24 @@ static const char* get_string(const ojson* node, const char* key) {
     return buf.c_str();
 }
 
+/**
+ * @brief Get a double field from a JSON node, with fallback default.
+ * @param node         Pointer to the JSON node to read from.
+ * @param key          Field name to look up.
+ * @param default_val  Value returned when the field is absent.
+ * @return The field value, or @p default_val if not present.
+ */
 static double get_double(const ojson* node, const char* key, double default_val) {
     if (!node || !node->contains(key)) return default_val;
     return (*node)[key].as<double>();
 }
 
+/**
+ * @brief Get floating-point dimensions from a JSON node.
+ * @param node  Pointer to the JSON node to read from.
+ * @param key   Field name of the dimensions object.
+ * @return Dimensions with width/height, or {0,0} if absent.
+ */
 static fdl_dimensions_f64_t get_dims_f64(const ojson* node, const char* key) {
     fdl_dimensions_f64_t result = {0.0, 0.0};
     if (!node || !node->contains(key) || !(*node)[key].is_object()) return result;
@@ -61,6 +100,12 @@ static fdl_dimensions_f64_t get_dims_f64(const ojson* node, const char* key) {
     return result;
 }
 
+/**
+ * @brief Get integer dimensions from a JSON node.
+ * @param node  Pointer to the JSON node to read from.
+ * @param key   Field name of the dimensions object.
+ * @return Dimensions with width/height, or {0,0} if absent.
+ */
 static fdl_dimensions_i64_t get_dims_i64(const ojson* node, const char* key) {
     fdl_dimensions_i64_t result = {0, 0};
     if (!node || !node->contains(key) || !(*node)[key].is_object()) return result;
@@ -70,6 +115,12 @@ static fdl_dimensions_i64_t get_dims_i64(const ojson* node, const char* key) {
     return result;
 }
 
+/**
+ * @brief Get a floating-point point from a JSON node.
+ * @param node  Pointer to the JSON node to read from.
+ * @param key   Field name of the point object.
+ * @return Point with x/y, or {0,0} if absent.
+ */
 static fdl_point_f64_t get_point_f64(const ojson* node, const char* key) {
     fdl_point_f64_t result = {0.0, 0.0};
     if (!node || !node->contains(key) || !(*node)[key].is_object()) return result;

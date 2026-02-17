@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_pipeline_api.cpp
+ * @brief C ABI wrappers for pipeline helper functions.
+ */
 #include "fdl/fdl_core.h"
 #include "fdl_pipeline.h"
 

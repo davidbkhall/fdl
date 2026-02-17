@@ -1,10 +1,15 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_builder.cpp
+ * @brief Builder functions: construct ojson objects with keys in canonical order.
+ */
 #include "fdl_builder.h"
 #include "fdl_enum_map.h"
 
 namespace fdl::detail {
 
+/** @brief Build a version object with major and minor fields. */
 ojson make_version(int major, int minor) {
     ojson v(jsoncons::json_object_arg);
     v.insert_or_assign("major", major);
@@ -12,6 +17,7 @@ ojson make_version(int major, int minor) {
     return v;
 }
 
+/** @brief Build an integer dimensions object (width, height). */
 ojson make_dimensions_int(int64_t width, int64_t height) {
     ojson d(jsoncons::json_object_arg);
     d.insert_or_assign("width", width);
@@ -19,6 +25,7 @@ ojson make_dimensions_int(int64_t width, int64_t height) {
     return d;
 }
 
+/** @brief Build a floating-point dimensions object (width, height). */
 ojson make_dimensions_float(double width, double height) {
     ojson d(jsoncons::json_object_arg);
     d.insert_or_assign("width", width);
@@ -26,6 +33,7 @@ ojson make_dimensions_float(double width, double height) {
     return d;
 }
 
+/** @brief Build a floating-point point object (x, y). */
 ojson make_point_float(double x, double y) {
     ojson p(jsoncons::json_object_arg);
     p.insert_or_assign("x", x);
@@ -33,6 +41,7 @@ ojson make_point_float(double x, double y) {
     return p;
 }
 
+/** @brief Build a rounding strategy object (even, mode). */
 ojson make_round_strategy(const char* even, const char* mode) {
     ojson r(jsoncons::json_object_arg);
     r.insert_or_assign("even", even);
@@ -57,6 +66,7 @@ ojson make_root(const char* uuid, int version_major, int version_minor,
     return root;
 }
 
+/** @brief Build a framing intent object with aspect ratio and protection. */
 ojson make_framing_intent(const char* id, const char* label,
                           int64_t aspect_w, int64_t aspect_h, double protection) {
     // Key order: label, id, aspect_ratio, protection
@@ -68,6 +78,7 @@ ojson make_framing_intent(const char* id, const char* label,
     return fi;
 }
 
+/** @brief Build a context object with label and creator. */
 ojson make_context(const char* label, const char* context_creator) {
     // Key order: label, context_creator, clip_id, canvases
     ojson ctx(jsoncons::json_object_arg);
@@ -77,6 +88,7 @@ ojson make_context(const char* label, const char* context_creator) {
     return ctx;
 }
 
+/** @brief Build a canvas object with dimensions and squeeze. */
 ojson make_canvas(const char* id, const char* label, const char* source_canvas_id,
                   int64_t dim_w, int64_t dim_h, double squeeze) {
     // Key order: label, id, source_canvas_id, dimensions,
@@ -93,6 +105,7 @@ ojson make_canvas(const char* id, const char* label, const char* source_canvas_i
     return c;
 }
 
+/** @brief Build a framing decision object with dimensions and anchor point. */
 ojson make_framing_decision(const char* id, const char* label,
                             const char* framing_intent_id,
                             double dim_w, double dim_h,
@@ -108,6 +121,7 @@ ojson make_framing_decision(const char* id, const char* label,
     return fd;
 }
 
+/** @brief Build a canvas template object with all transform parameters. */
 ojson make_canvas_template(const char* id, const char* label,
                            int64_t target_w, int64_t target_h, double target_squeeze,
                            fdl_geometry_path_t fit_source, fdl_fit_method_t fit_method,

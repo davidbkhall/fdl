@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_doc_api.cpp
+ * @brief C ABI wrappers for document creation, parsing, serialization, and memory management.
+ */
 #include "fdl/fdl_core.h"
 #include "fdl_compat.h"
 #include "fdl_doc.h"
@@ -10,27 +14,48 @@
 #include <string>
 #include <unordered_map>
 
-// Compound key for thread-local string buffer: (doc address, field name).
-// This ensures that reading the same field from different documents returns
-// independent buffers.
+/** @brief Thread-local buffer cache key for document-level strings.
+ *
+ * This ensures that reading the same field from different documents returns
+ * independent buffers.
+ */
 struct DocStringBufKey {
-    uintptr_t doc_addr;
-    std::string field;
+    uintptr_t doc_addr;   /**< Address of the owning document. */
+    std::string field;    /**< Field name within the document. */
+    /**
+     * @brief Equality comparison for hash-map lookup.
+     * @param o  The other key to compare against.
+     * @return True if both document address and field name match.
+     */
     bool operator==(const DocStringBufKey& o) const {
         return doc_addr == o.doc_addr && field == o.field;
     }
 };
 
+/** @brief Hash functor for DocStringBufKey. */
 struct DocStringBufKeyHash {
+    /**
+     * @brief Compute hash by combining document address and field name hashes.
+     * @param k  The key to hash.
+     * @return Combined hash value.
+     */
     size_t operator()(const DocStringBufKey& k) const {
         return std::hash<uintptr_t>{}(k.doc_addr) ^
                (std::hash<std::string>{}(k.field) << 1);
     }
 };
 
-// Per-(doc, key) thread-local buffer for doc-level string accessors.
-// Pointers are valid until the next call for the SAME doc AND SAME key
-// on the SAME thread.
+/**
+ * @brief Get a top-level string field from the document.
+ *
+ * Per-(doc, key) thread-local buffer for doc-level string accessors.
+ * Pointers are valid until the next call for the SAME doc AND SAME key
+ * on the SAME thread.
+ *
+ * @param doc  Pointer to the document handle.
+ * @param key  Top-level field name to look up.
+ * @return Pointer to a thread-local C string, or nullptr if absent/empty.
+ */
 static const char* get_doc_string(const fdl_doc_t* doc, const char* key) {
     if (!doc) return nullptr;
     const auto& data = doc->doc.data();

@@ -26,6 +26,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      # --- Python linting ---
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -39,6 +40,38 @@ jobs:
 
       - name: Run ruff format check
         run: uvx ruff format --check .
+
+      # --- C++ linting ---
+      - name: Install clang tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format clang-tidy
+
+      - name: Run clang-format check
+        run: |
+          find native/core/src native/core/include native/core/tests \
+            -type f \( -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) \
+            -exec clang-format --dry-run --Werror {} +
+
+      - name: Install CMake
+        run: sudo apt-get install -y cmake
+
+      - name: Install codegen dependencies
+        run: uv pip install pyyaml jinja2 --system
+
+      - name: Run codegen
+        run: python scripts/run_codegen.py
+
+      - name: CMake configure (for compile_commands.json)
+        run: |
+          cmake -S native/core -B native/core/build \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DFDL_BUILD_TESTS=OFF
+
+      - name: Run clang-tidy
+        run: |
+          find native/core/src -type f -name '*.cpp' \
+            -exec clang-tidy -p native/core/build --warnings-as-errors='' {} +
 
   # ---------------------------------------------------------------------------
   # Tests — gate for all downstream jobs

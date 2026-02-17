@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_rounding.cpp
+ * @brief FDL rounding functions (round, round_dimensions, round_point) using banker's rounding.
+ */
 #include "fdl/fdl_core.h"
 #include "fdl_rounding.h"
 

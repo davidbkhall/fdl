@@ -1,23 +1,47 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_geometry.cpp
+ * @brief Geometry operations on the 4-layer FDL dimension hierarchy.
+ *
+ * The FDL hierarchy is: canvas >= effective >= protection >= framing.
+ * This module provides the transformations applied during template application:
+ *
+ * - **Gap-filling**: Propagates populated dimensions upward to fill missing layers.
+ *   Protection is never auto-filled from framing (by spec).
+ * - **Normalize+scale**: Applies anamorphic correction and uniform scaling.
+ * - **Round**: Rounds all 7 fields (4 dimensions + 3 anchors) per strategy.
+ * - **Offset**: Translates anchors for alignment, tracking theoretical positions.
+ * - **Crop**: Clips dimensions to visible portion within canvas bounds,
+ *   enforcing the hierarchy invariant.
+ */
 #include "fdl_geometry.h"
 
 #include <algorithm>
 #include <cmath>
 
-// Re-use existing value type operations declared in fdl_core.h
-// fdl_dimensions_normalize_and_scale, fdl_dimensions_is_zero, fdl_dimensions_sub
-// fdl_point_add, fdl_point_clamp, fdl_round_dimensions, fdl_round_point
-// fdl_point_normalize, fdl_point_scale (via normalize_and_scale pattern)
-
 namespace fdl::detail {
 
+/**
+ * @brief Normalize a point for squeeze then apply uniform scale.
+ * @param pt              Input point.
+ * @param squeeze         Source anamorphic squeeze factor.
+ * @param scale           Uniform scale factor.
+ * @param target_squeeze  Target anamorphic squeeze factor.
+ * @return The normalized and scaled point.
+ */
 static fdl_point_f64_t point_normalize_and_scale(
     fdl_point_f64_t pt, double squeeze, double scale, double target_squeeze) {
     fdl_point_f64_t normalized = fdl_point_normalize(pt, squeeze);
     return fdl_point_scale(normalized, scale, target_squeeze);
 }
 
+/**
+ * @brief Clamp dimensions to not exceed given bounds.
+ * @param dims        Dimensions to clamp.
+ * @param clamp_dims  Maximum allowed dimensions.
+ * @return Dimensions with each axis clamped to the corresponding bound.
+ */
 static fdl_dimensions_f64_t dims_clamp_to_dims(
     fdl_dimensions_f64_t dims, fdl_dimensions_f64_t clamp_dims) {
     return {
@@ -142,7 +166,18 @@ fdl_geometry_t geometry_apply_offset(
     };
 }
 
-// Internal: Clip a dimension based on its theoretical anchor position.
+/**
+ * @brief Clip a dimension to the visible portion within canvas bounds.
+ *
+ * Uses the theoretical (unclamped) anchor to compute how much of the
+ * dimension extends beyond the canvas edges, then clips accordingly.
+ *
+ * @param dims            Dimensions to clip.
+ * @param theo_anchor     Theoretical (unclamped) anchor position.
+ * @param clamped_anchor  Clamped anchor position (>= 0).
+ * @param canvas_dims     Canvas bounds used for clipping.
+ * @return Visible portion of @p dims within the canvas.
+ */
 static fdl_dimensions_f64_t crop_dim(
     fdl_dimensions_f64_t dims,
     fdl_point_f64_t theo_anchor,
