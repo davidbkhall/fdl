@@ -58,7 +58,7 @@ jobs:
         run: sudo apt-get install -y cmake
 
       - name: Install codegen dependencies
-        run: uv pip install pyyaml jinja2 --system
+        run: uv pip install pyyaml jinja2 ruff --system
 
       - name: Run codegen (with drift check)
         run: python scripts/run_codegen.py --check
