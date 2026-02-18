@@ -325,6 +325,10 @@ public:
     int set_custom_attr(const std::string& name, double value) {
         return {{ fdl_class.ca_prefix }}set_custom_attr_float({{ fdl_class.handle_field }}, name.c_str(), value);
     }
+    /** Set a boolean custom attribute. Returns 0 on success, -1 on type mismatch. */
+    int set_custom_attr(const std::string& name, bool value) {
+        return {{ fdl_class.ca_prefix }}set_custom_attr_bool({{ fdl_class.handle_field }}, name.c_str(), value ? FDL_TRUE : FDL_FALSE);
+    }
     /** Get a string custom attribute. */
     std::optional<std::string> get_custom_attr_string(const std::string& name) const {
         const char* p = {{ fdl_class.ca_prefix }}get_custom_attr_string({{ fdl_class.handle_field }}, name.c_str());
@@ -340,6 +344,12 @@ public:
     std::optional<double> get_custom_attr_float(const std::string& name) const {
         double out;
         if ({{ fdl_class.ca_prefix }}get_custom_attr_float({{ fdl_class.handle_field }}, name.c_str(), &out) == 0) return out;
+        return std::nullopt;
+    }
+    /** Get a boolean custom attribute. */
+    std::optional<bool> get_custom_attr_bool(const std::string& name) const {
+        int out;
+        if ({{ fdl_class.ca_prefix }}get_custom_attr_bool({{ fdl_class.handle_field }}, name.c_str(), &out) == 0) return static_cast<bool>(out);
         return std::nullopt;
     }
     /** Check if a custom attribute exists. */
@@ -552,6 +562,10 @@ public:
     int set_custom_attr(const std::string& name, double value) {
         return {{ cls.ca_prefix }}set_custom_attr_float({{ cls.handle_field }}, name.c_str(), value);
     }
+    /** Set a boolean custom attribute. Returns 0 on success, -1 on type mismatch. */
+    int set_custom_attr(const std::string& name, bool value) {
+        return {{ cls.ca_prefix }}set_custom_attr_bool({{ cls.handle_field }}, name.c_str(), value ? FDL_TRUE : FDL_FALSE);
+    }
     /** Get a string custom attribute. */
     std::optional<std::string> get_custom_attr_string(const std::string& name) const {
         const char* p = {{ cls.ca_prefix }}get_custom_attr_string({{ cls.handle_field }}, name.c_str());
@@ -567,6 +581,12 @@ public:
     std::optional<double> get_custom_attr_float(const std::string& name) const {
         double out;
         if ({{ cls.ca_prefix }}get_custom_attr_float({{ cls.handle_field }}, name.c_str(), &out) == 0) return out;
+        return std::nullopt;
+    }
+    /** Get a boolean custom attribute. */
+    std::optional<bool> get_custom_attr_bool(const std::string& name) const {
+        int out;
+        if ({{ cls.ca_prefix }}get_custom_attr_bool({{ cls.handle_field }}, name.c_str(), &out) == 0) return static_cast<bool>(out);
         return std::nullopt;
     }
     /** Check if a custom attribute exists. */

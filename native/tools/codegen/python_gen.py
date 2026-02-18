@@ -340,6 +340,13 @@ def _compute_per_class_imports(
     has_handle_ref_setter = any(p["converter"] == "handle_ref" and p.get("setter_fn") for p in cls_ctx["properties"])
     needs_json = bool(cls_ctx.get("to_json_fn")) or "json_value" in getter_converters or has_handle_ref_setter
 
+    # ctypes is used by: to_json (string_at), lifecycle errors (string_at),
+    # composite_property (string_at), struct-returning getters (byref)
+    has_struct_getters = "struct" in getter_converters
+    has_lifecycle_errors = any(lc.get("error") for lc in cls_ctx.get("lifecycle", []))
+    has_composite = any(lc.get("kind") == "composite_property" for lc in cls_ctx.get("lifecycle", []))
+    needs_ctypes = bool(cls_ctx.get("to_json_fn")) or has_struct_getters or has_lifecycle_errors or has_composite
+
     # Dataclass imports
     dataclass_imports = sorted({lc["returns"] for lc in cls_ctx.get("lifecycle", []) if lc.get("returns") in dataclass_name_set})
 
@@ -355,6 +362,7 @@ def _compute_per_class_imports(
         "converter_imports": sorted(converter_imports),
         "enum_map_imports": sorted(enum_map_imports),
         "needs_json": needs_json,
+        "needs_ctypes": needs_ctypes,
         "needs_version": needs_version,
         "dataclass_imports": dataclass_imports,
         "runtime_enums": runtime_enums,
@@ -383,7 +391,7 @@ def _make_env() -> Environment:
 def _generate_custom_attr_ffi(idl: IDL) -> list[dict]:
     """Generate FFI function contexts for custom attribute functions.
 
-    For each handle type with custom_attrs=True, generates 11 function
+    For each handle type with custom_attrs=True, generates 13 function
     declarations matching the C ABI macro expansion.
     """
     # Template: (suffix, argtypes, restype)
@@ -391,9 +399,11 @@ def _generate_custom_attr_ffi(idl: IDL) -> list[dict]:
         ("set_custom_attr_string", "ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p", "ctypes.c_int"),
         ("set_custom_attr_int", "ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int64", "ctypes.c_int"),
         ("set_custom_attr_float", "ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double", "ctypes.c_int"),
+        ("set_custom_attr_bool", "ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int", "ctypes.c_int"),
         ("get_custom_attr_string", "ctypes.c_void_p, ctypes.c_char_p", "ctypes.c_char_p"),
         ("get_custom_attr_int", "ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int64)", "ctypes.c_int"),
         ("get_custom_attr_float", "ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)", "ctypes.c_int"),
+        ("get_custom_attr_bool", "ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)", "ctypes.c_int"),
         ("has_custom_attr", "ctypes.c_void_p, ctypes.c_char_p", "ctypes.c_int"),
         ("get_custom_attr_type", "ctypes.c_void_p, ctypes.c_char_p", "ctypes.c_uint32"),
         ("remove_custom_attr", "ctypes.c_void_p, ctypes.c_char_p", "ctypes.c_int"),

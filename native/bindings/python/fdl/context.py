@@ -60,13 +60,8 @@ class Context(HandleWrapper):
 
         lib = get_lib()
         from .fdl import FDL
-
         _doc_h = lib.fdl_doc_create_with_header(
-            b"00000000-0000-0000-0000-000000000000",
-            2,
-            0,
-            b"_",
-            None,
+            b"00000000-0000-0000-0000-000000000000", 2, 0, b"_", None,
         )
         _backing = FDL._from_handle(_doc_h, lib)
         handle = lib.fdl_doc_add_context(
@@ -96,7 +91,6 @@ class Context(HandleWrapper):
         if not self._lib.fdl_context_has_clip_id(self._handle):
             return None
         from .clip_id import ClipID
-
         handle = self._lib.fdl_context_clip_id(self._handle)
         if not handle:
             return None
@@ -122,7 +116,6 @@ class Context(HandleWrapper):
     def canvases(self) -> CollectionWrapper[Canvas]:
         self._check_handle()
         from .canvas import Canvas
-
         return CollectionWrapper(
             lib=self._lib,
             parent_handle=self._handle,
@@ -164,7 +157,6 @@ class Context(HandleWrapper):
         """Add a canvas to this context."""
         self._check_handle()
         from .canvas import Canvas
-
         handle = self._lib.fdl_context_add_canvas(
             self._handle,
             id.encode("utf-8"),
@@ -188,7 +180,6 @@ class Context(HandleWrapper):
         self._check_handle()
         from .canvas import Canvas
         from .framing_decision import FramingDecision
-
         result = self._lib.fdl_context_resolve_canvas_for_dimensions(
             self._handle,
             _to_c_dims_f64(input_dims),
@@ -210,21 +201,21 @@ class Context(HandleWrapper):
 
     _CA_PREFIX = "fdl_context_"
 
-    def set_custom_attr(self, name: str, value: str | int | float) -> None:
+    def set_custom_attr(self, name: str, value: str | int | float | bool) -> None:
         """Set a custom attribute. Type is inferred from value.
 
         Args:
             name: Attribute name (without ``_`` prefix).
-            value: Attribute value (str, int, or float).
+            value: Attribute value (str, int, float, or bool).
 
         Raises:
-            TypeError: If value is not str, int, or float.
+            TypeError: If value is not str, int, float, or bool.
             ValueError: If an attribute with the same name exists with a different type.
         """
         self._check_handle()
         _ca_set(self._lib, self._handle, self._CA_PREFIX, name, value)
 
-    def get_custom_attr(self, name: str) -> str | int | float | None:
+    def get_custom_attr(self, name: str) -> str | int | float | bool | None:
         """Get a custom attribute value by name.
 
         Args:
@@ -263,7 +254,7 @@ class Context(HandleWrapper):
         return _ca_count(self._lib, self._handle, self._CA_PREFIX)
 
     @property
-    def custom_attrs(self) -> dict[str, str | int | float]:
+    def custom_attrs(self) -> dict[str, str | int | float | bool]:
         """Return all custom attributes as a dictionary."""
         self._check_handle()
         return _ca_all(self._lib, self._handle, self._CA_PREFIX)

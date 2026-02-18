@@ -61,13 +61,8 @@ class Canvas(HandleWrapper):
 
         lib = get_lib()
         from .fdl import FDL
-
         _doc_h = lib.fdl_doc_create_with_header(
-            b"00000000-0000-0000-0000-000000000000",
-            2,
-            0,
-            b"_",
-            None,
+            b"00000000-0000-0000-0000-000000000000", 2, 0, b"_", None,
         )
         _backing = FDL._from_handle(_doc_h, lib)
         _ctx_h = lib.fdl_doc_add_context(_doc_h, b"_", None)
@@ -187,7 +182,6 @@ class Canvas(HandleWrapper):
     def framing_decisions(self) -> CollectionWrapper[FramingDecision]:
         self._check_handle()
         from .framing_decision import FramingDecision
-
         return CollectionWrapper(
             lib=self._lib,
             parent_handle=self._handle,
@@ -229,7 +223,6 @@ class Canvas(HandleWrapper):
         """Add a framing decision to this canvas."""
         self._check_handle()
         from .framing_decision import FramingDecision
-
         handle = self._lib.fdl_canvas_add_framing_decision(
             self._handle,
             id.encode("utf-8"),
@@ -267,7 +260,6 @@ class Canvas(HandleWrapper):
         """Get effective rect or None if not defined."""
         self._check_handle()
         from fdl_ffi._structs import fdl_rect_t
-
         out = fdl_rect_t()
         if not self._lib.fdl_canvas_get_effective_rect(self._handle, ctypes.byref(out)):
             return None
@@ -275,21 +267,21 @@ class Canvas(HandleWrapper):
 
     _CA_PREFIX = "fdl_canvas_"
 
-    def set_custom_attr(self, name: str, value: str | int | float) -> None:
+    def set_custom_attr(self, name: str, value: str | int | float | bool) -> None:
         """Set a custom attribute. Type is inferred from value.
 
         Args:
             name: Attribute name (without ``_`` prefix).
-            value: Attribute value (str, int, or float).
+            value: Attribute value (str, int, float, or bool).
 
         Raises:
-            TypeError: If value is not str, int, or float.
+            TypeError: If value is not str, int, float, or bool.
             ValueError: If an attribute with the same name exists with a different type.
         """
         self._check_handle()
         _ca_set(self._lib, self._handle, self._CA_PREFIX, name, value)
 
-    def get_custom_attr(self, name: str) -> str | int | float | None:
+    def get_custom_attr(self, name: str) -> str | int | float | bool | None:
         """Get a custom attribute value by name.
 
         Args:
@@ -328,7 +320,7 @@ class Canvas(HandleWrapper):
         return _ca_count(self._lib, self._handle, self._CA_PREFIX)
 
     @property
-    def custom_attrs(self) -> dict[str, str | int | float]:
+    def custom_attrs(self) -> dict[str, str | int | float | bool]:
         """Return all custom attributes as a dictionary."""
         self._check_handle()
         return _ca_all(self._lib, self._handle, self._CA_PREFIX)

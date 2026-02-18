@@ -19,7 +19,6 @@ class fdl_abi_version_t(ctypes.Structure):
         fields = ", ".join(f"{name}={getattr(self, name)}" for name, _ in self._fields_)
         return f"fdl_abi_version_t({fields})"
 
-
 class fdl_dimensions_i64_t(ctypes.Structure):
     _fields_ = [
         ("width", ctypes.c_int64),
@@ -29,7 +28,6 @@ class fdl_dimensions_i64_t(ctypes.Structure):
     def __repr__(self) -> str:
         fields = ", ".join(f"{name}={getattr(self, name)}" for name, _ in self._fields_)
         return f"fdl_dimensions_i64_t({fields})"
-
 
 class fdl_dimensions_f64_t(ctypes.Structure):
     _fields_ = [
@@ -41,7 +39,6 @@ class fdl_dimensions_f64_t(ctypes.Structure):
         fields = ", ".join(f"{name}={getattr(self, name)}" for name, _ in self._fields_)
         return f"fdl_dimensions_f64_t({fields})"
 
-
 class fdl_point_f64_t(ctypes.Structure):
     _fields_ = [
         ("x", ctypes.c_double),
@@ -51,7 +48,6 @@ class fdl_point_f64_t(ctypes.Structure):
     def __repr__(self) -> str:
         fields = ", ".join(f"{name}={getattr(self, name)}" for name, _ in self._fields_)
         return f"fdl_point_f64_t({fields})"
-
 
 class fdl_rect_t(ctypes.Structure):
     _fields_ = [
@@ -65,7 +61,6 @@ class fdl_rect_t(ctypes.Structure):
         fields = ", ".join(f"{name}={getattr(self, name)}" for name, _ in self._fields_)
         return f"fdl_rect_t({fields})"
 
-
 class fdl_round_strategy_t(ctypes.Structure):
     _fields_ = [
         ("even", ctypes.c_uint32),
@@ -75,7 +70,6 @@ class fdl_round_strategy_t(ctypes.Structure):
     def __repr__(self) -> str:
         fields = ", ".join(f"{name}={getattr(self, name)}" for name, _ in self._fields_)
         return f"fdl_round_strategy_t({fields})"
-
 
 class fdl_geometry_t(ctypes.Structure):
     _fields_ = [
@@ -92,7 +86,6 @@ class fdl_geometry_t(ctypes.Structure):
         fields = ", ".join(f"{name}={getattr(self, name)}" for name, _ in self._fields_)
         return f"fdl_geometry_t({fields})"
 
-
 class fdl_from_intent_result_t(ctypes.Structure):
     _fields_ = [
         ("dimensions", fdl_dimensions_f64_t),
@@ -106,7 +99,6 @@ class fdl_from_intent_result_t(ctypes.Structure):
         fields = ", ".join(f"{name}={getattr(self, name)}" for name, _ in self._fields_)
         return f"fdl_from_intent_result_t({fields})"
 
-
 class fdl_parse_result_t(ctypes.Structure):
     _fields_ = [
         ("doc", ctypes.c_void_p),
@@ -116,7 +108,6 @@ class fdl_parse_result_t(ctypes.Structure):
     def __repr__(self) -> str:
         fields = ", ".join(f"{name}={getattr(self, name)}" for name, _ in self._fields_)
         return f"fdl_parse_result_t({fields})"
-
 
 class fdl_template_result_t(ctypes.Structure):
     _fields_ = [
@@ -133,7 +124,6 @@ class fdl_template_result_t(ctypes.Structure):
     def __repr__(self) -> str:
         fields = ", ".join(f"{name}={getattr(self, name)}" for name, _ in self._fields_)
         return f"fdl_template_result_t({fields})"
-
 
 class fdl_resolve_canvas_result_t(ctypes.Structure):
     _fields_ = [

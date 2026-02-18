@@ -104,9 +104,22 @@ class TestDocCustomAttrs:
         # Original value preserved
         assert doc.get_custom_attr("x") == 10
 
+    def test_set_get_bool(self, doc):
+        doc.set_custom_attr("active", True)
+        assert doc.get_custom_attr("active") is True
+        doc.set_custom_attr("disabled", False)
+        assert doc.get_custom_attr("disabled") is False
+
+    def test_bool_type_mismatch(self, doc):
+        doc.set_custom_attr("flag", True)
+        with pytest.raises(ValueError, match="type mismatch"):
+            doc.set_custom_attr("flag", 42)
+        with pytest.raises(ValueError, match="type mismatch"):
+            doc.set_custom_attr("flag", "yes")
+        # Original preserved
+        assert doc.get_custom_attr("flag") is True
+
     def test_bad_type_raises(self, doc):
-        with pytest.raises(TypeError):
-            doc.set_custom_attr("flag", True)
         with pytest.raises(TypeError):
             doc.set_custom_attr("items", [1, 2, 3])
 
@@ -126,11 +139,13 @@ class TestDocCustomAttrs:
         doc.set_custom_attr("alpha", "a")
         doc.set_custom_attr("beta", 2)
         doc.set_custom_attr("gamma", 3.14)
+        doc.set_custom_attr("delta", True)
         attrs = doc.custom_attrs
         assert attrs["alpha"] == "a"
         assert attrs["beta"] == 2
         assert attrs["gamma"] == 3.14
-        assert len(attrs) == 3
+        assert attrs["delta"] is True
+        assert len(attrs) == 4
 
 
 # ---------------------------------------------------------------------------
@@ -211,6 +226,7 @@ class TestRoundtrip:
         doc.set_custom_attr("tool", "test-suite")
         doc.set_custom_attr("version_num", 1)
         doc.set_custom_attr("scale", 2.5)
+        doc.set_custom_attr("approved", True)
 
         ctx = doc.contexts[0]
         ctx.set_custom_attr("note", "ctx-note")
@@ -238,6 +254,7 @@ class TestRoundtrip:
         assert doc2.get_custom_attr("tool") == "test-suite"
         assert doc2.get_custom_attr("version_num") == 1
         assert doc2.get_custom_attr("scale") == 2.5
+        assert doc2.get_custom_attr("approved") is True
 
         ctx2 = doc2.contexts[0]
         assert ctx2.get_custom_attr("note") == "ctx-note"

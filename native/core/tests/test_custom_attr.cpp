@@ -86,6 +86,24 @@ TEST_CASE("Custom attrs CRUD on fdl_doc_t", "[custom_attr][doc]") {
         REQUIRE(val == 1.5);
     }
 
+    SECTION("set and get bool true") {
+        REQUIRE(fdl_doc_set_custom_attr_bool(doc, "active", FDL_TRUE) == 0);
+        REQUIRE(fdl_doc_has_custom_attr(doc, "active") != 0);
+        REQUIRE(fdl_doc_get_custom_attr_type(doc, "active") == FDL_CUSTOM_ATTR_TYPE_BOOL);
+        int val = 0;
+        REQUIRE(fdl_doc_get_custom_attr_bool(doc, "active", &val) == 0);
+        REQUIRE(val == FDL_TRUE);
+        REQUIRE(fdl_doc_custom_attrs_count(doc) == 1);
+    }
+
+    SECTION("set and get bool false") {
+        REQUIRE(fdl_doc_set_custom_attr_bool(doc, "disabled", FDL_FALSE) == 0);
+        REQUIRE(fdl_doc_get_custom_attr_type(doc, "disabled") == FDL_CUSTOM_ATTR_TYPE_BOOL);
+        int val = 1;
+        REQUIRE(fdl_doc_get_custom_attr_bool(doc, "disabled", &val) == 0);
+        REQUIRE(val == FDL_FALSE);
+    }
+
     SECTION("update same type") {
         REQUIRE(fdl_doc_set_custom_attr_string(doc, "note", "first") == 0);
         REQUIRE(fdl_doc_set_custom_attr_string(doc, "note", "second") == 0);
@@ -96,10 +114,24 @@ TEST_CASE("Custom attrs CRUD on fdl_doc_t", "[custom_attr][doc]") {
         REQUIRE(fdl_doc_set_custom_attr_int(doc, "x", 10) == 0);
         // Attempting to set as string should fail
         REQUIRE(fdl_doc_set_custom_attr_string(doc, "x", "nope") == -1);
+        // Attempting to set as bool should fail
+        REQUIRE(fdl_doc_set_custom_attr_bool(doc, "x", FDL_TRUE) == -1);
         // Original value preserved
         int64_t val = 0;
         REQUIRE(fdl_doc_get_custom_attr_int(doc, "x", &val) == 0);
         REQUIRE(val == 10);
+    }
+
+    SECTION("bool type mismatch") {
+        REQUIRE(fdl_doc_set_custom_attr_bool(doc, "flag", FDL_TRUE) == 0);
+        // Cannot overwrite bool with int, string, or float
+        REQUIRE(fdl_doc_set_custom_attr_int(doc, "flag", 42) == -1);
+        REQUIRE(fdl_doc_set_custom_attr_string(doc, "flag", "no") == -1);
+        REQUIRE(fdl_doc_set_custom_attr_float(doc, "flag", 1.0) == -1);
+        // Bool still true
+        int bval = 0;
+        REQUIRE(fdl_doc_get_custom_attr_bool(doc, "flag", &bval) == 0);
+        REQUIRE(bval == FDL_TRUE);
     }
 
     SECTION("remove") {
@@ -118,13 +150,16 @@ TEST_CASE("Custom attrs CRUD on fdl_doc_t", "[custom_attr][doc]") {
         REQUIRE(fdl_doc_get_custom_attr_int(doc, "nope", &ival) == -1);
         double fval = 0.0;
         REQUIRE(fdl_doc_get_custom_attr_float(doc, "nope", &fval) == -1);
+        int bval = 0;
+        REQUIRE(fdl_doc_get_custom_attr_bool(doc, "nope", &bval) == -1);
     }
 
-    SECTION("enumerate multiple attrs") {
+    SECTION("enumerate multiple attrs including bool") {
         fdl_doc_set_custom_attr_string(doc, "alpha", "a");
         fdl_doc_set_custom_attr_int(doc, "beta", 2);
         fdl_doc_set_custom_attr_float(doc, "gamma", 3.14);
-        REQUIRE(fdl_doc_custom_attrs_count(doc) == 3);
+        fdl_doc_set_custom_attr_bool(doc, "delta", FDL_TRUE);
+        REQUIRE(fdl_doc_custom_attrs_count(doc) == 4);
     }
 
     fdl_doc_free(doc);
@@ -338,6 +373,7 @@ TEST_CASE("Add custom attrs then roundtrip", "[custom_attr][roundtrip]") {
     fdl_doc_set_custom_attr_string(doc, "tool", "test-suite");
     fdl_doc_set_custom_attr_int(doc, "version_num", 1);
     fdl_doc_set_custom_attr_float(doc, "scale", 2.5);
+    fdl_doc_set_custom_attr_bool(doc, "approved", FDL_TRUE);
 
     fdl_context_t* ctx = fdl_doc_context_at(doc, 0);
     fdl_context_set_custom_attr_string(ctx, "note", "ctx-note");
@@ -376,6 +412,10 @@ TEST_CASE("Add custom attrs then roundtrip", "[custom_attr][roundtrip]") {
     double sc = 0;
     fdl_doc_get_custom_attr_float(doc2, "scale", &sc);
     REQUIRE(sc == 2.5);
+    int approved = 0;
+    fdl_doc_get_custom_attr_bool(doc2, "approved", &approved);
+    REQUIRE(approved == FDL_TRUE);
+    REQUIRE(fdl_doc_get_custom_attr_type(doc2, "approved") == FDL_CUSTOM_ATTR_TYPE_BOOL);
 
     fdl_context_t* ctx2 = fdl_doc_context_at(doc2, 0);
     REQUIRE(std::string(fdl_context_get_custom_attr_string(ctx2, "note")) == "ctx-note");

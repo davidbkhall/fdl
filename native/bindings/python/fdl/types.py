@@ -22,12 +22,16 @@ class DimensionsInt:
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, DimensionsFloat):
-            return math.isclose(float(self.width), float(other.width), rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL) and math.isclose(
-                float(self.height), float(other.height), rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL
+            return (
+                math.isclose(float(self.width), float(other.width), rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL) and
+                math.isclose(float(self.height), float(other.height), rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL)
             )
         if not isinstance(other, DimensionsInt):
             return NotImplemented
-        return self.width == other.width and self.height == other.height
+        return (
+            self.width == other.width and
+            self.height == other.height
+        )
 
     def __hash__(self) -> int:
         return hash((self.width, self.height))
@@ -41,14 +45,12 @@ class DimensionsInt:
     def is_zero(self) -> bool:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_dimensions_i64_t
-
         _c = fdl_dimensions_i64_t(width=self.width, height=self.height)
         return bool(get_lib().fdl_dimensions_i64_is_zero(_c))
 
     def normalize(self, squeeze: float) -> DimensionsFloat:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_dimensions_i64_t
-
         _c = fdl_dimensions_i64_t(width=self.width, height=self.height)
         _r = get_lib().fdl_dimensions_i64_normalize(_c, float(squeeze))
         return DimensionsFloat(width=_r.width, height=_r.height)
@@ -67,7 +69,6 @@ class DimensionsInt:
     def __gt__(self, other: DimensionsInt) -> bool:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_dimensions_i64_t
-
         _c = fdl_dimensions_i64_t(width=self.width, height=self.height)
         _c_other = fdl_dimensions_i64_t(width=other.width, height=other.height)
         _r = get_lib().fdl_dimensions_i64_gt(_c, _c_other)
@@ -76,7 +77,6 @@ class DimensionsInt:
     def __lt__(self, other: DimensionsInt) -> bool:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_dimensions_i64_t
-
         _c = fdl_dimensions_i64_t(width=self.width, height=self.height)
         _c_other = fdl_dimensions_i64_t(width=other.width, height=other.height)
         _r = get_lib().fdl_dimensions_i64_lt(_c, _c_other)
@@ -84,7 +84,6 @@ class DimensionsInt:
 
     def __bool__(self) -> bool:
         return not self.is_zero()
-
 
 class DimensionsFloat:
     """Lightweight DimensionsFloat value type."""
@@ -97,13 +96,15 @@ class DimensionsFloat:
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, DimensionsInt):
-            return math.isclose(float(self.width), float(other.width), rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL) and math.isclose(
-                float(self.height), float(other.height), rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL
+            return (
+                math.isclose(float(self.width), float(other.width), rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL) and
+                math.isclose(float(self.height), float(other.height), rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL)
             )
         if not isinstance(other, DimensionsFloat):
             return NotImplemented
-        return math.isclose(self.width, other.width, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL) and math.isclose(
-            self.height, other.height, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL
+        return (
+            math.isclose(self.width, other.width, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL) and
+            math.isclose(self.height, other.height, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL)
         )
 
     def __hash__(self) -> int:
@@ -118,14 +119,12 @@ class DimensionsFloat:
     def is_zero(self) -> bool:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_dimensions_f64_t
-
         _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
         return bool(get_lib().fdl_dimensions_is_zero(_c))
 
     def normalize(self, squeeze: float) -> DimensionsFloat:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_dimensions_f64_t
-
         _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
         _r = get_lib().fdl_dimensions_normalize(_c, float(squeeze))
         return DimensionsFloat(width=_r.width, height=_r.height)
@@ -133,7 +132,6 @@ class DimensionsFloat:
     def scale(self, scale_factor: float, target_squeeze: float) -> DimensionsFloat:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_dimensions_f64_t
-
         _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
         _r = get_lib().fdl_dimensions_scale(_c, float(scale_factor), float(target_squeeze))
         return DimensionsFloat(width=_r.width, height=_r.height)
@@ -141,7 +139,6 @@ class DimensionsFloat:
     def normalize_and_scale(self, input_squeeze: float, scale_factor: float, target_squeeze: float) -> DimensionsFloat:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_dimensions_f64_t
-
         _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
         _r = get_lib().fdl_dimensions_normalize_and_scale(_c, float(input_squeeze), float(scale_factor), float(target_squeeze))
         return DimensionsFloat(width=_r.width, height=_r.height)
@@ -151,7 +148,6 @@ class DimensionsFloat:
         from fdl_ffi._structs import fdl_dimensions_f64_t
 
         from .enum_maps import ROUNDING_EVEN_TO_C, ROUNDING_MODE_TO_C
-
         _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
         _r = get_lib().fdl_round_dimensions(_c, ROUNDING_EVEN_TO_C[even], ROUNDING_MODE_TO_C[mode])
         return DimensionsFloat(width=_r.width, height=_r.height)
@@ -161,7 +157,6 @@ class DimensionsFloat:
 
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_dimensions_f64_t, fdl_point_f64_t
-
         _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
         _c_clamp_dims = fdl_dimensions_f64_t(width=clamp_dims.width, height=clamp_dims.height)
         _out_delta = fdl_point_f64_t()
@@ -196,7 +191,6 @@ class DimensionsFloat:
     def __sub__(self, other: DimensionsFloat) -> DimensionsFloat:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_dimensions_f64_t
-
         _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
         _c_other = fdl_dimensions_f64_t(width=other.width, height=other.height)
         _r = get_lib().fdl_dimensions_sub(_c, _c_other)
@@ -205,7 +199,6 @@ class DimensionsFloat:
     def __lt__(self, other: DimensionsFloat) -> bool:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_dimensions_f64_t
-
         _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
         _c_other = fdl_dimensions_f64_t(width=other.width, height=other.height)
         _r = get_lib().fdl_dimensions_f64_lt(_c, _c_other)
@@ -214,7 +207,6 @@ class DimensionsFloat:
     def __gt__(self, other: DimensionsFloat) -> bool:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_dimensions_f64_t
-
         _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
         _c_other = fdl_dimensions_f64_t(width=other.width, height=other.height)
         _r = get_lib().fdl_dimensions_f64_gt(_c, _c_other)
@@ -222,7 +214,6 @@ class DimensionsFloat:
 
     def __bool__(self) -> bool:
         return not self.is_zero()
-
 
 class PointFloat:
     """Lightweight PointFloat value type."""
@@ -236,8 +227,9 @@ class PointFloat:
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, PointFloat):
             return NotImplemented
-        return math.isclose(self.x, other.x, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL) and math.isclose(
-            self.y, other.y, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL
+        return (
+            math.isclose(self.x, other.x, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL) and
+            math.isclose(self.y, other.y, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL)
         )
 
     def __hash__(self) -> int:
@@ -252,14 +244,12 @@ class PointFloat:
     def is_zero(self) -> bool:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_point_f64_t
-
         _c = fdl_point_f64_t(x=self.x, y=self.y)
         return bool(get_lib().fdl_point_is_zero(_c))
 
     def normalize(self, squeeze: float) -> PointFloat:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_point_f64_t
-
         _c = fdl_point_f64_t(x=self.x, y=self.y)
         _r = get_lib().fdl_point_normalize(_c, float(squeeze))
         return PointFloat(x=_r.x, y=_r.y)
@@ -267,7 +257,6 @@ class PointFloat:
     def scale(self, scale_factor: float, target_squeeze: float) -> PointFloat:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_point_f64_t
-
         _c = fdl_point_f64_t(x=self.x, y=self.y)
         _r = get_lib().fdl_point_scale(_c, float(scale_factor), float(target_squeeze))
         return PointFloat(x=_r.x, y=_r.y)
@@ -275,7 +264,6 @@ class PointFloat:
     def normalize_and_scale(self, input_squeeze: float, scale_factor: float, target_squeeze: float) -> PointFloat:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_point_f64_t
-
         _c = fdl_point_f64_t(x=self.x, y=self.y)
         _r = get_lib().fdl_point_normalize_and_scale(_c, float(input_squeeze), float(scale_factor), float(target_squeeze))
         return PointFloat(x=_r.x, y=_r.y)
@@ -283,7 +271,6 @@ class PointFloat:
     def clamp(self, min_val: float | None = None, max_val: float | None = None) -> PointFloat:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_point_f64_t
-
         _c = fdl_point_f64_t(x=self.x, y=self.y)
         _min_val_val = float(min_val) if min_val is not None else 0.0
         _min_val_has = 1 if min_val is not None else 0
@@ -297,7 +284,6 @@ class PointFloat:
         from fdl_ffi._structs import fdl_point_f64_t
 
         from .enum_maps import ROUNDING_EVEN_TO_C, ROUNDING_MODE_TO_C
-
         _c = fdl_point_f64_t(x=self.x, y=self.y)
         _r = get_lib().fdl_round_point(_c, ROUNDING_EVEN_TO_C[even], ROUNDING_MODE_TO_C[mode])
         return PointFloat(x=_r.x, y=_r.y)
@@ -311,7 +297,6 @@ class PointFloat:
     def __add__(self, other: PointFloat) -> PointFloat:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_point_f64_t
-
         _c = fdl_point_f64_t(x=self.x, y=self.y)
         _c_other = fdl_point_f64_t(x=other.x, y=other.y)
         _r = get_lib().fdl_point_add(_c, _c_other)
@@ -325,7 +310,6 @@ class PointFloat:
     def __sub__(self, other: PointFloat) -> PointFloat:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_point_f64_t
-
         _c = fdl_point_f64_t(x=self.x, y=self.y)
         _c_other = fdl_point_f64_t(x=other.x, y=other.y)
         _r = get_lib().fdl_point_sub(_c, _c_other)
@@ -334,7 +318,6 @@ class PointFloat:
     def __mul__(self, other: PointFloat | float) -> PointFloat:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_point_f64_t
-
         _c = fdl_point_f64_t(x=self.x, y=self.y)
         if isinstance(other, (int, float)):
             _r = get_lib().fdl_point_mul_scalar(_c, float(other))
@@ -347,12 +330,10 @@ class PointFloat:
     def __lt__(self, other: PointFloat) -> bool:
         from fdl_ffi import get_lib
         from fdl_ffi._structs import fdl_point_f64_t
-
         _c = fdl_point_f64_t(x=self.x, y=self.y)
         _c_other = fdl_point_f64_t(x=other.x, y=other.y)
         _r = get_lib().fdl_point_f64_lt(_c, _c_other)
         return bool(_r)
-
 
 class Rect:
     """Lightweight Rect value type."""
@@ -369,10 +350,10 @@ class Rect:
         if not isinstance(other, Rect):
             return NotImplemented
         return (
-            math.isclose(self.x, other.x, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL)
-            and math.isclose(self.y, other.y, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL)
-            and math.isclose(self.width, other.width, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL)
-            and math.isclose(self.height, other.height, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL)
+            math.isclose(self.x, other.x, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL) and
+            math.isclose(self.y, other.y, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL) and
+            math.isclose(self.width, other.width, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL) and
+            math.isclose(self.height, other.height, rel_tol=_FP_REL_TOL, abs_tol=_FP_ABS_TOL)
         )
 
     def __hash__(self) -> int:

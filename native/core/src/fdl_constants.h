@@ -97,7 +97,8 @@ constexpr uint32_t kCustomAttrTypeNone = 0;   /**< Attribute not found. */
 constexpr uint32_t kCustomAttrTypeString = 1; /**< String attribute. */
 constexpr uint32_t kCustomAttrTypeInt = 2;    /**< Integer attribute. */
 constexpr uint32_t kCustomAttrTypeFloat = 3;  /**< Floating-point attribute. */
-constexpr uint32_t kCustomAttrTypeOther = 4;  /**< Unsupported JSON type. */
+constexpr uint32_t kCustomAttrTypeBool = 4;   /**< Boolean attribute. */
+constexpr uint32_t kCustomAttrTypeOther = 5;  /**< Unsupported JSON type. */
 /** @} */
 
 /** Custom attribute key prefix character. */

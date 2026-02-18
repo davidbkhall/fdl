@@ -117,13 +117,8 @@ class CanvasTemplate(HandleWrapper):
 
         lib = get_lib()
         from .fdl import FDL
-
         _doc_h = lib.fdl_doc_create_with_header(
-            b"00000000-0000-0000-0000-000000000000",
-            2,
-            0,
-            b"_",
-            None,
+            b"00000000-0000-0000-0000-000000000000", 2, 0, b"_", None,
         )
         _backing = FDL._from_handle(_doc_h, lib)
         handle = lib.fdl_doc_add_canvas_template(
@@ -270,7 +265,6 @@ class CanvasTemplate(HandleWrapper):
         """Apply this canvas template to a source canvas/framing decision."""
         self._check_handle()
         from .fdl import FDL
-
         result = self._lib.fdl_apply_canvas_template(
             self._handle,
             source_canvas._handle,
@@ -306,21 +300,21 @@ class CanvasTemplate(HandleWrapper):
 
     _CA_PREFIX = "fdl_canvas_template_"
 
-    def set_custom_attr(self, name: str, value: str | int | float) -> None:
+    def set_custom_attr(self, name: str, value: str | int | float | bool) -> None:
         """Set a custom attribute. Type is inferred from value.
 
         Args:
             name: Attribute name (without ``_`` prefix).
-            value: Attribute value (str, int, or float).
+            value: Attribute value (str, int, float, or bool).
 
         Raises:
-            TypeError: If value is not str, int, or float.
+            TypeError: If value is not str, int, float, or bool.
             ValueError: If an attribute with the same name exists with a different type.
         """
         self._check_handle()
         _ca_set(self._lib, self._handle, self._CA_PREFIX, name, value)
 
-    def get_custom_attr(self, name: str) -> str | int | float | None:
+    def get_custom_attr(self, name: str) -> str | int | float | bool | None:
         """Get a custom attribute value by name.
 
         Args:
@@ -359,7 +353,7 @@ class CanvasTemplate(HandleWrapper):
         return _ca_count(self._lib, self._handle, self._CA_PREFIX)
 
     @property
-    def custom_attrs(self) -> dict[str, str | int | float]:
+    def custom_attrs(self) -> dict[str, str | int | float | bool]:
         """Return all custom attributes as a dictionary."""
         self._check_handle()
         return _ca_all(self._lib, self._handle, self._CA_PREFIX)

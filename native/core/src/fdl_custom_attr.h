@@ -74,6 +74,15 @@ int set_int(ojson* node, const char* name, int64_t value);
 int set_float(ojson* node, const char* name, double value);
 
 /**
+ * @brief Set a boolean custom attribute. Fails if the key exists with a different type.
+ * @param node   Target JSON node.
+ * @param name   User-visible attribute name.
+ * @param value  Boolean value (non-zero = true, zero = false).
+ * @return 0 on success, -1 on type mismatch.
+ */
+int set_bool(ojson* node, const char* name, int value);
+
+/**
  * @brief Get a string custom attribute.
  * @param node  Target JSON node.
  * @param name  User-visible attribute name.
@@ -98,6 +107,15 @@ int get_int(const ojson* node, const char* name, int64_t* out);
  * @return 0 on success, -1 if absent or wrong type.
  */
 int get_float(const ojson* node, const char* name, double* out);
+
+/**
+ * @brief Get a boolean custom attribute.
+ * @param node  Target JSON node.
+ * @param name  User-visible attribute name.
+ * @param out   Output pointer for the boolean value (FDL_TRUE or FDL_FALSE).
+ * @return 0 on success, -1 if absent or wrong type.
+ */
+int get_bool(const ojson* node, const char* name, int* out);
 
 /**
  * @brief Remove a custom attribute.

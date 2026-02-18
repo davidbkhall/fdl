@@ -77,6 +77,9 @@ fdl_custom_attr_type_t get_type(const ojson* node, const char* name) {
     if (val.is_string()) {
         return FDL_CUSTOM_ATTR_TYPE_STRING;
     }
+    if (val.is_bool()) {
+        return FDL_CUSTOM_ATTR_TYPE_BOOL;
+    }
     if (val.is_int64() || val.is_uint64()) {
         return FDL_CUSTOM_ATTR_TYPE_INT;
     }
@@ -135,6 +138,21 @@ int set_float(ojson* node, const char* name, double value) {
     return fdl::constants::kCustomAttrSuccess;
 }
 
+int set_bool(ojson* node, const char* name, int value) {
+    if (node == nullptr || name == nullptr) {
+        return fdl::constants::kCustomAttrError;
+    }
+    auto key = make_key(name);
+    if (node->contains(key)) {
+        const auto& existing = (*node)[key];
+        if (!existing.is_bool()) {
+            return fdl::constants::kCustomAttrError;
+        }
+    }
+    node->insert_or_assign(key, ojson(value != 0));
+    return fdl::constants::kCustomAttrSuccess;
+}
+
 // -----------------------------------------------------------------------
 // Getters
 // -----------------------------------------------------------------------
@@ -182,6 +200,22 @@ int get_float(const ojson* node, const char* name, double* out) {
         return fdl::constants::kCustomAttrError;
     }
     *out = val.as<double>();
+    return fdl::constants::kCustomAttrSuccess;
+}
+
+int get_bool(const ojson* node, const char* name, int* out) {
+    if (node == nullptr || name == nullptr || out == nullptr) {
+        return fdl::constants::kCustomAttrError;
+    }
+    auto key = make_key(name);
+    if (!node->contains(key)) {
+        return fdl::constants::kCustomAttrError;
+    }
+    const auto& val = (*node)[key];
+    if (!val.is_bool()) {
+        return fdl::constants::kCustomAttrError;
+    }
+    *out = val.as_bool() ? FDL_TRUE : FDL_FALSE;
     return fdl::constants::kCustomAttrSuccess;
 }
 

@@ -42,7 +42,8 @@ typedef uint32_t fdl_custom_attr_type_t;
 #define FDL_CUSTOM_ATTR_TYPE_STRING 1 /**< String attribute. */
 #define FDL_CUSTOM_ATTR_TYPE_INT 2    /**< Integer attribute. */
 #define FDL_CUSTOM_ATTR_TYPE_FLOAT 3  /**< Floating-point attribute. */
-#define FDL_CUSTOM_ATTR_TYPE_OTHER 4  /**< Unsupported JSON type. */
+#define FDL_CUSTOM_ATTR_TYPE_BOOL 4   /**< Boolean attribute. */
+#define FDL_CUSTOM_ATTR_TYPE_OTHER 5  /**< Unsupported JSON type. */
 
 /* -----------------------------------------------------------------------
  * ABI version
@@ -1872,7 +1873,7 @@ FDL_API void fdl_free(void* ptr);
  * returns -1. Remove the attribute first, then set with the new type.
  * ----------------------------------------------------------------------- */
 
-/** @brief Macro to declare all 11 custom attribute functions for a handle type.
+/** @brief Macro to declare all 13 custom attribute functions for a handle type.
  *  @param PREFIX      Function name prefix (e.g., fdl_doc_).
  *  @param HANDLE_TYPE C handle type (e.g., fdl_doc_t). */
 #define FDL_CUSTOM_ATTR_DECL(PREFIX, HANDLE_TYPE)                                                                    \
@@ -1882,12 +1883,16 @@ FDL_API void fdl_free(void* ptr);
     FDL_API int PREFIX##set_custom_attr_int(HANDLE_TYPE* h, const char* name, int64_t value);                        \
     /** @brief Set a float custom attribute. @return 0 on success, -1 on type mismatch. */                           \
     FDL_API int PREFIX##set_custom_attr_float(HANDLE_TYPE* h, const char* name, double value);                       \
+    /** @brief Set a boolean custom attribute. @return 0 on success, -1 on type mismatch. */                         \
+    FDL_API int PREFIX##set_custom_attr_bool(HANDLE_TYPE* h, const char* name, int value);                           \
     /** @brief Get a string custom attribute. @return Thread-local pointer, or NULL. */                              \
     FDL_API const char* PREFIX##get_custom_attr_string(const HANDLE_TYPE* h, const char* name);                      \
     /** @brief Get an integer custom attribute. @return 0 on success, -1 if absent/wrong type. */                    \
     FDL_API int PREFIX##get_custom_attr_int(const HANDLE_TYPE* h, const char* name, int64_t* out);                   \
     /** @brief Get a float custom attribute. @return 0 on success, -1 if absent/wrong type. */                       \
     FDL_API int PREFIX##get_custom_attr_float(const HANDLE_TYPE* h, const char* name, double* out);                  \
+    /** @brief Get a boolean custom attribute. @return 0 on success, -1 if absent/wrong type. */                     \
+    FDL_API int PREFIX##get_custom_attr_bool(const HANDLE_TYPE* h, const char* name, int* out);                      \
     /** @brief Check if a custom attribute exists. @return FDL_TRUE or FDL_FALSE. */                                 \
     FDL_API int PREFIX##has_custom_attr(const HANDLE_TYPE* h, const char* name);                                     \
     /** @brief Get the type of a custom attribute. @return FDL_CUSTOM_ATTR_TYPE_* constant. */                       \

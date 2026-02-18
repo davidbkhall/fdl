@@ -4,7 +4,7 @@
  * @file fdl_custom_attr_api.cpp
  * @brief C ABI wrappers for custom attribute operations on all handle types.
  *
- * Uses a macro to generate 11 extern "C" functions per handle type (8 types = 88 functions).
+ * Uses a macro to generate 13 extern "C" functions per handle type (8 types = 104 functions).
  * Each wrapper null-checks the handle, acquires the document mutex, resolves the
  * target JSON node, and delegates to the shared implementation in fdl_custom_attr.h.
  */
@@ -17,7 +17,7 @@ namespace ca = fdl::detail::custom_attr;
 // clang-format off
 
 /**
- * @brief Macro to generate all 11 custom attribute C ABI functions for a handle type.
+ * @brief Macro to generate all 13 custom attribute C ABI functions for a handle type.
  *
  * @param PREFIX      Function name prefix (e.g., fdl_doc_).
  * @param HANDLE_TYPE C handle type (e.g., fdl_doc_t).
@@ -43,6 +43,12 @@ namespace ca = fdl::detail::custom_attr;
         auto* node = GET_NODE;                                                                                    \
         return ca::set_float(node, name, value);                                                                  \
     }                                                                                                             \
+    int PREFIX##set_custom_attr_bool(HANDLE_TYPE* h, const char* name, int value) {                               \
+        if (h == nullptr) return fdl::constants::kCustomAttrError;                                                \
+        const doc_lock lock(GET_OWNER);                                                                           \
+        auto* node = GET_NODE;                                                                                    \
+        return ca::set_bool(node, name, value);                                                                   \
+    }                                                                                                             \
     const char* PREFIX##get_custom_attr_string(const HANDLE_TYPE* h, const char* name) {                          \
         if (h == nullptr) return nullptr;                                                                         \
         const doc_lock lock(GET_OWNER);                                                                           \
@@ -60,6 +66,12 @@ namespace ca = fdl::detail::custom_attr;
         const doc_lock lock(GET_OWNER);                                                                           \
         const auto* node = GET_NODE;                                                                              \
         return ca::get_float(node, name, out);                                                                    \
+    }                                                                                                             \
+    int PREFIX##get_custom_attr_bool(const HANDLE_TYPE* h, const char* name, int* out) {                          \
+        if (h == nullptr) return fdl::constants::kCustomAttrError;                                                \
+        const doc_lock lock(GET_OWNER);                                                                           \
+        const auto* node = GET_NODE;                                                                              \
+        return ca::get_bool(node, name, out);                                                                     \
     }                                                                                                             \
     int PREFIX##has_custom_attr(const HANDLE_TYPE* h, const char* name) {                                         \
         if (h == nullptr) return 0;                                                                               \

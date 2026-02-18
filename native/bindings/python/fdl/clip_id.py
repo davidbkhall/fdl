@@ -52,7 +52,6 @@ class ClipID(HandleWrapper):
         if not self._lib.fdl_clip_id_has_sequence(self._handle):
             return None
         from .file_sequence import FileSequence
-
         handle = self._lib.fdl_clip_id_sequence(self._handle)
         if not handle:
             return None
@@ -69,21 +68,21 @@ class ClipID(HandleWrapper):
 
     _CA_PREFIX = "fdl_clip_id_"
 
-    def set_custom_attr(self, name: str, value: str | int | float) -> None:
+    def set_custom_attr(self, name: str, value: str | int | float | bool) -> None:
         """Set a custom attribute. Type is inferred from value.
 
         Args:
             name: Attribute name (without ``_`` prefix).
-            value: Attribute value (str, int, or float).
+            value: Attribute value (str, int, float, or bool).
 
         Raises:
-            TypeError: If value is not str, int, or float.
+            TypeError: If value is not str, int, float, or bool.
             ValueError: If an attribute with the same name exists with a different type.
         """
         self._check_handle()
         _ca_set(self._lib, self._handle, self._CA_PREFIX, name, value)
 
-    def get_custom_attr(self, name: str) -> str | int | float | None:
+    def get_custom_attr(self, name: str) -> str | int | float | bool | None:
         """Get a custom attribute value by name.
 
         Args:
@@ -122,7 +121,7 @@ class ClipID(HandleWrapper):
         return _ca_count(self._lib, self._handle, self._CA_PREFIX)
 
     @property
-    def custom_attrs(self) -> dict[str, str | int | float]:
+    def custom_attrs(self) -> dict[str, str | int | float | bool]:
         """Return all custom attributes as a dictionary."""
         self._check_handle()
         return _ca_all(self._lib, self._handle, self._CA_PREFIX)

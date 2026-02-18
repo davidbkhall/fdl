@@ -794,6 +794,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     lib.fdl_doc_set_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double]
     lib.fdl_doc_set_custom_attr_float.restype = ctypes.c_int
 
+    # Custom attr: set_custom_attr_bool on FDL
+    lib.fdl_doc_set_custom_attr_bool.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
+    lib.fdl_doc_set_custom_attr_bool.restype = ctypes.c_int
+
     # Custom attr: get_custom_attr_string on FDL
     lib.fdl_doc_get_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
     lib.fdl_doc_get_custom_attr_string.restype = ctypes.c_char_p
@@ -805,6 +809,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     # Custom attr: get_custom_attr_float on FDL
     lib.fdl_doc_get_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
     lib.fdl_doc_get_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_bool on FDL
+    lib.fdl_doc_get_custom_attr_bool.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)]
+    lib.fdl_doc_get_custom_attr_bool.restype = ctypes.c_int
 
     # Custom attr: has_custom_attr on FDL
     lib.fdl_doc_has_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
@@ -838,6 +846,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     lib.fdl_context_set_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double]
     lib.fdl_context_set_custom_attr_float.restype = ctypes.c_int
 
+    # Custom attr: set_custom_attr_bool on Context
+    lib.fdl_context_set_custom_attr_bool.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
+    lib.fdl_context_set_custom_attr_bool.restype = ctypes.c_int
+
     # Custom attr: get_custom_attr_string on Context
     lib.fdl_context_get_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
     lib.fdl_context_get_custom_attr_string.restype = ctypes.c_char_p
@@ -849,6 +861,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     # Custom attr: get_custom_attr_float on Context
     lib.fdl_context_get_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
     lib.fdl_context_get_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_bool on Context
+    lib.fdl_context_get_custom_attr_bool.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)]
+    lib.fdl_context_get_custom_attr_bool.restype = ctypes.c_int
 
     # Custom attr: has_custom_attr on Context
     lib.fdl_context_has_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
@@ -882,6 +898,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     lib.fdl_canvas_set_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double]
     lib.fdl_canvas_set_custom_attr_float.restype = ctypes.c_int
 
+    # Custom attr: set_custom_attr_bool on Canvas
+    lib.fdl_canvas_set_custom_attr_bool.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
+    lib.fdl_canvas_set_custom_attr_bool.restype = ctypes.c_int
+
     # Custom attr: get_custom_attr_string on Canvas
     lib.fdl_canvas_get_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
     lib.fdl_canvas_get_custom_attr_string.restype = ctypes.c_char_p
@@ -893,6 +913,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     # Custom attr: get_custom_attr_float on Canvas
     lib.fdl_canvas_get_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
     lib.fdl_canvas_get_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_bool on Canvas
+    lib.fdl_canvas_get_custom_attr_bool.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)]
+    lib.fdl_canvas_get_custom_attr_bool.restype = ctypes.c_int
 
     # Custom attr: has_custom_attr on Canvas
     lib.fdl_canvas_has_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
@@ -926,6 +950,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     lib.fdl_framing_decision_set_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double]
     lib.fdl_framing_decision_set_custom_attr_float.restype = ctypes.c_int
 
+    # Custom attr: set_custom_attr_bool on FramingDecision
+    lib.fdl_framing_decision_set_custom_attr_bool.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
+    lib.fdl_framing_decision_set_custom_attr_bool.restype = ctypes.c_int
+
     # Custom attr: get_custom_attr_string on FramingDecision
     lib.fdl_framing_decision_get_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
     lib.fdl_framing_decision_get_custom_attr_string.restype = ctypes.c_char_p
@@ -937,6 +965,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     # Custom attr: get_custom_attr_float on FramingDecision
     lib.fdl_framing_decision_get_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
     lib.fdl_framing_decision_get_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_bool on FramingDecision
+    lib.fdl_framing_decision_get_custom_attr_bool.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)]
+    lib.fdl_framing_decision_get_custom_attr_bool.restype = ctypes.c_int
 
     # Custom attr: has_custom_attr on FramingDecision
     lib.fdl_framing_decision_has_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
@@ -970,6 +1002,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     lib.fdl_framing_intent_set_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double]
     lib.fdl_framing_intent_set_custom_attr_float.restype = ctypes.c_int
 
+    # Custom attr: set_custom_attr_bool on FramingIntent
+    lib.fdl_framing_intent_set_custom_attr_bool.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
+    lib.fdl_framing_intent_set_custom_attr_bool.restype = ctypes.c_int
+
     # Custom attr: get_custom_attr_string on FramingIntent
     lib.fdl_framing_intent_get_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
     lib.fdl_framing_intent_get_custom_attr_string.restype = ctypes.c_char_p
@@ -981,6 +1017,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     # Custom attr: get_custom_attr_float on FramingIntent
     lib.fdl_framing_intent_get_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
     lib.fdl_framing_intent_get_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_bool on FramingIntent
+    lib.fdl_framing_intent_get_custom_attr_bool.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)]
+    lib.fdl_framing_intent_get_custom_attr_bool.restype = ctypes.c_int
 
     # Custom attr: has_custom_attr on FramingIntent
     lib.fdl_framing_intent_has_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
@@ -1014,6 +1054,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     lib.fdl_canvas_template_set_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double]
     lib.fdl_canvas_template_set_custom_attr_float.restype = ctypes.c_int
 
+    # Custom attr: set_custom_attr_bool on CanvasTemplate
+    lib.fdl_canvas_template_set_custom_attr_bool.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
+    lib.fdl_canvas_template_set_custom_attr_bool.restype = ctypes.c_int
+
     # Custom attr: get_custom_attr_string on CanvasTemplate
     lib.fdl_canvas_template_get_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
     lib.fdl_canvas_template_get_custom_attr_string.restype = ctypes.c_char_p
@@ -1025,6 +1069,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     # Custom attr: get_custom_attr_float on CanvasTemplate
     lib.fdl_canvas_template_get_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
     lib.fdl_canvas_template_get_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_bool on CanvasTemplate
+    lib.fdl_canvas_template_get_custom_attr_bool.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)]
+    lib.fdl_canvas_template_get_custom_attr_bool.restype = ctypes.c_int
 
     # Custom attr: has_custom_attr on CanvasTemplate
     lib.fdl_canvas_template_has_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
@@ -1058,6 +1106,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     lib.fdl_clip_id_set_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double]
     lib.fdl_clip_id_set_custom_attr_float.restype = ctypes.c_int
 
+    # Custom attr: set_custom_attr_bool on ClipID
+    lib.fdl_clip_id_set_custom_attr_bool.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
+    lib.fdl_clip_id_set_custom_attr_bool.restype = ctypes.c_int
+
     # Custom attr: get_custom_attr_string on ClipID
     lib.fdl_clip_id_get_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
     lib.fdl_clip_id_get_custom_attr_string.restype = ctypes.c_char_p
@@ -1069,6 +1121,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     # Custom attr: get_custom_attr_float on ClipID
     lib.fdl_clip_id_get_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
     lib.fdl_clip_id_get_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_bool on ClipID
+    lib.fdl_clip_id_get_custom_attr_bool.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)]
+    lib.fdl_clip_id_get_custom_attr_bool.restype = ctypes.c_int
 
     # Custom attr: has_custom_attr on ClipID
     lib.fdl_clip_id_has_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
@@ -1102,6 +1158,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     lib.fdl_file_sequence_set_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double]
     lib.fdl_file_sequence_set_custom_attr_float.restype = ctypes.c_int
 
+    # Custom attr: set_custom_attr_bool on FileSequence
+    lib.fdl_file_sequence_set_custom_attr_bool.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
+    lib.fdl_file_sequence_set_custom_attr_bool.restype = ctypes.c_int
+
     # Custom attr: get_custom_attr_string on FileSequence
     lib.fdl_file_sequence_get_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
     lib.fdl_file_sequence_get_custom_attr_string.restype = ctypes.c_char_p
@@ -1113,6 +1173,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     # Custom attr: get_custom_attr_float on FileSequence
     lib.fdl_file_sequence_get_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
     lib.fdl_file_sequence_get_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_bool on FileSequence
+    lib.fdl_file_sequence_get_custom_attr_bool.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)]
+    lib.fdl_file_sequence_get_custom_attr_bool.restype = ctypes.c_int
 
     # Custom attr: has_custom_attr on FileSequence
     lib.fdl_file_sequence_has_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
