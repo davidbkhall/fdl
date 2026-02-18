@@ -458,9 +458,9 @@ fdl_template_result_t apply_canvas_template(
 
     // Store computed transformation values as custom attributes on the output canvas
     fdl_canvas_set_custom_attr_float(new_cvs, FDL_ATTR_SCALE_FACTOR, scale_factor);
-    fdl_point_f64_t ct_val = content_translation;
+    const fdl_point_f64_t ct_val = content_translation;
     fdl_canvas_set_custom_attr_point_f64(new_cvs, FDL_ATTR_CONTENT_TRANSLATION, ct_val);
-    fdl_dimensions_f64_t sbb_val = scaled_bounding_box;
+    const fdl_dimensions_f64_t sbb_val = scaled_bounding_box;
     fdl_canvas_set_custom_attr_dims_f64(new_cvs, FDL_ATTR_SCALED_BOUNDING_BOX, sbb_val);
 
     // Populate result
