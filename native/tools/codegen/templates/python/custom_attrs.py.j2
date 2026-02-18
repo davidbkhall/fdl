@@ -20,10 +20,10 @@ def _set(lib, handle, prefix: str, name: str, value: str | int | float | bool | 
         handle: The opaque C handle.
         prefix: C function name prefix (e.g. ``"fdl_canvas_"``).
         name: Attribute name (without ``_`` prefix).
-        value: Attribute value (str, int, float, or bool).
+        value: Attribute value (str, int, float, bool, PointFloat, DimensionsFloat, or DimensionsInt).
 
     Raises:
-        TypeError: If value is not str, int, float, or bool.
+        TypeError: If value is not str, int, float, bool, PointFloat, DimensionsFloat, or DimensionsInt.
         ValueError: If an attribute with the same name exists with a different type.
     """
     _name = name.encode("utf-8")
@@ -123,7 +123,7 @@ def _count(lib, handle, prefix: str) -> int:
     return int(getattr(lib, f"{prefix}custom_attrs_count")(handle))
 
 
-def _all(lib, handle, prefix: str) -> dict[str, str | int | float | bool]:
+def _all(lib, handle, prefix: str) -> dict[str, str | int | float | bool | PointFloat | DimensionsFloat | DimensionsInt]:
     """Return all custom attributes as a dictionary."""
     result: dict = {}
     count = getattr(lib, f"{prefix}custom_attrs_count")(handle)

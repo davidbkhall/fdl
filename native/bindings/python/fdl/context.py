@@ -9,7 +9,7 @@ from __future__ import annotations
 import ctypes
 import json
 
-from .fdl_types import DimensionsFloat, DimensionsInt
+from .fdl_types import DimensionsFloat, DimensionsInt, PointFloat
 
 from .base import (
     CollectionWrapper,
@@ -210,21 +210,21 @@ class Context(HandleWrapper):
 
     _CA_PREFIX = "fdl_context_"
 
-    def set_custom_attr(self, name: str, value: str | int | float | bool) -> None:
+    def set_custom_attr(self, name: str, value: str | int | float | bool | PointFloat | DimensionsFloat | DimensionsInt) -> None:
         """Set a custom attribute. Type is inferred from value.
 
         Args:
             name: Attribute name (without ``_`` prefix).
-            value: Attribute value (str, int, float, or bool).
+            value: Attribute value (str, int, float, bool, PointFloat, DimensionsFloat, or DimensionsInt).
 
         Raises:
-            TypeError: If value is not str, int, float, or bool.
+            TypeError: If value is not str, int, float, bool, PointFloat, DimensionsFloat, or DimensionsInt.
             ValueError: If an attribute with the same name exists with a different type.
         """
         self._check_handle()
         _ca_set(self._lib, self._handle, self._CA_PREFIX, name, value)
 
-    def get_custom_attr(self, name: str) -> str | int | float | bool | None:
+    def get_custom_attr(self, name: str) -> str | int | float | bool | PointFloat | DimensionsFloat | DimensionsInt | None:
         """Get a custom attribute value by name.
 
         Args:
@@ -263,7 +263,7 @@ class Context(HandleWrapper):
         return _ca_count(self._lib, self._handle, self._CA_PREFIX)
 
     @property
-    def custom_attrs(self) -> dict[str, str | int | float | bool]:
+    def custom_attrs(self) -> dict[str, str | int | float | bool | PointFloat | DimensionsFloat | DimensionsInt]:
         """Return all custom attributes as a dictionary."""
         self._check_handle()
         return _ca_all(self._lib, self._handle, self._CA_PREFIX)

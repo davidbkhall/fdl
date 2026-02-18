@@ -733,6 +733,12 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
             for field in dc["fields"]:
                 if field["type"] in types_set and field["type"] not in imports["type_imports"]:
                     imports["type_imports"] = sorted(set(imports["type_imports"]) | {field["type"]})
+        # Ensure composite types are imported for custom attribute annotations
+        if cls_ctx.get("custom_attrs"):
+            ca_types = {"DimensionsFloat", "DimensionsInt", "PointFloat"}
+            missing = ca_types - set(imports["type_imports"])
+            if missing:
+                imports["type_imports"] = sorted(set(imports["type_imports"]) | missing)
         cls_src = tmpl.render(cls=cls_ctx, imports=imports)
         (output_dir / f"{module_name}.py").write_text(encoding="utf-8", data=cls_src)
 
