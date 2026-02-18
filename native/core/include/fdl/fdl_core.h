@@ -460,6 +460,15 @@ FDL_API int fdl_point_equal(fdl_point_f64_t a, fdl_point_f64_t b);
  */
 FDL_API int fdl_point_f64_lt(fdl_point_f64_t a, fdl_point_f64_t b);
 
+/**
+ * Check if a > b using OR logic (either x or y is greater).
+ *
+ * @param a  First point.
+ * @param b  Second point.
+ * @return FDL_TRUE if a.x > b.x OR a.y > b.y, FDL_FALSE otherwise.
+ */
+FDL_API int fdl_point_f64_gt(fdl_point_f64_t a, fdl_point_f64_t b);
+
 /* -----------------------------------------------------------------------
  * Floating-point comparison constants
  * ----------------------------------------------------------------------- */

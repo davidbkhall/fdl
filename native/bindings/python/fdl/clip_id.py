@@ -67,6 +67,22 @@ class ClipID(HandleWrapper):
         self._lib.fdl_free(json_ptr)
         return result
 
+    def validate(self) -> None:
+        """Validate this clip_id for mutual exclusion rules."""
+        self._check_handle()
+        json_ptr = self._lib.fdl_clip_id_to_json(self._handle, 0)
+        if not json_ptr:
+            raise RuntimeError("fdl_clip_id_to_json returned NULL")
+        _json_bytes = ctypes.string_at(json_ptr)
+        self._lib.fdl_free(json_ptr)
+        _err = self._lib.fdl_clip_id_validate_json(_json_bytes, len(_json_bytes))
+        if _err:
+            _msg = ctypes.string_at(_err).decode("utf-8")
+            self._lib.fdl_free(_err)
+            from .errors import FDLValidationError
+
+            raise FDLValidationError(_msg)
+
     _CA_PREFIX = "fdl_clip_id_"
 
     def set_custom_attr(self, name: str, value: str | int | float | bool) -> None:

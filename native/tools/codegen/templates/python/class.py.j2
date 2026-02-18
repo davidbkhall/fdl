@@ -531,6 +531,23 @@ class {{ cls.name }}({{ "OwnedHandle" if cls.owns_handle else "HandleWrapper" }}
 {% endfor %}
         )
 
+{% elif method.kind == "validate_json" %}
+    def {{ method.name }}(self) -> None:
+        """{{ method.doc }}"""
+        self._check_handle()
+        json_ptr = self._lib.{{ cls.to_json_fn }}(self._handle, 0)
+        if not json_ptr:
+            raise RuntimeError("{{ cls.to_json_fn }} returned NULL")
+        _json_bytes = ctypes.string_at(json_ptr)
+        self._lib.fdl_free(json_ptr)
+        _err = self._lib.{{ method.c_function }}(_json_bytes, len(_json_bytes))
+        if _err:
+            _msg = ctypes.string_at(_err).decode("utf-8")
+            self._lib.fdl_free(_err)
+            from .errors import FDLValidationError
+
+            raise FDLValidationError(_msg)
+
 {% elif method.kind == "instance_getter" %}
     def {{ method.name }}(self) -> {{ method.returns }}:
         """{{ method.doc }}"""

@@ -133,6 +133,10 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     lib.fdl_point_f64_lt.argtypes = [fdl_point_f64_t, fdl_point_f64_t]
     lib.fdl_point_f64_lt.restype = ctypes.c_int
 
+    # Greater-than (OR logic) for float64 points.
+    lib.fdl_point_f64_gt.argtypes = [fdl_point_f64_t, fdl_point_f64_t]
+    lib.fdl_point_f64_gt.restype = ctypes.c_int
+
     # Relative tolerance for floating-point comparison (1e-9).
     lib.fdl_fp_rel_tol.argtypes = []
     lib.fdl_fp_rel_tol.restype = ctypes.c_double

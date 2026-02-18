@@ -204,6 +204,7 @@ public:
         return PointFloat(data_.x * other.data_.x, data_.y * other.data_.y);
     }
     bool operator<(const PointFloat& other) const { return ::fdl_point_f64_lt(data_, other.data_) != 0; }
+    bool operator>(const PointFloat& other) const { return ::fdl_point_f64_gt(data_, other.data_) != 0; }
     bool operator==(const PointFloat& other) const { return ::fdl_point_equal(data_, other.data_) != 0; }
     bool operator!=(const PointFloat& other) const { return !(*this == other); }
 
@@ -1526,6 +1527,18 @@ public:
 
     // --- Builder methods ---
 
+    // --- Lifecycle methods ---
+    /** Validate this clip_id for mutual exclusion rules. */
+    void validate() const {
+        auto json = to_json(0);
+        const char* err = ::fdl_clip_id_validate_json(json.c_str(), json.size());
+        if (err) {
+            std::string msg(err);
+            fdl_free(const_cast<char*>(err));
+            throw std::runtime_error(msg);
+        }
+    }
+
     // --- Custom attributes ---
 
     /** Set a string custom attribute. Returns 0 on success, -1 on type mismatch. */
@@ -2069,6 +2082,22 @@ inline int64_t round(double value, fdl_rounding_even_t even, fdl_rounding_mode_t
 inline double calculate_scale_factor(
     const DimensionsFloat& fit_norm, const DimensionsFloat& target_norm, fdl_fit_method_t fit_method) {
     return ::fdl_calculate_scale_factor(fit_norm, target_norm, fit_method);
+}
+
+/** Return the ABI version of the loaded library as (major, minor, patch). */
+inline fdl_abi_version_t abi_version() {
+    return ::fdl_abi_version();
+}
+
+/** Compute a framing decision from a framing intent without needing existing handles. */
+inline fdl_from_intent_result_t compute_framing_from_intent(
+    const DimensionsFloat& canvas_dims,
+    const DimensionsFloat& working_dims,
+    double squeeze,
+    const DimensionsInt& aspect_ratio,
+    double protection,
+    const fdl_round_strategy_t& rounding) {
+    return ::fdl_compute_framing_from_intent(canvas_dims, working_dims, squeeze, aspect_ratio, protection, rounding);
 }
 
 /** Create a rect from raw coordinates. */

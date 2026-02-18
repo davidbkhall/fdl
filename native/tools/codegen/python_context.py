@@ -801,6 +801,7 @@ def build_facade_class_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_c
             "composite_property",
             "instance_getter",
             "instance_getter_optional",
+            "validate_json",
         ) or (method.kind == "instance" and method.name != "to_json" and (method.params or method.error_handling)):
             ctx = build_lifecycle_method_context(method, idl, enum_contexts)
             lifecycle.append(ctx)

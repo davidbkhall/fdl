@@ -858,6 +858,14 @@ def _build_lifecycle(method, handle_field: str) -> dict | None:
             "doc": method.doc,
         }
 
+    if kind == "validate_json":
+        return {
+            "kind": "validate_json",
+            "name": method.name,
+            "c_function": method.function,
+            "doc": method.doc or "Validate this object.",
+        }
+
     return None
 
 
@@ -910,6 +918,7 @@ def _build_class(ir_cls, idl: IDL) -> dict:
             "composite_property",
             "instance_getter",
             "instance_getter_optional",
+            "validate_json",
         ) or (method.kind == "instance" and method.name != "to_json" and (method.params or method.error_handling)):
             ctx = _build_lifecycle(method, hf)
             if ctx:

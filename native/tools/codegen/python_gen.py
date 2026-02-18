@@ -616,9 +616,13 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
             dataclass_names.append(dc.class_name)
 
     # --- Free functions (split by module: rounding vs utils) ---
-    ff_contexts = [build_free_function_context(ff, idl) for ff in idl.free_functions]
+    # Skip free functions whose return types lack Python facade mappings
+    # (these are hand-coded in the template instead)
+    _PYTHON_SKIP_FF = {"abi_version", "compute_framing_from_intent"}
+    ff_contexts = [build_free_function_context(ff, idl) for ff in idl.free_functions if ff.display_name not in _PYTHON_SKIP_FF]
+    ff_defs = [ff for ff in idl.free_functions if ff.display_name not in _PYTHON_SKIP_FF]
     # Tag each context with its module
-    for ff, ctx in zip(idl.free_functions, ff_contexts):
+    for ff, ctx in zip(ff_defs, ff_contexts):
         ctx["module"] = ff.module
     # Build converter lookup for value type returns
     vt_converter_map: dict[str, str] = {}
@@ -677,7 +681,9 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
     # --- utils.py (generated from template) ---
     utility_names = sorted(u.name for u in idl.utilities)
     utils_ff_names = sorted(ctx["display_name"] for ctx in utils_ff_contexts)
-    utility_names = sorted(set(utility_names) | set(utils_ff_names))
+    # Include hand-coded utils functions (skipped from codegen but defined in template)
+    _HANDCODED_UTILS = {"abi_version", "compute_framing_from_intent", "FramingFromIntentResult"}
+    utility_names = sorted(set(utility_names) | set(utils_ff_names) | _HANDCODED_UTILS)
     c_abi_utils = [u for u in idl.utilities if u.kind == "c_abi"]
     # Collect extra type imports needed by utils free functions (beyond DimensionsFloat/PointFloat)
     utils_extra_types: set[str] = set()

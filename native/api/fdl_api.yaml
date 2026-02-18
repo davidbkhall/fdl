@@ -133,6 +133,7 @@ value_types:
       - { op: __sub__, c_function: fdl_point_sub, param_type: fdl_point_f64_t, returns: fdl_point_f64_t }
       - { op: __mul__, c_function: fdl_point_mul_scalar, param_type: scalar_or_point, returns: fdl_point_f64_t }
       - { op: __lt__, c_function: fdl_point_f64_lt, param_type: fdl_point_f64_t, returns: bool }
+      - { op: __gt__, c_function: fdl_point_f64_gt, param_type: fdl_point_f64_t, returns: bool }
 
   fdl_rect_t:
     fields:
@@ -901,6 +902,10 @@ object_model:
         to_json:
           function: fdl_clip_id_to_json
           kind: instance
+        validate:
+          function: fdl_clip_id_validate_json
+          kind: validate_json
+          doc: Validate this clip_id for mutual exclusion rules.
 
     FileSequence:
       c_handle: fdl_file_sequence_t
@@ -1151,6 +1156,14 @@ functions:
       - { name: a, type: fdl_point_f64_t }
       - { name: b, type: fdl_point_f64_t }
     doc: Less-than (OR logic) for float64 points.
+
+  - name: fdl_point_f64_gt
+    category: math
+    returns: int
+    params:
+      - { name: a, type: fdl_point_f64_t }
+      - { name: b, type: fdl_point_f64_t }
+    doc: Greater-than (OR logic) for float64 points.
 
   # === Floating-point comparison constants ===
   - name: fdl_fp_rel_tol
@@ -2448,6 +2461,28 @@ free_functions:
       - { name: target_norm, type: fdl_dimensions_f64_t }
       - { name: fit_method, type: fit_method }
     returns: float
+
+  - name: abi_version
+    display_name: abi_version
+    c_function: fdl_abi_version
+    module: utils
+    doc: Return the ABI version of the loaded library as (major, minor, patch).
+    params: []
+    returns: fdl_abi_version_t
+
+  - name: compute_framing_from_intent
+    display_name: compute_framing_from_intent
+    c_function: fdl_compute_framing_from_intent
+    module: utils
+    doc: Compute a framing decision from a framing intent without needing existing handles.
+    params:
+      - { name: canvas_dims, type: fdl_dimensions_f64_t }
+      - { name: working_dims, type: fdl_dimensions_f64_t }
+      - { name: squeeze, type: double }
+      - { name: aspect_ratio, type: fdl_dimensions_i64_t }
+      - { name: protection, type: double }
+      - { name: rounding, type: fdl_round_strategy_t }
+    returns: fdl_from_intent_result_t
 
   - name: make_rect
     display_name: make_rect

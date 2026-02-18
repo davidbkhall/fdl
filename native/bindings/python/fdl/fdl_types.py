@@ -353,6 +353,15 @@ class PointFloat:
         _r = get_lib().fdl_point_f64_lt(_c, _c_other)
         return bool(_r)
 
+    def __gt__(self, other: PointFloat) -> bool:
+        from fdl_ffi import get_lib
+        from fdl_ffi._structs import fdl_point_f64_t
+
+        _c = fdl_point_f64_t(x=self.x, y=self.y)
+        _c_other = fdl_point_f64_t(x=other.x, y=other.y)
+        _r = get_lib().fdl_point_f64_gt(_c, _c_other)
+        return bool(_r)
+
 
 class Rect:
     """Lightweight Rect value type."""
