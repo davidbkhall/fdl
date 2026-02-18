@@ -33,5 +33,4 @@ repos:
     rev: v19.1.7
     hooks:
       - id: clang-format
-        files: '^native/core/(src|include|tests)/.*\.(cpp|h|hpp)$'
-        exclude: '^native/bindings/'
+        files: '^native/(core/(src|include|tests)|bindings/cpp)/.*\.(cpp|h|hpp)$'

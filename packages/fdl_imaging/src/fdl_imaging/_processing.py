@@ -141,7 +141,7 @@ def process_image_with_fdl(
     _check_raster_output(output_path)
 
     # Load FDL if needed
-    if isinstance(fdl, (str, Path)):
+    if isinstance(fdl, str | Path):
         fdl = read_from_file(fdl)
 
     # Get FDL components
@@ -255,9 +255,9 @@ def process_image_with_fdl_template(
     _check_raster_output(Path(output_path))
 
     # Load FDLs if needed
-    if isinstance(source_fdl, (str, Path)):
+    if isinstance(source_fdl, str | Path):
         source_fdl = read_from_file(source_fdl)
-    if isinstance(template_fdl, (str, Path)):
+    if isinstance(template_fdl, str | Path):
         template_fdl = read_from_file(template_fdl)
 
     # Get source FDL components
@@ -346,7 +346,7 @@ def extract_framing_region(
     _check_raster_output(output_path)
 
     # Load FDL if needed
-    if isinstance(fdl, (str, Path)):
+    if isinstance(fdl, str | Path):
         fdl = read_from_file(fdl)
 
     # Get FDL components

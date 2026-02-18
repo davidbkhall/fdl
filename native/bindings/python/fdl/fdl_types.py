@@ -336,7 +336,7 @@ class PointFloat:
         from fdl_ffi._structs import fdl_point_f64_t
 
         _c = fdl_point_f64_t(x=self.x, y=self.y)
-        if isinstance(other, (int, float)):
+        if isinstance(other, int | float):
             _r = get_lib().fdl_point_mul_scalar(_c, float(other))
         elif isinstance(other, PointFloat):
             return PointFloat(x=float(self.x) * float(other.x), y=float(self.y) * float(other.y))

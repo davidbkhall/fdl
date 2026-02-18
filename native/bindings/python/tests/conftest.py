@@ -4,6 +4,8 @@ import tempfile
 from pathlib import Path
 
 import pytest
+
+from fdl import DEFAULT_ROUNDING_STRATEGY, set_rounding
 from fdl.canvas import Canvas
 from fdl.context import Context
 from fdl.fdl_types import DimensionsFloat, DimensionsInt, PointFloat
@@ -14,8 +16,6 @@ from fdl.testing import (
     build_test_params,
     get_scenario_test_id,
 )
-
-from fdl import DEFAULT_ROUNDING_STRATEGY, set_rounding
 
 
 def pytest_configure(config):

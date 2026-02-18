@@ -12,9 +12,9 @@ import copy
 import json
 
 import pytest
-from fdl.errors import FDLValidationError
 
 from fdl import FDL
+from fdl.errors import FDLValidationError
 
 # ---------------------------------------------------------------------------
 # Helpers
