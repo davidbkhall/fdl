@@ -26,7 +26,7 @@ docs = [
 
 [tool.ruff]
 line-length = 140
-exclude = ["native/bindings/python/build/**", "native/bindings/python/fdl.egg-info/**"]
+exclude = ["native/bindings/python/build/**", "native/bindings/python/fdl.egg-info/**", "native/**/build/**"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["fdl", "fdl_ffi", "fdl_imaging", "fdl_frameline_generator", "fdl_viewer"]

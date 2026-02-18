@@ -44,8 +44,8 @@ extract_framing_region(
     context_id="Camera A",
     canvas_id="canvas_001",
     framing_decision_id="fd_001",
-    resize_width=1920,
-    resize_height=1080,
+    output_width=1920,
+    output_height=1080,
 )
 ```
 
