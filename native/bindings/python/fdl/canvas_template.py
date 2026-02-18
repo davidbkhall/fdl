@@ -34,6 +34,14 @@ from .enum_maps import (
     V_ALIGN_FROM_C,
     V_ALIGN_TO_C,
 )
+from ._custom_attrs import (
+    _all as _ca_all,
+    _count as _ca_count,
+    _get as _ca_get,
+    _has as _ca_has,
+    _remove as _ca_remove,
+    _set as _ca_set,
+)
 from dataclasses import dataclass
 from .constants import (
     FitMethod,
@@ -295,3 +303,63 @@ class CanvasTemplate(HandleWrapper):
             _canvas_id=_canvas_id,
             _framing_decision_id=_framing_decision_id,
         )
+
+    _CA_PREFIX = "fdl_canvas_template_"
+
+    def set_custom_attr(self, name: str, value: str | int | float) -> None:
+        """Set a custom attribute. Type is inferred from value.
+
+        Args:
+            name: Attribute name (without ``_`` prefix).
+            value: Attribute value (str, int, or float).
+
+        Raises:
+            TypeError: If value is not str, int, or float.
+            ValueError: If an attribute with the same name exists with a different type.
+        """
+        self._check_handle()
+        _ca_set(self._lib, self._handle, self._CA_PREFIX, name, value)
+
+    def get_custom_attr(self, name: str) -> str | int | float | None:
+        """Get a custom attribute value by name.
+
+        Args:
+            name: Attribute name (without ``_`` prefix).
+
+        Returns:
+            The attribute value, or None if not found.
+        """
+        self._check_handle()
+        return _ca_get(self._lib, self._handle, self._CA_PREFIX, name)
+
+    def has_custom_attr(self, name: str) -> bool:
+        """Check if a custom attribute exists.
+
+        Args:
+            name: Attribute name (without ``_`` prefix).
+        """
+        self._check_handle()
+        return _ca_has(self._lib, self._handle, self._CA_PREFIX, name)
+
+    def remove_custom_attr(self, name: str) -> bool:
+        """Remove a custom attribute.
+
+        Args:
+            name: Attribute name (without ``_`` prefix).
+
+        Returns:
+            True if the attribute was removed, False if it was not found.
+        """
+        self._check_handle()
+        return _ca_remove(self._lib, self._handle, self._CA_PREFIX, name)
+
+    def custom_attrs_count(self) -> int:
+        """Return the number of custom attributes on this object."""
+        self._check_handle()
+        return _ca_count(self._lib, self._handle, self._CA_PREFIX)
+
+    @property
+    def custom_attrs(self) -> dict[str, str | int | float]:
+        """Return all custom attributes as a dictionary."""
+        self._check_handle()
+        return _ca_all(self._lib, self._handle, self._CA_PREFIX)

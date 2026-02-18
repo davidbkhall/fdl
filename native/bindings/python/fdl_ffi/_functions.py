@@ -9,7 +9,6 @@ import ctypes
 
 from ._structs import (
     fdl_abi_version_t,
-    fdl_clip_id_t,
     fdl_dimensions_f64_t,
     fdl_dimensions_i64_t,
     fdl_from_intent_result_t,
@@ -443,13 +442,49 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     lib.fdl_context_get_clip_id.argtypes = [ctypes.c_void_p]
     lib.fdl_context_get_clip_id.restype = ctypes.c_void_p
 
-    # Get clip_id as typed struct. Strings are strdup'd; free with fdl_clip_id_free.
-    lib.fdl_context_get_clip_id_struct.argtypes = [ctypes.c_void_p]
-    lib.fdl_context_get_clip_id_struct.restype = fdl_clip_id_t
+    # Get clip_id handle from context. Returns NULL if absent.
+    lib.fdl_context_clip_id.argtypes = [ctypes.c_void_p]
+    lib.fdl_context_clip_id.restype = ctypes.c_void_p
 
-    # Free string fields in a clip_id struct.
-    lib.fdl_clip_id_free.argtypes = [ctypes.POINTER(fdl_clip_id_t)]
-    lib.fdl_clip_id_free.restype = None
+    # Get clip_name from clip_id.
+    lib.fdl_clip_id_get_clip_name.argtypes = [ctypes.c_void_p]
+    lib.fdl_clip_id_get_clip_name.restype = ctypes.c_char_p
+
+    # Check if clip_id has a file path.
+    lib.fdl_clip_id_has_file.argtypes = [ctypes.c_void_p]
+    lib.fdl_clip_id_has_file.restype = ctypes.c_int
+
+    # Get file path from clip_id. NULL if absent.
+    lib.fdl_clip_id_get_file.argtypes = [ctypes.c_void_p]
+    lib.fdl_clip_id_get_file.restype = ctypes.c_char_p
+
+    # Check if clip_id has a file sequence.
+    lib.fdl_clip_id_has_sequence.argtypes = [ctypes.c_void_p]
+    lib.fdl_clip_id_has_sequence.restype = ctypes.c_int
+
+    # Get file sequence handle from clip_id. Returns NULL if absent.
+    lib.fdl_clip_id_sequence.argtypes = [ctypes.c_void_p]
+    lib.fdl_clip_id_sequence.restype = ctypes.c_void_p
+
+    # Serialize clip_id to canonical JSON. Caller frees with fdl_free.
+    lib.fdl_clip_id_to_json.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    lib.fdl_clip_id_to_json.restype = ctypes.c_void_p
+
+    # Get sequence pattern value string.
+    lib.fdl_file_sequence_get_value.argtypes = [ctypes.c_void_p]
+    lib.fdl_file_sequence_get_value.restype = ctypes.c_char_p
+
+    # Get index variable name.
+    lib.fdl_file_sequence_get_idx.argtypes = [ctypes.c_void_p]
+    lib.fdl_file_sequence_get_idx.restype = ctypes.c_char_p
+
+    # Get minimum (first) frame number.
+    lib.fdl_file_sequence_get_min.argtypes = [ctypes.c_void_p]
+    lib.fdl_file_sequence_get_min.restype = ctypes.c_int64
+
+    # Get maximum (last) frame number.
+    lib.fdl_file_sequence_get_max.argtypes = [ctypes.c_void_p]
+    lib.fdl_file_sequence_get_max.restype = ctypes.c_int64
 
     # Get framing decision label.
     lib.fdl_framing_decision_get_label.argtypes = [ctypes.c_void_p]
@@ -746,3 +781,355 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     # Free memory allocated by fdl_core functions.
     lib.fdl_free.argtypes = [ctypes.c_void_p]
     lib.fdl_free.restype = None
+
+    # Custom attr: set_custom_attr_string on FDL
+    lib.fdl_doc_set_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
+    lib.fdl_doc_set_custom_attr_string.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_int on FDL
+    lib.fdl_doc_set_custom_attr_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int64]
+    lib.fdl_doc_set_custom_attr_int.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_float on FDL
+    lib.fdl_doc_set_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double]
+    lib.fdl_doc_set_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_string on FDL
+    lib.fdl_doc_get_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_doc_get_custom_attr_string.restype = ctypes.c_char_p
+
+    # Custom attr: get_custom_attr_int on FDL
+    lib.fdl_doc_get_custom_attr_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int64)]
+    lib.fdl_doc_get_custom_attr_int.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_float on FDL
+    lib.fdl_doc_get_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
+    lib.fdl_doc_get_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: has_custom_attr on FDL
+    lib.fdl_doc_has_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_doc_has_custom_attr.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_type on FDL
+    lib.fdl_doc_get_custom_attr_type.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_doc_get_custom_attr_type.restype = ctypes.c_uint32
+
+    # Custom attr: remove_custom_attr on FDL
+    lib.fdl_doc_remove_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_doc_remove_custom_attr.restype = ctypes.c_int
+
+    # Custom attr: custom_attrs_count on FDL
+    lib.fdl_doc_custom_attrs_count.argtypes = [ctypes.c_void_p]
+    lib.fdl_doc_custom_attrs_count.restype = ctypes.c_uint32
+
+    # Custom attr: custom_attr_name_at on FDL
+    lib.fdl_doc_custom_attr_name_at.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    lib.fdl_doc_custom_attr_name_at.restype = ctypes.c_char_p
+
+    # Custom attr: set_custom_attr_string on Context
+    lib.fdl_context_set_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
+    lib.fdl_context_set_custom_attr_string.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_int on Context
+    lib.fdl_context_set_custom_attr_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int64]
+    lib.fdl_context_set_custom_attr_int.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_float on Context
+    lib.fdl_context_set_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double]
+    lib.fdl_context_set_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_string on Context
+    lib.fdl_context_get_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_context_get_custom_attr_string.restype = ctypes.c_char_p
+
+    # Custom attr: get_custom_attr_int on Context
+    lib.fdl_context_get_custom_attr_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int64)]
+    lib.fdl_context_get_custom_attr_int.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_float on Context
+    lib.fdl_context_get_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
+    lib.fdl_context_get_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: has_custom_attr on Context
+    lib.fdl_context_has_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_context_has_custom_attr.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_type on Context
+    lib.fdl_context_get_custom_attr_type.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_context_get_custom_attr_type.restype = ctypes.c_uint32
+
+    # Custom attr: remove_custom_attr on Context
+    lib.fdl_context_remove_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_context_remove_custom_attr.restype = ctypes.c_int
+
+    # Custom attr: custom_attrs_count on Context
+    lib.fdl_context_custom_attrs_count.argtypes = [ctypes.c_void_p]
+    lib.fdl_context_custom_attrs_count.restype = ctypes.c_uint32
+
+    # Custom attr: custom_attr_name_at on Context
+    lib.fdl_context_custom_attr_name_at.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    lib.fdl_context_custom_attr_name_at.restype = ctypes.c_char_p
+
+    # Custom attr: set_custom_attr_string on Canvas
+    lib.fdl_canvas_set_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
+    lib.fdl_canvas_set_custom_attr_string.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_int on Canvas
+    lib.fdl_canvas_set_custom_attr_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int64]
+    lib.fdl_canvas_set_custom_attr_int.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_float on Canvas
+    lib.fdl_canvas_set_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double]
+    lib.fdl_canvas_set_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_string on Canvas
+    lib.fdl_canvas_get_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_canvas_get_custom_attr_string.restype = ctypes.c_char_p
+
+    # Custom attr: get_custom_attr_int on Canvas
+    lib.fdl_canvas_get_custom_attr_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int64)]
+    lib.fdl_canvas_get_custom_attr_int.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_float on Canvas
+    lib.fdl_canvas_get_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
+    lib.fdl_canvas_get_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: has_custom_attr on Canvas
+    lib.fdl_canvas_has_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_canvas_has_custom_attr.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_type on Canvas
+    lib.fdl_canvas_get_custom_attr_type.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_canvas_get_custom_attr_type.restype = ctypes.c_uint32
+
+    # Custom attr: remove_custom_attr on Canvas
+    lib.fdl_canvas_remove_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_canvas_remove_custom_attr.restype = ctypes.c_int
+
+    # Custom attr: custom_attrs_count on Canvas
+    lib.fdl_canvas_custom_attrs_count.argtypes = [ctypes.c_void_p]
+    lib.fdl_canvas_custom_attrs_count.restype = ctypes.c_uint32
+
+    # Custom attr: custom_attr_name_at on Canvas
+    lib.fdl_canvas_custom_attr_name_at.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    lib.fdl_canvas_custom_attr_name_at.restype = ctypes.c_char_p
+
+    # Custom attr: set_custom_attr_string on FramingDecision
+    lib.fdl_framing_decision_set_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
+    lib.fdl_framing_decision_set_custom_attr_string.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_int on FramingDecision
+    lib.fdl_framing_decision_set_custom_attr_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int64]
+    lib.fdl_framing_decision_set_custom_attr_int.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_float on FramingDecision
+    lib.fdl_framing_decision_set_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double]
+    lib.fdl_framing_decision_set_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_string on FramingDecision
+    lib.fdl_framing_decision_get_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_framing_decision_get_custom_attr_string.restype = ctypes.c_char_p
+
+    # Custom attr: get_custom_attr_int on FramingDecision
+    lib.fdl_framing_decision_get_custom_attr_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int64)]
+    lib.fdl_framing_decision_get_custom_attr_int.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_float on FramingDecision
+    lib.fdl_framing_decision_get_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
+    lib.fdl_framing_decision_get_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: has_custom_attr on FramingDecision
+    lib.fdl_framing_decision_has_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_framing_decision_has_custom_attr.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_type on FramingDecision
+    lib.fdl_framing_decision_get_custom_attr_type.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_framing_decision_get_custom_attr_type.restype = ctypes.c_uint32
+
+    # Custom attr: remove_custom_attr on FramingDecision
+    lib.fdl_framing_decision_remove_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_framing_decision_remove_custom_attr.restype = ctypes.c_int
+
+    # Custom attr: custom_attrs_count on FramingDecision
+    lib.fdl_framing_decision_custom_attrs_count.argtypes = [ctypes.c_void_p]
+    lib.fdl_framing_decision_custom_attrs_count.restype = ctypes.c_uint32
+
+    # Custom attr: custom_attr_name_at on FramingDecision
+    lib.fdl_framing_decision_custom_attr_name_at.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    lib.fdl_framing_decision_custom_attr_name_at.restype = ctypes.c_char_p
+
+    # Custom attr: set_custom_attr_string on FramingIntent
+    lib.fdl_framing_intent_set_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
+    lib.fdl_framing_intent_set_custom_attr_string.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_int on FramingIntent
+    lib.fdl_framing_intent_set_custom_attr_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int64]
+    lib.fdl_framing_intent_set_custom_attr_int.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_float on FramingIntent
+    lib.fdl_framing_intent_set_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double]
+    lib.fdl_framing_intent_set_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_string on FramingIntent
+    lib.fdl_framing_intent_get_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_framing_intent_get_custom_attr_string.restype = ctypes.c_char_p
+
+    # Custom attr: get_custom_attr_int on FramingIntent
+    lib.fdl_framing_intent_get_custom_attr_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int64)]
+    lib.fdl_framing_intent_get_custom_attr_int.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_float on FramingIntent
+    lib.fdl_framing_intent_get_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
+    lib.fdl_framing_intent_get_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: has_custom_attr on FramingIntent
+    lib.fdl_framing_intent_has_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_framing_intent_has_custom_attr.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_type on FramingIntent
+    lib.fdl_framing_intent_get_custom_attr_type.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_framing_intent_get_custom_attr_type.restype = ctypes.c_uint32
+
+    # Custom attr: remove_custom_attr on FramingIntent
+    lib.fdl_framing_intent_remove_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_framing_intent_remove_custom_attr.restype = ctypes.c_int
+
+    # Custom attr: custom_attrs_count on FramingIntent
+    lib.fdl_framing_intent_custom_attrs_count.argtypes = [ctypes.c_void_p]
+    lib.fdl_framing_intent_custom_attrs_count.restype = ctypes.c_uint32
+
+    # Custom attr: custom_attr_name_at on FramingIntent
+    lib.fdl_framing_intent_custom_attr_name_at.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    lib.fdl_framing_intent_custom_attr_name_at.restype = ctypes.c_char_p
+
+    # Custom attr: set_custom_attr_string on CanvasTemplate
+    lib.fdl_canvas_template_set_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
+    lib.fdl_canvas_template_set_custom_attr_string.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_int on CanvasTemplate
+    lib.fdl_canvas_template_set_custom_attr_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int64]
+    lib.fdl_canvas_template_set_custom_attr_int.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_float on CanvasTemplate
+    lib.fdl_canvas_template_set_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double]
+    lib.fdl_canvas_template_set_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_string on CanvasTemplate
+    lib.fdl_canvas_template_get_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_canvas_template_get_custom_attr_string.restype = ctypes.c_char_p
+
+    # Custom attr: get_custom_attr_int on CanvasTemplate
+    lib.fdl_canvas_template_get_custom_attr_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int64)]
+    lib.fdl_canvas_template_get_custom_attr_int.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_float on CanvasTemplate
+    lib.fdl_canvas_template_get_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
+    lib.fdl_canvas_template_get_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: has_custom_attr on CanvasTemplate
+    lib.fdl_canvas_template_has_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_canvas_template_has_custom_attr.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_type on CanvasTemplate
+    lib.fdl_canvas_template_get_custom_attr_type.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_canvas_template_get_custom_attr_type.restype = ctypes.c_uint32
+
+    # Custom attr: remove_custom_attr on CanvasTemplate
+    lib.fdl_canvas_template_remove_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_canvas_template_remove_custom_attr.restype = ctypes.c_int
+
+    # Custom attr: custom_attrs_count on CanvasTemplate
+    lib.fdl_canvas_template_custom_attrs_count.argtypes = [ctypes.c_void_p]
+    lib.fdl_canvas_template_custom_attrs_count.restype = ctypes.c_uint32
+
+    # Custom attr: custom_attr_name_at on CanvasTemplate
+    lib.fdl_canvas_template_custom_attr_name_at.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    lib.fdl_canvas_template_custom_attr_name_at.restype = ctypes.c_char_p
+
+    # Custom attr: set_custom_attr_string on ClipID
+    lib.fdl_clip_id_set_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
+    lib.fdl_clip_id_set_custom_attr_string.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_int on ClipID
+    lib.fdl_clip_id_set_custom_attr_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int64]
+    lib.fdl_clip_id_set_custom_attr_int.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_float on ClipID
+    lib.fdl_clip_id_set_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double]
+    lib.fdl_clip_id_set_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_string on ClipID
+    lib.fdl_clip_id_get_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_clip_id_get_custom_attr_string.restype = ctypes.c_char_p
+
+    # Custom attr: get_custom_attr_int on ClipID
+    lib.fdl_clip_id_get_custom_attr_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int64)]
+    lib.fdl_clip_id_get_custom_attr_int.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_float on ClipID
+    lib.fdl_clip_id_get_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
+    lib.fdl_clip_id_get_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: has_custom_attr on ClipID
+    lib.fdl_clip_id_has_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_clip_id_has_custom_attr.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_type on ClipID
+    lib.fdl_clip_id_get_custom_attr_type.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_clip_id_get_custom_attr_type.restype = ctypes.c_uint32
+
+    # Custom attr: remove_custom_attr on ClipID
+    lib.fdl_clip_id_remove_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_clip_id_remove_custom_attr.restype = ctypes.c_int
+
+    # Custom attr: custom_attrs_count on ClipID
+    lib.fdl_clip_id_custom_attrs_count.argtypes = [ctypes.c_void_p]
+    lib.fdl_clip_id_custom_attrs_count.restype = ctypes.c_uint32
+
+    # Custom attr: custom_attr_name_at on ClipID
+    lib.fdl_clip_id_custom_attr_name_at.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    lib.fdl_clip_id_custom_attr_name_at.restype = ctypes.c_char_p
+
+    # Custom attr: set_custom_attr_string on FileSequence
+    lib.fdl_file_sequence_set_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
+    lib.fdl_file_sequence_set_custom_attr_string.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_int on FileSequence
+    lib.fdl_file_sequence_set_custom_attr_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int64]
+    lib.fdl_file_sequence_set_custom_attr_int.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_float on FileSequence
+    lib.fdl_file_sequence_set_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double]
+    lib.fdl_file_sequence_set_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_string on FileSequence
+    lib.fdl_file_sequence_get_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_file_sequence_get_custom_attr_string.restype = ctypes.c_char_p
+
+    # Custom attr: get_custom_attr_int on FileSequence
+    lib.fdl_file_sequence_get_custom_attr_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int64)]
+    lib.fdl_file_sequence_get_custom_attr_int.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_float on FileSequence
+    lib.fdl_file_sequence_get_custom_attr_float.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
+    lib.fdl_file_sequence_get_custom_attr_float.restype = ctypes.c_int
+
+    # Custom attr: has_custom_attr on FileSequence
+    lib.fdl_file_sequence_has_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_file_sequence_has_custom_attr.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_type on FileSequence
+    lib.fdl_file_sequence_get_custom_attr_type.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_file_sequence_get_custom_attr_type.restype = ctypes.c_uint32
+
+    # Custom attr: remove_custom_attr on FileSequence
+    lib.fdl_file_sequence_remove_custom_attr.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+    lib.fdl_file_sequence_remove_custom_attr.restype = ctypes.c_int
+
+    # Custom attr: custom_attrs_count on FileSequence
+    lib.fdl_file_sequence_custom_attrs_count.argtypes = [ctypes.c_void_p]
+    lib.fdl_file_sequence_custom_attrs_count.restype = ctypes.c_uint32
+
+    # Custom attr: custom_attr_name_at on FileSequence
+    lib.fdl_file_sequence_custom_attr_name_at.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    lib.fdl_file_sequence_custom_attr_name_at.restype = ctypes.c_char_p

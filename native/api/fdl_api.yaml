@@ -1,5 +1,3 @@
-abi_version: { major: 0, minor: 8, patch: 0 }
-
 # -----------------------------------------------------------------------
 # Value types (pass by value, no heap allocation)
 # -----------------------------------------------------------------------
@@ -198,20 +196,7 @@ value_types:
       - { name: was_resolved,      type: int }
       - { name: error,             type: "const char*", ownership: caller_frees }
 
-  fdl_file_sequence_t:
-    fields:
-      - { name: value, type: "char*", ownership: caller_frees }
-      - { name: idx, type: "char*", ownership: caller_frees }
-      - { name: min, type: int64_t }
-      - { name: max, type: int64_t }
-
-  fdl_clip_id_t:
-    fields:
-      - { name: clip_name, type: "char*", ownership: caller_frees }
-      - { name: has_file, type: int }
-      - { name: file, type: "char*", ownership: caller_frees }
-      - { name: has_sequence, type: int }
-      - { name: sequence, type: fdl_file_sequence_t }
+  # fdl_clip_id_t and fdl_file_sequence_t moved to opaque_types (handle-based)
 
 # -----------------------------------------------------------------------
 # Enums (uint32_t constants)
@@ -313,6 +298,8 @@ opaque_types:
   - fdl_framing_decision_t
   - fdl_framing_intent_t
   - fdl_canvas_template_t
+  - fdl_clip_id_t
+  - fdl_file_sequence_t
   - fdl_validation_result_t
 
 # -----------------------------------------------------------------------
@@ -326,6 +313,7 @@ object_model:
     FDL:
       c_handle: fdl_doc_t
       owns_handle: true
+      custom_attrs: true
       factory: fdl_doc_create
       destructor: fdl_doc_free
       properties:
@@ -474,6 +462,7 @@ object_model:
     Context:
       c_handle: fdl_context_t
       owns_handle: false
+      custom_attrs: true
       parent: FDL
       properties:
         label:
@@ -484,11 +473,12 @@ object_model:
           type: string
           nullable: true
         clip_id:
-          getter: fdl_context_get_clip_id_struct
+          getter: fdl_context_clip_id
           has: fdl_context_has_clip_id
           setter: fdl_context_set_clip_id_json
           remover: fdl_context_remove_clip_id
-          type: clip_id
+          type: handle_ref
+          handle_class: ClipID
           nullable: true
       collections:
         canvases:
@@ -543,6 +533,7 @@ object_model:
     Canvas:
       c_handle: fdl_canvas_t
       owns_handle: false
+      custom_attrs: true
       parent: Context
       properties:
         id:
@@ -656,6 +647,7 @@ object_model:
     FramingDecision:
       c_handle: fdl_framing_decision_t
       owns_handle: false
+      custom_attrs: true
       parent: Canvas
       properties:
         id:
@@ -758,6 +750,7 @@ object_model:
     FramingIntent:
       c_handle: fdl_framing_intent_t
       owns_handle: false
+      custom_attrs: true
       parent: FDL
       properties:
         id:
@@ -790,6 +783,7 @@ object_model:
     CanvasTemplate:
       c_handle: fdl_canvas_template_t
       owns_handle: false
+      custom_attrs: true
       parent: FDL
       properties:
         id:
@@ -888,6 +882,50 @@ object_model:
           - kind: property
             property: pad_to_maximum
             always: true
+
+    ClipID:
+      c_handle: fdl_clip_id_t
+      owns_handle: false
+      parent: Context
+      custom_attrs: true
+      properties:
+        clip_name:
+          getter: fdl_clip_id_get_clip_name
+          type: string
+        file:
+          getter: fdl_clip_id_get_file
+          has: fdl_clip_id_has_file
+          type: string
+          nullable: true
+        sequence:
+          getter: fdl_clip_id_sequence
+          has: fdl_clip_id_has_sequence
+          type: handle_ref
+          handle_class: FileSequence
+          nullable: true
+      methods:
+        to_json:
+          function: fdl_clip_id_to_json
+          kind: instance
+
+    FileSequence:
+      c_handle: fdl_file_sequence_t
+      owns_handle: false
+      parent: ClipID
+      custom_attrs: true
+      properties:
+        value:
+          getter: fdl_file_sequence_get_value
+          type: string
+        idx:
+          getter: fdl_file_sequence_get_idx
+          type: string
+        min:
+          getter: fdl_file_sequence_get_min
+          type: int64_t
+        max:
+          getter: fdl_file_sequence_get_max
+          type: int64_t
 
 # -----------------------------------------------------------------------
 # Functions
@@ -1718,19 +1756,84 @@ functions:
       - { name: ctx, type: "const fdl_context_t*" }
     doc: Get clip_id as JSON string. Returns NULL if not present. Caller owns (free with fdl_free).
 
-  - name: fdl_context_get_clip_id_struct
+  - name: fdl_context_clip_id
     category: accessor
-    returns: fdl_clip_id_t
+    returns: "fdl_clip_id_t*"
     params:
-      - { name: ctx, type: "const fdl_context_t*" }
-    doc: Get clip_id as typed struct. Strings are strdup'd; free with fdl_clip_id_free.
+      - { name: ctx, type: "fdl_context_t*" }
+    doc: Get clip_id handle from context. Returns NULL if absent.
 
-  - name: fdl_clip_id_free
-    category: lifecycle
-    returns: void
+  - name: fdl_clip_id_get_clip_name
+    category: accessor
+    returns: "const char*"
     params:
-      - { name: clip_id, type: "fdl_clip_id_t*" }
-    doc: Free string fields in a clip_id struct.
+      - { name: cid, type: "const fdl_clip_id_t*" }
+    doc: Get clip_name from clip_id.
+
+  - name: fdl_clip_id_has_file
+    category: accessor
+    returns: int
+    params:
+      - { name: cid, type: "const fdl_clip_id_t*" }
+    doc: Check if clip_id has a file path.
+
+  - name: fdl_clip_id_get_file
+    category: accessor
+    returns: "const char*"
+    params:
+      - { name: cid, type: "const fdl_clip_id_t*" }
+    doc: Get file path from clip_id. NULL if absent.
+
+  - name: fdl_clip_id_has_sequence
+    category: accessor
+    returns: int
+    params:
+      - { name: cid, type: "const fdl_clip_id_t*" }
+    doc: Check if clip_id has a file sequence.
+
+  - name: fdl_clip_id_sequence
+    category: accessor
+    returns: "fdl_file_sequence_t*"
+    params:
+      - { name: cid, type: "fdl_clip_id_t*" }
+    doc: Get file sequence handle from clip_id. Returns NULL if absent.
+
+  - name: fdl_clip_id_to_json
+    category: accessor
+    returns: "char*"
+    ownership: caller_frees
+    params:
+      - { name: cid, type: "const fdl_clip_id_t*" }
+      - { name: indent, type: int }
+    doc: Serialize clip_id to canonical JSON. Caller frees with fdl_free.
+
+  - name: fdl_file_sequence_get_value
+    category: accessor
+    returns: "const char*"
+    params:
+      - { name: seq, type: "const fdl_file_sequence_t*" }
+    doc: Get sequence pattern value string.
+
+  - name: fdl_file_sequence_get_idx
+    category: accessor
+    returns: "const char*"
+    params:
+      - { name: seq, type: "const fdl_file_sequence_t*" }
+    doc: Get index variable name.
+
+  - name: fdl_file_sequence_get_min
+    category: accessor
+    returns: int64_t
+    params:
+      - { name: seq, type: "const fdl_file_sequence_t*" }
+    doc: Get minimum (first) frame number.
+
+  - name: fdl_file_sequence_get_max
+    category: accessor
+    returns: int64_t
+    params:
+      - { name: seq, type: "const fdl_file_sequence_t*" }
+    doc: Get maximum (last) frame number.
 
   # === Field accessors — Framing Decision ===
   - name: fdl_framing_decision_get_label
@@ -2331,25 +2434,7 @@ auxiliary_types:
         - { name: framing_decision, type: FramingDecision }
         - { name: was_resolved,     type: bool }
 
-  json_wrappers:
-    FileSequence:
-      doc: File sequence information for a clip.
-      c_struct: fdl_file_sequence_t
-      fields:
-        - { name: value, type: str }
-        - { name: idx, type: str, max_length: 1 }
-        - { name: min, type: int, min_value: 0 }
-        - { name: max, type: int, min_value: 0 }
-
-    ClipID:
-      doc: Clip identification for a context or canvas.
-      c_struct: fdl_clip_id_t
-      free_fn: fdl_clip_id_free
-      fields:
-        - { name: clip_name, type: str }
-        - { name: file, type: str, nullable: true, c_has_flag: has_file }
-        - { name: sequence, type: FileSequence, nullable: true, c_has_flag: has_sequence }
-      mutual_exclusion: [file, sequence]
+  # json_wrappers: ClipID and FileSequence moved to object_model as handle-based classes
 
 # Free functions exposed as top-level functions in target language bindings
 free_functions:

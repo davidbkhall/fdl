@@ -186,6 +186,11 @@ def _add_lazy_imports(cls_ctx: dict, all_class_names: set[str]) -> None:
     elif init:
         init["lazy_imports"] = []
 
+    # Handle_ref properties — the getter calls HandleClass._from_handle() at runtime
+    # (the lazy import is emitted inline in the template, not as a module-level import,
+    #  so we don't need to add anything here — but we do need TYPE_CHECKING imports
+    #  for the type annotations on setters, which _compute_per_class_imports handles)
+
     # Lifecycle methods — result_struct_multi wrap_class references
     for method in cls_ctx.get("lifecycle", []):
         lazy: list[dict] = []
@@ -330,10 +335,10 @@ def _compute_per_class_imports(
         if ec["map_name"] in used_enum_to_c:
             enum_map_imports.append(f"{ec['map_name']}_TO_C")
 
-    # Version / ClipID / JSON checks
+    # Version / JSON checks
     needs_version = any(lc.get("kind") == "composite_property" and lc.get("returns") == "Version" for lc in cls_ctx.get("lifecycle", []))
-    needs_clip_id = "clip_id" in getter_converters
-    needs_json = bool(cls_ctx.get("to_json_fn")) or needs_clip_id or "json_value" in getter_converters
+    has_handle_ref_setter = any(p["converter"] == "handle_ref" and p.get("setter_fn") for p in cls_ctx["properties"])
+    needs_json = bool(cls_ctx.get("to_json_fn")) or "json_value" in getter_converters or has_handle_ref_setter
 
     # Dataclass imports
     dataclass_imports = sorted({lc["returns"] for lc in cls_ctx.get("lifecycle", []) if lc.get("returns") in dataclass_name_set})
@@ -351,7 +356,6 @@ def _compute_per_class_imports(
         "enum_map_imports": sorted(enum_map_imports),
         "needs_json": needs_json,
         "needs_version": needs_version,
-        "needs_clip_id": needs_clip_id,
         "dataclass_imports": dataclass_imports,
         "runtime_enums": runtime_enums,
         "type_check_enums": type_check_enums,
@@ -376,6 +380,43 @@ def _make_env() -> Environment:
     )
 
 
+def _generate_custom_attr_ffi(idl: IDL) -> list[dict]:
+    """Generate FFI function contexts for custom attribute functions.
+
+    For each handle type with custom_attrs=True, generates 11 function
+    declarations matching the C ABI macro expansion.
+    """
+    # Template: (suffix, argtypes, restype)
+    _CA_FUNCTIONS = [
+        ("set_custom_attr_string", "ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p", "ctypes.c_int"),
+        ("set_custom_attr_int", "ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int64", "ctypes.c_int"),
+        ("set_custom_attr_float", "ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double", "ctypes.c_int"),
+        ("get_custom_attr_string", "ctypes.c_void_p, ctypes.c_char_p", "ctypes.c_char_p"),
+        ("get_custom_attr_int", "ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int64)", "ctypes.c_int"),
+        ("get_custom_attr_float", "ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)", "ctypes.c_int"),
+        ("has_custom_attr", "ctypes.c_void_p, ctypes.c_char_p", "ctypes.c_int"),
+        ("get_custom_attr_type", "ctypes.c_void_p, ctypes.c_char_p", "ctypes.c_uint32"),
+        ("remove_custom_attr", "ctypes.c_void_p, ctypes.c_char_p", "ctypes.c_int"),
+        ("custom_attrs_count", "ctypes.c_void_p", "ctypes.c_uint32"),
+        ("custom_attr_name_at", "ctypes.c_void_p, ctypes.c_uint32", "ctypes.c_char_p"),
+    ]
+
+    contexts = []
+    for cls in idl.object_model.classes:
+        if not cls.custom_attrs:
+            continue
+        prefix = cls.c_handle.removesuffix("t")  # fdl_doc_t → fdl_doc_
+        for suffix, argtypes, restype in _CA_FUNCTIONS:
+            fn_name = f"{prefix}{suffix}"
+            contexts.append({
+                "name": fn_name,
+                "doc": f"Custom attr: {suffix} on {cls.name}",
+                "argtypes_str": argtypes,
+                "restype_str": restype,
+            })
+    return contexts
+
+
 def generate_ffi(idl: IDL, output_dir: Path) -> None:
     """Generate low-level Python ctypes binding files (_enums, _structs, _functions)."""
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -395,6 +436,8 @@ def generate_ffi(idl: IDL, output_dir: Path) -> None:
     # --- _functions.py ---
     tmpl = env.get_template("python/ffi.py.j2")
     fn_contexts = [_build_function_context(fn, idl) for fn in idl.functions]
+    # Add programmatically-generated custom attr FFI declarations
+    fn_contexts.extend(_generate_custom_attr_ffi(idl))
     # Only import struct types that are actually referenced in function signatures
     all_vt_names = {vt.name for vt in idl.value_types}
     used_vt_names: set[str] = set()
@@ -554,43 +597,6 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
             }
             dataclass_names.append(dc.class_name)
 
-    # --- _clipid.py (from auxiliary_types) ---
-    json_wrapper_names: list[str] = []
-    if aux.json_wrappers:
-        jw_contexts = []
-        jw_class_names = {jw.class_name for jw in aux.json_wrappers}
-        for jw in aux.json_wrappers:
-            fields = []
-            for f in jw.fields:
-                is_nested = f.field_type in jw_class_names
-                fields.append(
-                    {
-                        "name": f.name,
-                        "python_type": f.field_type,
-                        "nullable": f.nullable,
-                        "max_length": f.max_length,
-                        "min_value": f.min_value,
-                        "c_has_flag": f.c_has_flag,
-                        "nested_class": f.field_type if is_nested else None,
-                        "is_string": f.field_type == "str" and not f.c_has_flag,
-                        "is_int": f.field_type == "int" and not f.c_has_flag,
-                    }
-                )
-            jw_contexts.append(
-                {
-                    "class_name": jw.class_name,
-                    "doc": jw.doc,
-                    "fields": fields,
-                    "c_struct": jw.c_struct,
-                    "free_fn": jw.free_fn,
-                    "mutual_exclusion": jw.mutual_exclusion,
-                }
-            )
-            json_wrapper_names.append(jw.class_name)
-        tmpl = env.get_template("python/clipid.py.j2")
-        jw_src = tmpl.render(wrappers=jw_contexts)
-        (output_dir / "clipid.py").write_text(encoding="utf-8", data=jw_src)
-
     # --- Free functions (split by module: rounding vs utils) ---
     ff_contexts = [build_free_function_context(ff, idl) for ff in idl.free_functions]
     # Tag each context with its module
@@ -673,6 +679,13 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
     )
     (output_dir / "utils.py").write_text(encoding="utf-8", data=utils_src)
 
+    # --- _custom_attrs.py (shared custom attribute helpers) ---
+    has_custom_attrs = any(cls_ctx.get("custom_attrs") for cls_ctx in class_contexts)
+    if has_custom_attrs:
+        ca_tmpl = env.get_template("python/custom_attrs.py.j2")
+        ca_src = ca_tmpl.render()
+        (output_dir / "_custom_attrs.py").write_text(encoding="utf-8", data=ca_src)
+
     # --- Per-class facade files ---
     dataclass_name_set = set(dataclass_names)
     dc_name_to_module: dict[str, str] = {}
@@ -744,13 +757,6 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
     if rounding_exports:
         init_lines.append("from .rounding import (  # noqa: F401")
         for name in rounding_exports:
-            init_lines.append(f"    {name},")
-        init_lines.append(")")
-
-    # Export json wrappers from _clipid
-    if json_wrapper_names:
-        init_lines.append("from .clipid import (  # noqa: F401")
-        for name in sorted(json_wrapper_names):
             init_lines.append(f"    {name},")
         init_lines.append(")")
 

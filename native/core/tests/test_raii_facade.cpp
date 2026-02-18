@@ -804,23 +804,25 @@ TEST_CASE("ContextRef clip_id", "[raii][facade][context][clip_id]") {
         REQUIRE(ctx.has_clip_id());
         auto cid = ctx.clip_id();
         REQUIRE(cid.has_value());
-        REQUIRE(cid->clip_name == "A001");
-        REQUIRE(cid->file.has_value());
-        REQUIRE(*cid->file == "A001C001.ari");
-        REQUIRE_FALSE(cid->sequence.has_value());
+        REQUIRE(cid->clip_name() == "A001");
+        REQUIRE(cid->has_file());
+        REQUIRE(cid->file().value() == "A001C001.ari");
+        REQUIRE_FALSE(cid->has_sequence());
     }
 
     SECTION("set with file_sequence") {
         ctx.set_clip_id(R"({"clip_name":"B001","sequence":{"value":"B001.####.exr","idx":"#","min":0,"max":100}})");
         auto cid = ctx.clip_id();
         REQUIRE(cid.has_value());
-        REQUIRE(cid->clip_name == "B001");
-        REQUIRE_FALSE(cid->file.has_value());
-        REQUIRE(cid->sequence.has_value());
-        REQUIRE(cid->sequence->value == "B001.####.exr");
-        REQUIRE(cid->sequence->idx == "#");
-        REQUIRE(cid->sequence->min == 0);
-        REQUIRE(cid->sequence->max == 100);
+        REQUIRE(cid->clip_name() == "B001");
+        REQUIRE_FALSE(cid->has_file());
+        REQUIRE(cid->has_sequence());
+        auto seq = cid->sequence();
+        REQUIRE(seq.has_value());
+        REQUIRE(seq->value() == "B001.####.exr");
+        REQUIRE(seq->idx() == "#");
+        REQUIRE(seq->min() == 0);
+        REQUIRE(seq->max() == 100);
     }
 
     SECTION("remove clip_id") {

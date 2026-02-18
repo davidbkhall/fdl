@@ -35,13 +35,6 @@ from .ir import (
 
 
 @dataclass
-class ABIVersion:
-    major: int
-    minor: int
-    patch: int
-
-
-@dataclass
 class StructField:
     name: str
     c_type: str
@@ -144,6 +137,7 @@ class PropertyMapping:
     has_fn: str | None = None
     value_type: str = "string"
     nullable: bool = False
+    handle_class: str | None = None  # For handle_ref: target facade class name
 
 
 @dataclass
@@ -239,6 +233,7 @@ class ObjectClass:
     parent: str | None = None
     factory: str | None = None
     destructor: str | None = None
+    custom_attrs: bool = False
     properties: list[PropertyMapping] = field(default_factory=list)
     collections: list[CollectionPattern] = field(default_factory=list)
     methods: list[MethodMapping] = field(default_factory=list)
@@ -372,7 +367,6 @@ class UtilityDef:
 
 @dataclass
 class IDL:
-    abi_version: ABIVersion
     value_types: list[ValueType]
     enums: list[EnumType]
     opaque_types: list[str]
@@ -484,6 +478,7 @@ def _parse_property(name: str, raw: dict) -> PropertyMapping:
         has_fn=raw.get("has"),
         value_type=raw.get("type", "string"),
         nullable=raw.get("nullable", False),
+        handle_class=raw.get("handle_class"),
     )
 
 
@@ -597,6 +592,7 @@ def _parse_object_class(name: str, raw: dict) -> ObjectClass:
         parent=raw.get("parent"),
         factory=raw.get("factory"),
         destructor=raw.get("destructor"),
+        custom_attrs=raw.get("custom_attrs", False),
         properties=properties,
         collections=collections,
         methods=methods,
@@ -674,9 +670,6 @@ def parse_idl(path: Path) -> IDL:
     with path.open(encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
-    abi = data["abi_version"]
-    abi_version = ABIVersion(major=abi["major"], minor=abi["minor"], patch=abi["patch"])
-
     value_types = [_parse_value_type(name, vt) for name, vt in data.get("value_types", {}).items()]
     enums = [_parse_enum(name, e) for name, e in data.get("enums", {}).items()]
     opaque_types = data.get("opaque_types", [])
@@ -714,7 +707,6 @@ def parse_idl(path: Path) -> IDL:
         )
 
     return IDL(
-        abi_version=abi_version,
         value_types=value_types,
         enums=enums,
         opaque_types=opaque_types,
@@ -752,6 +744,7 @@ def build_ir(idl: IDL) -> IR:
             factory=cls.factory,
             destructor=cls.destructor,
             identity_attr=_IDENTITY_ATTRS.get(cls.name),
+            custom_attrs=cls.custom_attrs,
         )
 
         for prop in cls.properties:
@@ -764,6 +757,7 @@ def build_ir(idl: IDL) -> IR:
                     remover_fn=prop.remover,
                     has_fn=prop.has_fn,
                     nullable=prop.nullable,
+                    handle_class=prop.handle_class,
                 )
             )
 

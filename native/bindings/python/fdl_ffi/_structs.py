@@ -146,30 +146,3 @@ class fdl_resolve_canvas_result_t(ctypes.Structure):
     def __repr__(self) -> str:
         fields = ", ".join(f"{name}={getattr(self, name)}" for name, _ in self._fields_)
         return f"fdl_resolve_canvas_result_t({fields})"
-
-
-class fdl_file_sequence_t(ctypes.Structure):
-    _fields_ = [
-        ("value", ctypes.c_void_p),
-        ("idx", ctypes.c_void_p),
-        ("min", ctypes.c_int64),
-        ("max", ctypes.c_int64),
-    ]
-
-    def __repr__(self) -> str:
-        fields = ", ".join(f"{name}={getattr(self, name)}" for name, _ in self._fields_)
-        return f"fdl_file_sequence_t({fields})"
-
-
-class fdl_clip_id_t(ctypes.Structure):
-    _fields_ = [
-        ("clip_name", ctypes.c_void_p),
-        ("has_file", ctypes.c_int),
-        ("file", ctypes.c_void_p),
-        ("has_sequence", ctypes.c_int),
-        ("sequence", fdl_file_sequence_t),
-    ]
-
-    def __repr__(self) -> str:
-        fields = ", ".join(f"{name}={getattr(self, name)}" for name, _ in self._fields_)
-        return f"fdl_clip_id_t({fields})"

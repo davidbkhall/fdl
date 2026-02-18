@@ -33,6 +33,18 @@ extern "C" {
 #define FDL_DEFAULT_JSON_INDENT 2 /**< Spaces per indent level. */
 
 /* -----------------------------------------------------------------------
+ * Custom attribute type constants
+ * ----------------------------------------------------------------------- */
+
+/** @brief Type identifier for custom attributes. */
+typedef uint32_t fdl_custom_attr_type_t;
+#define FDL_CUSTOM_ATTR_TYPE_NONE 0   /**< Attribute not found. */
+#define FDL_CUSTOM_ATTR_TYPE_STRING 1 /**< String attribute. */
+#define FDL_CUSTOM_ATTR_TYPE_INT 2    /**< Integer attribute. */
+#define FDL_CUSTOM_ATTR_TYPE_FLOAT 3  /**< Floating-point attribute. */
+#define FDL_CUSTOM_ATTR_TYPE_OTHER 4  /**< Unsupported JSON type. */
+
+/* -----------------------------------------------------------------------
  * ABI version
  * ----------------------------------------------------------------------- */
 
@@ -80,23 +92,8 @@ typedef struct fdl_rect_t {
     double height; /**< Rectangle height. */
 } fdl_rect_t;
 
-/** File sequence within a clip_id (image sequence on disk). */
-typedef struct fdl_file_sequence_t {
-    const char* value; /**< Sequence pattern string (strdup'd, caller frees with fdl_clip_id_free). */
-    const char* idx;   /**< Index variable name, single character (strdup'd, caller frees). */
-    int64_t min;       /**< First frame number in the sequence. */
-    int64_t max;       /**< Last frame number in the sequence. */
-} fdl_file_sequence_t;
-
-/** Clip identification — associates a context with source media.
- *  A clip_id has either a file OR a sequence, never both. */
-typedef struct fdl_clip_id_t {
-    const char* clip_name;        /**< Clip name identifier (strdup'd, caller frees). */
-    int has_file;                 /**< FDL_TRUE if @c file is populated, FDL_FALSE otherwise. */
-    const char* file;             /**< File path (strdup'd, caller frees). NULL if !has_file. */
-    int has_sequence;             /**< FDL_TRUE if @c sequence is populated, FDL_FALSE otherwise. */
-    fdl_file_sequence_t sequence; /**< File sequence data. Valid only if has_sequence. */
-} fdl_clip_id_t;
+/* Note: fdl_clip_id_t and fdl_file_sequence_t are opaque handle types,
+ * declared alongside other sub-object handles in the Document Model section. */
 
 /* -----------------------------------------------------------------------
  * Enums (as uint32_t constants)
@@ -683,6 +680,8 @@ typedef struct fdl_canvas fdl_canvas_t;                     /**< Opaque handle t
 typedef struct fdl_framing_decision fdl_framing_decision_t; /**< Opaque handle to a framing decision. */
 typedef struct fdl_framing_intent fdl_framing_intent_t;     /**< Opaque handle to a framing intent. */
 typedef struct fdl_canvas_template fdl_canvas_template_t;   /**< Opaque handle to a canvas template. */
+typedef struct fdl_clip_id fdl_clip_id_t;                   /**< Opaque handle to a clip ID. */
+typedef struct fdl_file_sequence fdl_file_sequence_t;       /**< Opaque handle to a file sequence. */
 
 /** Result of parsing JSON into an FDL document. */
 typedef struct fdl_parse_result_t {
@@ -996,22 +995,93 @@ FDL_API int fdl_context_has_clip_id(const fdl_context_t* ctx);
 FDL_API const char* fdl_context_get_clip_id(const fdl_context_t* ctx);
 
 /**
- * Get clip_id as a typed struct.
- *
- * Only call after fdl_context_has_clip_id() returns FDL_TRUE.
+ * Get the clip_id handle from a context.
  *
  * @param ctx  Context handle.
- * @return Populated clip_id struct. String fields are strdup'd copies —
- *         free with fdl_clip_id_free().
+ * @return Clip ID handle (owned by doc), or NULL if clip_id is not present.
  */
-FDL_API fdl_clip_id_t fdl_context_get_clip_id_struct(const fdl_context_t* ctx);
+FDL_API fdl_clip_id_t* fdl_context_clip_id(fdl_context_t* ctx);
 
 /**
- * Free string fields in a clip_id struct.
+ * Get the clip_name from a clip_id.
  *
- * @param clip_id  Struct populated by fdl_context_get_clip_id_struct().
+ * @param cid  Clip ID handle.
+ * @return Clip name string. Thread-local pointer, valid until next call for same field on same thread.
  */
-FDL_API void fdl_clip_id_free(fdl_clip_id_t* clip_id);
+FDL_API const char* fdl_clip_id_get_clip_name(const fdl_clip_id_t* cid);
+
+/**
+ * Check if a clip_id has a file path.
+ *
+ * @param cid  Clip ID handle.
+ * @return FDL_TRUE if file is present, FDL_FALSE otherwise.
+ */
+FDL_API int fdl_clip_id_has_file(const fdl_clip_id_t* cid);
+
+/**
+ * Get the file path from a clip_id.
+ *
+ * @param cid  Clip ID handle.
+ * @return File path string, or NULL if not present. Thread-local pointer.
+ */
+FDL_API const char* fdl_clip_id_get_file(const fdl_clip_id_t* cid);
+
+/**
+ * Check if a clip_id has a file sequence.
+ *
+ * @param cid  Clip ID handle.
+ * @return FDL_TRUE if sequence is present, FDL_FALSE otherwise.
+ */
+FDL_API int fdl_clip_id_has_sequence(const fdl_clip_id_t* cid);
+
+/**
+ * Get the file sequence handle from a clip_id.
+ *
+ * @param cid  Clip ID handle.
+ * @return File sequence handle (owned by doc), or NULL if sequence is not present.
+ */
+FDL_API fdl_file_sequence_t* fdl_clip_id_sequence(fdl_clip_id_t* cid);
+
+/**
+ * Serialize a clip_id to canonical JSON.
+ *
+ * @param cid     Clip ID handle.
+ * @param indent  Number of spaces per indent level (0 for compact).
+ * @return Heap-allocated JSON string. Caller owns — free with fdl_free().
+ */
+FDL_API char* fdl_clip_id_to_json(const fdl_clip_id_t* cid, int indent);
+
+/**
+ * Get the sequence pattern value string.
+ *
+ * @param seq  File sequence handle.
+ * @return Sequence pattern string. Thread-local pointer.
+ */
+FDL_API const char* fdl_file_sequence_get_value(const fdl_file_sequence_t* seq);
+
+/**
+ * Get the index variable name.
+ *
+ * @param seq  File sequence handle.
+ * @return Index variable string. Thread-local pointer.
+ */
+FDL_API const char* fdl_file_sequence_get_idx(const fdl_file_sequence_t* seq);
+
+/**
+ * Get the minimum (first) frame number.
+ *
+ * @param seq  File sequence handle.
+ * @return First frame number.
+ */
+FDL_API int64_t fdl_file_sequence_get_min(const fdl_file_sequence_t* seq);
+
+/**
+ * Get the maximum (last) frame number.
+ *
+ * @param seq  File sequence handle.
+ * @return Last frame number.
+ */
+FDL_API int64_t fdl_file_sequence_get_max(const fdl_file_sequence_t* seq);
 
 /* -----------------------------------------------------------------------
  * Field accessors — Canvas
@@ -1793,6 +1863,52 @@ FDL_API void fdl_validation_result_free(fdl_validation_result_t* result);
  * @param ptr  Pointer to free, or NULL (no-op).
  */
 FDL_API void fdl_free(void* ptr);
+
+/* -----------------------------------------------------------------------
+ * Custom attribute API (11 functions x 8 handle types = 88 functions)
+ *
+ * Names are passed WITHOUT the '_' prefix; the library prepends it internally.
+ * Type-safe: setting an attribute with a different type than its current value
+ * returns -1. Remove the attribute first, then set with the new type.
+ * ----------------------------------------------------------------------- */
+
+/** @brief Macro to declare all 11 custom attribute functions for a handle type.
+ *  @param PREFIX      Function name prefix (e.g., fdl_doc_).
+ *  @param HANDLE_TYPE C handle type (e.g., fdl_doc_t). */
+#define FDL_CUSTOM_ATTR_DECL(PREFIX, HANDLE_TYPE)                                                                    \
+    /** @brief Set a string custom attribute. @return 0 on success, -1 on type mismatch. */                          \
+    FDL_API int PREFIX##set_custom_attr_string(HANDLE_TYPE* h, const char* name, const char* value);                 \
+    /** @brief Set an integer custom attribute. @return 0 on success, -1 on type mismatch. */                        \
+    FDL_API int PREFIX##set_custom_attr_int(HANDLE_TYPE* h, const char* name, int64_t value);                        \
+    /** @brief Set a float custom attribute. @return 0 on success, -1 on type mismatch. */                           \
+    FDL_API int PREFIX##set_custom_attr_float(HANDLE_TYPE* h, const char* name, double value);                       \
+    /** @brief Get a string custom attribute. @return Thread-local pointer, or NULL. */                              \
+    FDL_API const char* PREFIX##get_custom_attr_string(const HANDLE_TYPE* h, const char* name);                      \
+    /** @brief Get an integer custom attribute. @return 0 on success, -1 if absent/wrong type. */                    \
+    FDL_API int PREFIX##get_custom_attr_int(const HANDLE_TYPE* h, const char* name, int64_t* out);                   \
+    /** @brief Get a float custom attribute. @return 0 on success, -1 if absent/wrong type. */                       \
+    FDL_API int PREFIX##get_custom_attr_float(const HANDLE_TYPE* h, const char* name, double* out);                  \
+    /** @brief Check if a custom attribute exists. @return FDL_TRUE or FDL_FALSE. */                                 \
+    FDL_API int PREFIX##has_custom_attr(const HANDLE_TYPE* h, const char* name);                                     \
+    /** @brief Get the type of a custom attribute. @return FDL_CUSTOM_ATTR_TYPE_* constant. */                       \
+    FDL_API fdl_custom_attr_type_t PREFIX##get_custom_attr_type(const HANDLE_TYPE* h, const char* name);             \
+    /** @brief Remove a custom attribute. @return 0 if removed, -1 if not found. */                                  \
+    FDL_API int PREFIX##remove_custom_attr(HANDLE_TYPE* h, const char* name);                                        \
+    /** @brief Count custom attributes on this object. */                                                            \
+    FDL_API uint32_t PREFIX##custom_attrs_count(const HANDLE_TYPE* h);                                               \
+    /** @brief Get name of custom attribute at index (without '_' prefix). @return Thread-local pointer, or NULL. */ \
+    FDL_API const char* PREFIX##custom_attr_name_at(const HANDLE_TYPE* h, uint32_t index);
+
+FDL_CUSTOM_ATTR_DECL(fdl_doc_, fdl_doc_t)
+FDL_CUSTOM_ATTR_DECL(fdl_context_, fdl_context_t)
+FDL_CUSTOM_ATTR_DECL(fdl_canvas_, fdl_canvas_t)
+FDL_CUSTOM_ATTR_DECL(fdl_framing_decision_, fdl_framing_decision_t)
+FDL_CUSTOM_ATTR_DECL(fdl_framing_intent_, fdl_framing_intent_t)
+FDL_CUSTOM_ATTR_DECL(fdl_canvas_template_, fdl_canvas_template_t)
+FDL_CUSTOM_ATTR_DECL(fdl_clip_id_, fdl_clip_id_t)
+FDL_CUSTOM_ATTR_DECL(fdl_file_sequence_, fdl_file_sequence_t)
+
+#undef FDL_CUSTOM_ATTR_DECL
 
 #ifdef __cplusplus
 }

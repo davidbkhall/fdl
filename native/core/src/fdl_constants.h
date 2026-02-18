@@ -89,6 +89,20 @@ constexpr int64_t kDefaultAspectRatio = 1; /**< 1:1 aspect ratio for generated f
 /** Default JSON serialization indent (spaces per level). */
 constexpr int kDefaultJsonIndent = 2;
 
+/** @name Custom attribute return codes and type values
+ *  @{ */
+constexpr int kCustomAttrSuccess = 0;     /**< Operation succeeded. */
+constexpr int kCustomAttrError = -1;      /**< Operation failed (type mismatch, not found, etc.). */
+constexpr uint32_t kCustomAttrTypeNone = 0;   /**< Attribute not found. */
+constexpr uint32_t kCustomAttrTypeString = 1; /**< String attribute. */
+constexpr uint32_t kCustomAttrTypeInt = 2;    /**< Integer attribute. */
+constexpr uint32_t kCustomAttrTypeFloat = 3;  /**< Floating-point attribute. */
+constexpr uint32_t kCustomAttrTypeOther = 4;  /**< Unsupported JSON type. */
+/** @} */
+
+/** Custom attribute key prefix character. */
+constexpr char kCustomAttrPrefix = '_';
+
 } // namespace fdl::constants
 
 #endif // FDL_CONSTANTS_INTERNAL_H
