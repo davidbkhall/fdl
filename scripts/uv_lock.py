@@ -19,10 +19,15 @@ INDEX_URL = "https://pypi.org/simple"
 
 def main() -> int:
     print(f"Regenerating uv.lock with index: {INDEX_URL}")
+    # Build a clean env that overrides any global/user uv.toml index config.
+    # UV_DEFAULT_INDEX overrides the [tool.uv] and global config index-url.
+    env = {k: v for k, v in subprocess.os.environ.items()}
+    env["UV_DEFAULT_INDEX"] = INDEX_URL
+    env["UV_INDEX_URL"] = INDEX_URL
     result = subprocess.run(
-        ["uv", "lock", "--index-url", INDEX_URL],
+        ["uv", "lock", "--default-index", INDEX_URL],
         cwd=REPO_ROOT,
-        env={"UV_INDEX_URL": INDEX_URL, "PATH": subprocess.os.environ["PATH"]},
+        env=env,
     )
     if result.returncode == 0:
         print("uv.lock regenerated successfully.")
