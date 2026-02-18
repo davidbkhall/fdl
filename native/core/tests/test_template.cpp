@@ -4,10 +4,10 @@
 
 #include "fdl/fdl_core.h"
 
-#include <jsoncons/json.hpp>
 #include <cmath>
 #include <cstring>
 #include <fstream>
+#include <jsoncons/json.hpp>
 #include <string>
 
 using ojson = jsoncons::ojson;
@@ -232,8 +232,7 @@ TEST_CASE("apply_canvas_template matches Python golden vectors", "[template][app
 }
 
 TEST_CASE("apply_canvas_template NULL safety", "[template][null]") {
-    auto result = fdl_apply_canvas_template(nullptr, nullptr, nullptr,
-                                             "id", "name", nullptr, nullptr);
+    auto result = fdl_apply_canvas_template(nullptr, nullptr, nullptr, "id", "name", nullptr, nullptr);
     REQUIRE(result.error != nullptr);
     REQUIRE(result.output_fdl == nullptr);
     fdl_template_result_free(&result);

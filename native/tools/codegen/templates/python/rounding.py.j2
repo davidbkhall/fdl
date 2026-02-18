@@ -52,7 +52,7 @@ class {{ round_strategy.python_class }}:
 {% for ff in free_functions %}
 
 
-def {{ ff.python_name }}({{ ff.param_sig }}) -> {{ ff.python_return }}:
+def {{ ff.display_name }}({{ ff.param_sig }}) -> {{ ff.python_return }}:
     """{{ ff.doc }}"""
     from fdl_ffi import get_lib
 {% if ff.needed_c_structs %}

@@ -11,7 +11,57 @@ and collections backed by count/at/find patterns.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
+
+
+# -----------------------------------------------------------------------
+# DefaultDescriptor — structured representation of default values
+# -----------------------------------------------------------------------
+
+
+@dataclass
+class DefaultDescriptor:
+    """Language-neutral representation of a parameter default value.
+
+    Replaces raw syntax strings (e.g. ``"FitMethod.WIDTH"``) with
+    a structured form that each language adapter can render independently.
+    """
+
+    kind: str  # "none", "literal", "enum_member", "constructor"
+    value: str | None = None  # For "literal": the raw value (e.g. "2", "0.0", "False")
+    enum_class: str | None = None  # For "enum_member": e.g. "FitMethod"
+    member: str | None = None  # For "enum_member": e.g. "WIDTH"
+    constructor_class: str | None = None  # For "constructor": e.g. "DimensionsFloat"
+    constructor_kwargs: dict[str, str] | None = None  # For "constructor": e.g. {"width": "0.0"}
+
+
+_ENUM_MEMBER_RE = re.compile(r"^([A-Z][A-Za-z]+)\.([A-Z_]+)$")
+_CONSTRUCTOR_RE = re.compile(r"^([A-Z][A-Za-z]+)\((.*)\)$", re.DOTALL)
+_KWARG_RE = re.compile(r"(\w+)=([\w.]+)")
+
+
+def parse_default(raw: str) -> DefaultDescriptor:
+    """Parse a raw default value string into a DefaultDescriptor."""
+    if raw == "None":
+        return DefaultDescriptor(kind="none")
+
+    m = _ENUM_MEMBER_RE.match(raw)
+    if m:
+        return DefaultDescriptor(kind="enum_member", enum_class=m.group(1), member=m.group(2))
+
+    m = _CONSTRUCTOR_RE.match(raw)
+    if m:
+        cls_name, args_str = m.group(1), m.group(2).strip()
+        kwargs = dict(_KWARG_RE.findall(args_str)) if args_str else None
+        return DefaultDescriptor(kind="constructor", constructor_class=cls_name, constructor_kwargs=kwargs)
+
+    return DefaultDescriptor(kind="literal", value=raw)
+
+
+# -----------------------------------------------------------------------
+# IR dataclasses
+# -----------------------------------------------------------------------
 
 
 @dataclass
@@ -19,13 +69,12 @@ class IRProperty:
     """A readable (and optionally writable) property on a class."""
 
     name: str
-    type_key: str  # Language-neutral key resolved by type_maps
+    type_key: str  # Language-neutral key resolved by language adapters
     getter_fn: str
     setter_fn: str | None = None
     remover_fn: str | None = None
     has_fn: str | None = None
     nullable: bool = False
-    converter: str | None = None  # e.g. "dims_i64", "string", "enum_geometry_path"
 
     @property
     def read_only(self) -> bool:
@@ -50,9 +99,9 @@ class IRMethodParam:
     """A parameter for a method."""
 
     name: str
-    type_key: str  # Language-neutral key resolved by type_maps
+    type_key: str  # Language-neutral key resolved by language adapters
     nullable: bool = False
-    default: str | None = None  # Default value expression (e.g. "None")
+    default: DefaultDescriptor | None = None  # Structured default value
     expand: bool = False  # Expand value type fields as separate C args
     source_class: str | None = None  # For handle params: which facade class
     global_fallback: str | None = None  # For nullable params: fallback function name
@@ -62,12 +111,12 @@ class IRMethodParam:
 class IRResultField:
     """A field in a multi-field result struct extraction."""
 
-    name: str  # Python field name (e.g. "doc")
+    name: str  # field name (e.g. "doc")
     source: str  # C struct field name (e.g. "output_doc")
     extract: str  # "handle", "scalar", "value_type", "string"
     wrap_class: str | None = None  # For extract=handle
     converter: str | None = None  # For extract=value_type
-    python_type: str | None = None  # For extract=scalar
+    scalar_type: str | None = None  # For extract=scalar (e.g. "bool", "int")
     private: bool = False  # If True, prefix field name with _ in constructor call
 
 
@@ -103,17 +152,17 @@ class IRMethod:
 
 @dataclass
 class IRInitParam:
-    """A parameter for a kwargs __init__ method."""
+    """A parameter for a keyword-argument constructor."""
 
     name: str
-    type_key: str  # Language-neutral key resolved by type_maps
+    type_key: str  # Language-neutral key resolved by language adapters
     nullable: bool = False
-    default: str | None = None
+    default: DefaultDescriptor | None = None  # Structured default value
 
 
 @dataclass
 class IRInitPostSetter:
-    """A post-construction setter call in kwargs __init__."""
+    """A post-construction setter call."""
 
     kind: str  # "property" or "compound"
     property: str | None = None
@@ -125,7 +174,7 @@ class IRInitPostSetter:
 
 @dataclass
 class IRInit:
-    """Kwargs __init__ definition for a facade class."""
+    """Keyword-argument constructor definition for a facade class."""
 
     depth: int  # scaffolding depth: 1=doc->obj, 2=doc->ctx->obj, 3=doc->ctx->canvas->obj
     builder_method: str  # name of builder method on parent class

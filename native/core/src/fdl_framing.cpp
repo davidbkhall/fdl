@@ -1,12 +1,19 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_framing.cpp
+ * @brief Framing-from-intent computation — aspect ratio fitting with protection.
+ *
+ * Algorithm:
+ * 1. Compare intent aspect ratio with working (effective or canvas) aspect ratio.
+ * 2. If intent is wider: letterbox (fit to width, shrink height).
+ *    If intent is narrower: pillarbox (fit to height, shrink width).
+ * 3. If protection > 0, round to get protection dimensions, then shrink by
+ *    the protection factor to get final framing dimensions.
+ * 4. Center both framing and protection anchors within the full canvas.
+ */
 #include "fdl_framing.h"
-
-// Reuse existing rounding from fdl_core
-extern "C" {
-    fdl_dimensions_f64_t fdl_round_dimensions(fdl_dimensions_f64_t dims,
-        fdl_rounding_even_t even, fdl_rounding_mode_t mode);
-}
+#include "fdl_constants.h"
 
 namespace fdl::detail {
 
@@ -19,14 +26,14 @@ fdl_from_intent_result_t compute_framing_from_intent(
     fdl_round_strategy_t rounding) {
 
     fdl_from_intent_result_t result = {};
-    result.has_protection = 0;
+    result.has_protection = FDL_FALSE;
 
     // Compare aspect ratios
-    double intent_aspect = static_cast<double>(aspect_ratio.width) /
-                           static_cast<double>(aspect_ratio.height);
-    double canvas_aspect = working_dims.width / working_dims.height;
+    double const intent_aspect = static_cast<double>(aspect_ratio.width) / static_cast<double>(aspect_ratio.height);
+    double const canvas_aspect = working_dims.width / working_dims.height;
 
-    double width, height;
+    double width;
+    double height;
     if (intent_aspect >= canvas_aspect) {
         // Letterbox: wider intent, height shrinks
         width = working_dims.width;
@@ -41,32 +48,33 @@ fdl_from_intent_result_t compute_framing_from_intent(
     fdl_dimensions_f64_t prot_dims = {0.0, 0.0};
     if (protection > 0) {
         prot_dims = fdl_round_dimensions({width, height}, rounding.even, rounding.mode);
-        result.has_protection = 1;
+        result.has_protection = FDL_TRUE;
         result.protection_dimensions = prot_dims;
     }
 
     // If protection was set, base final dimensions on protection dims
-    if (result.has_protection) {
+    if (result.has_protection != 0) {
         width = prot_dims.width;
         height = prot_dims.height;
     }
 
     // Apply protection factor and round
-    fdl_dimensions_f64_t dims = {
-        width * (1.0 - protection),
-        height * (1.0 - protection)
-    };
+    fdl_dimensions_f64_t const dims = {
+        width * (fdl::constants::kProtectionBase - protection),
+        height * (fdl::constants::kProtectionBase - protection)};
     result.dimensions = fdl_round_dimensions(dims, rounding.even, rounding.mode);
 
     // Center framing decision anchor within canvas
     // (always relative to full canvas dims, not effective)
-    result.anchor_point.x = (canvas_dims.width - result.dimensions.width) / 2.0;
-    result.anchor_point.y = (canvas_dims.height - result.dimensions.height) / 2.0;
+    result.anchor_point.x = (canvas_dims.width - result.dimensions.width) / fdl::constants::kCenterDivisor;
+    result.anchor_point.y = (canvas_dims.height - result.dimensions.height) / fdl::constants::kCenterDivisor;
 
     // Center protection anchor within canvas (if applicable)
-    if (result.has_protection) {
-        result.protection_anchor_point.x = (canvas_dims.width - result.protection_dimensions.width) / 2.0;
-        result.protection_anchor_point.y = (canvas_dims.height - result.protection_dimensions.height) / 2.0;
+    if (result.has_protection != 0) {
+        result.protection_anchor_point.x =
+            (canvas_dims.width - result.protection_dimensions.width) / fdl::constants::kCenterDivisor;
+        result.protection_anchor_point.y =
+            (canvas_dims.height - result.protection_dimensions.height) / fdl::constants::kCenterDivisor;
     }
 
     return result;

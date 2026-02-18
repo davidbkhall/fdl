@@ -184,6 +184,17 @@ install(FILES
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FDL
 )
 
+# Documentation (optional, requires Doxygen)
+find_package(Doxygen QUIET)
+if(DOXYGEN_FOUND)
+  add_custom_target(docs
+    COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Generating API documentation with Doxygen"
+    VERBATIM
+  )
+endif()
+
 # Tests (optional, gated by BUILD_TESTING)
 option(FDL_BUILD_TESTS "Build fdl_core tests" ON)
 if(FDL_BUILD_TESTS)

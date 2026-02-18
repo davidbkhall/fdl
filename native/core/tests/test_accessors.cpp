@@ -463,7 +463,7 @@ TEST_CASE("Context clip_id accessors", "[accessors][context]") {
 
     SECTION("fdl_clip_id_free on zeroed struct") {
         fdl_clip_id_t cid = {};
-        fdl_clip_id_free(&cid); // should not crash
+        fdl_clip_id_free(&cid);    // should not crash
         fdl_clip_id_free(nullptr); // should not crash
     }
 
@@ -558,7 +558,8 @@ TEST_CASE("set_clip_id_json -sequence variant", "[accessors][context][clip_id]")
     auto* doc = parse_full_fdl();
     auto* ctx = fdl_doc_context_at(doc, 0);
 
-    const char* json = R"({"clip_name": "C001", "sequence": {"value": "C001.####.exr", "idx": "#", "min": 0, "max": 100}})";
+    const char* json =
+        R"({"clip_name": "C001", "sequence": {"value": "C001.####.exr", "idx": "#", "min": 0, "max": 100}})";
     auto* err = fdl_context_set_clip_id_json(ctx, json, std::strlen(json));
     REQUIRE(err == nullptr);
 
@@ -581,7 +582,8 @@ TEST_CASE("set_clip_id_json -mutual exclusion rejected", "[accessors][context][c
     fdl_context_remove_clip_id(ctx);
     REQUIRE(fdl_context_has_clip_id(ctx) == 0);
 
-    const char* json = R"({"clip_name": "D001", "file": "D001.ari", "sequence": {"value": "D001.####.exr", "idx": "#", "min": 0, "max": 10}})";
+    const char* json =
+        R"({"clip_name": "D001", "file": "D001.ari", "sequence": {"value": "D001.####.exr", "idx": "#", "min": 0, "max": 10}})";
     auto* err = fdl_context_set_clip_id_json(ctx, json, std::strlen(json));
     REQUIRE(err != nullptr);
     REQUIRE(std::string(err).find("Both file and sequence") != std::string::npos);

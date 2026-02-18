@@ -26,8 +26,8 @@ from .ir import (
     IRMethodParam,
     IRProperty,
     IRResultField,
+    parse_default,
 )
-from .type_maps import PYTHON_CONVERTERS
 
 # -----------------------------------------------------------------------
 # Low-level IDL dataclasses (unchanged from Phase 3)
@@ -175,7 +175,7 @@ class ResultFieldMapping:
     extract: str  # "handle", "scalar", "value_type", "string"
     wrap_class: str | None = None
     converter: str | None = None
-    python_type: str | None = None
+    scalar_type: str | None = None
     private: bool = False
 
 
@@ -330,7 +330,7 @@ class AuxiliaryTypes:
 
 
 # -----------------------------------------------------------------------
-# Free functions (top-level Python functions wrapping C ABI)
+# Free functions (top-level functions wrapping C ABI)
 # -----------------------------------------------------------------------
 
 
@@ -343,12 +343,12 @@ class FreeFunctionParam:
 @dataclass
 class FreeFunctionDef:
     name: str
-    python_name: str
+    display_name: str
     c_function: str
     doc: str
     params: list[FreeFunctionParam]
     returns: str
-    module: str = "rounding"  # target Python module: "rounding" or "utils"
+    module: str = "rounding"  # target module grouping: "rounding" or "utils"
 
 
 # -----------------------------------------------------------------------
@@ -526,7 +526,7 @@ def _parse_method(name: str, raw: dict) -> MethodMapping:
                     extract=f["extract"],
                     wrap_class=f.get("wrap_class"),
                     converter=f.get("converter"),
-                    python_type=f.get("python_type"),
+                    scalar_type=f.get("scalar_type"),
                     private=f.get("private", False),
                 )
                 for f in eh["fields"]
@@ -691,7 +691,7 @@ def parse_idl(path: Path) -> IDL:
         free_functions.append(
             FreeFunctionDef(
                 name=ff_raw["name"],
-                python_name=ff_raw["python_name"],
+                display_name=ff_raw["display_name"],
                 c_function=ff_raw["c_function"],
                 doc=ff_raw.get("doc", ""),
                 params=params,
@@ -764,7 +764,6 @@ def build_ir(idl: IDL) -> IR:
                     remover_fn=prop.remover,
                     has_fn=prop.has_fn,
                     nullable=prop.nullable,
-                    converter=PYTHON_CONVERTERS.get(prop.value_type),
                 )
             )
 
@@ -790,7 +789,7 @@ def build_ir(idl: IDL) -> IR:
                             name=p.name,
                             type_key=p.param_type,
                             nullable=p.nullable,
-                            default=p.default,
+                            default=parse_default(p.default) if p.default is not None else None,
                             expand=p.expand,
                             source_class=p.source_class,
                             global_fallback=p.global_fallback,
@@ -808,7 +807,7 @@ def build_ir(idl: IDL) -> IR:
                             extract=rf.extract,
                             wrap_class=rf.wrap_class,
                             converter=rf.converter,
-                            python_type=rf.python_type,
+                            scalar_type=rf.scalar_type,
                             private=rf.private,
                         )
                         for rf in eh.result_fields
@@ -847,7 +846,7 @@ def build_ir(idl: IDL) -> IR:
                         name=p.name,
                         type_key=p.param_type,
                         nullable=p.nullable,
-                        default=p.default,
+                        default=parse_default(p.default) if p.default is not None else None,
                     )
                     for p in cls.init.params
                 ],

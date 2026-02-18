@@ -382,7 +382,7 @@ object_model:
             error_field: error
             success_field: doc
             free_fn: fdl_free
-            error_class: ValueError
+            error_class: validation_error
         create:
           function: fdl_doc_create_with_header
           kind: static_factory
@@ -526,12 +526,12 @@ object_model:
           error_handling:
             pattern: result_struct_multi
             error_field: error
-            error_class: ValueError
+            error_class: validation_error
             free_fn: fdl_free
             fields:
               - { name: canvas,           source: canvas,           extract: handle_ref, wrap_class: Canvas }
               - { name: framing_decision, source: framing_decision, extract: handle_ref, wrap_class: FramingDecision }
-              - { name: was_resolved,     source: was_resolved,     extract: scalar, python_type: bool }
+              - { name: was_resolved,     source: was_resolved,     extract: scalar, scalar_type: bool }
       init:
         depth: 1
         builder_method: add_context
@@ -854,11 +854,11 @@ object_model:
           error_handling:
             pattern: result_struct_multi
             error_field: error
-            error_class: ValueError
+            error_class: validation_error
             free_fn: fdl_free
             fields:
               - { name: fdl,                   source: output_fdl,          extract: handle, wrap_class: FDL }
-              - { name: scale_factor,          source: scale_factor,        extract: scalar, python_type: float }
+              - { name: scale_factor,          source: scale_factor,        extract: scalar, scalar_type: float }
               - { name: scaled_bounding_box,   source: scaled_bounding_box, extract: value_type, converter: dims_f64 }
               - { name: content_translation,   source: content_translation, extract: value_type, converter: point_f64 }
               - { name: context_label,         source: context_label,       extract: string, private: true }
@@ -2351,10 +2351,10 @@ auxiliary_types:
         - { name: sequence, type: FileSequence, nullable: true, c_has_flag: has_sequence }
       mutual_exclusion: [file, sequence]
 
-# Free functions exposed as top-level Python functions in fdl_core
+# Free functions exposed as top-level functions in target language bindings
 free_functions:
   - name: fdl_round
-    python_name: fdl_round
+    display_name: fdl_round
     c_function: fdl_round
     doc: Round a single float value according to FDL rounding rules.
     params:
@@ -2364,7 +2364,7 @@ free_functions:
     returns: int
 
   - name: calculate_scale_factor
-    python_name: calculate_scale_factor
+    display_name: calculate_scale_factor
     c_function: fdl_calculate_scale_factor
     doc: Calculate scale factor based on fit method.
     params:
@@ -2374,7 +2374,7 @@ free_functions:
     returns: float
 
   - name: make_rect
-    python_name: make_rect
+    display_name: make_rect
     c_function: fdl_make_rect
     module: utils
     doc: Create a rect from raw coordinates.

@@ -2,7 +2,8 @@
 Python code generator: produces ctypes FFI bindings and idiomatic facade classes.
 
 This module contains all Python-specific type maps, context builders, and
-rendering logic. Language-neutral context builders live in context_builders.py.
+rendering logic. Language-neutral context builders live in shared_context.py;
+Python-specific ones live in python_context.py.
 """
 
 from __future__ import annotations
@@ -12,13 +13,15 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
-from .context_builders import (
+from .python_context import (
     build_constants_enum_context,
     build_converter_context,
-    build_enum_context,
     build_facade_class_context,
     build_free_function_context,
     build_value_type_context,
+)
+from .shared_context import (
+    build_enum_context,
 )
 from .fdl_idl import IDL, Function, ValueType, build_ir
 
@@ -205,7 +208,7 @@ def _compute_per_class_imports(
     dataclass_name_set: set[str],
 ) -> dict:
     """Compute the import requirements for a single facade class file."""
-    all_enum_classes = {ec["python_class"] for ec in enum_contexts}
+    all_enum_classes = {ec["facade_class"] for ec in enum_contexts}
 
     # Sets for tracking
     types_set = {"DimensionsInt", "DimensionsFloat", "PointFloat", "Rect"}
@@ -644,12 +647,12 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
         enum_imports=sorted(rs_enum_imports),
     )
     (output_dir / "rounding.py").write_text(encoding="utf-8", data=rounding_src)
-    rounding_ff_names = sorted(ctx["python_name"] for ctx in rounding_ff_contexts)
+    rounding_ff_names = sorted(ctx["display_name"] for ctx in rounding_ff_contexts)
     rounding_vt_names = sorted(ctx["python_class"] for ctx in rounding_vt_contexts)
 
     # --- utils.py (generated from template) ---
     utility_names = sorted(u.name for u in idl.utilities)
-    utils_ff_names = sorted(ctx["python_name"] for ctx in utils_ff_contexts)
+    utils_ff_names = sorted(ctx["display_name"] for ctx in utils_ff_contexts)
     utility_names = sorted(set(utility_names) | set(utils_ff_names))
     c_abi_utils = [u for u in idl.utilities if u.kind == "c_abi"]
     # Collect extra type imports needed by utils free functions (beyond DimensionsFloat/PointFloat)

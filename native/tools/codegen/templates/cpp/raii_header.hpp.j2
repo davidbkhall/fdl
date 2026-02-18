@@ -602,7 +602,7 @@ const
         {{ rf.wrap_class }}(result.{{ rf.source }}){{ "," if not loop.last else "};" }}
 {% elif rf.extract == "string" %}
         [&]{ std::string s(result.{{ rf.source }}); fdl_free(const_cast<char*>(result.{{ rf.source }})); return s; }(){{ "," if not loop.last else "};" }}
-{% elif rf.extract == "scalar" and rf.python_type == "bool" %}
+{% elif rf.extract == "scalar" and rf.scalar_type == "bool" %}
         result.{{ rf.source }} != 0{{ "," if not loop.last else "};" }}
 {% else %}
         result.{{ rf.source }}{{ "," if not loop.last else "};" }}

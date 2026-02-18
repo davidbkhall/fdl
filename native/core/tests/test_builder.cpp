@@ -4,18 +4,14 @@
 
 #include "fdl/fdl_core.h"
 
-#include <jsoncons/json.hpp>
 #include <cstring>
+#include <jsoncons/json.hpp>
 #include <string>
 
 using ojson = jsoncons::ojson;
 
 TEST_CASE("Build minimal FDL and serialize", "[builder]") {
-    auto* doc = fdl_doc_create_with_header(
-        "00000000-0000-0000-0000-000000000099",
-        2, 0,
-        "test-builder",
-        nullptr);
+    auto* doc = fdl_doc_create_with_header("00000000-0000-0000-0000-000000000099", 2, 0, "test-builder", nullptr);
     REQUIRE(doc != nullptr);
 
     char* json = fdl_doc_to_json(doc, 2);
@@ -41,9 +37,7 @@ TEST_CASE("Build minimal FDL and serialize", "[builder]") {
 }
 
 TEST_CASE("Build FDL with framing intents", "[builder]") {
-    auto* doc = fdl_doc_create_with_header(
-        "00000000-0000-0000-0000-000000000099",
-        2, 0, "test-builder", "FI_239");
+    auto* doc = fdl_doc_create_with_header("00000000-0000-0000-0000-000000000099", 2, 0, "test-builder", "FI_239");
 
     auto* fi = fdl_doc_add_framing_intent(doc, "FI_239", "2.39:1", 239, 100, 0.1);
     REQUIRE(fi != nullptr);
@@ -63,9 +57,7 @@ TEST_CASE("Build FDL with framing intents", "[builder]") {
 }
 
 TEST_CASE("Build FDL with full hierarchy", "[builder]") {
-    auto* doc = fdl_doc_create_with_header(
-        "00000000-0000-0000-0000-000000000099",
-        2, 0, "test-builder", "FI_239");
+    auto* doc = fdl_doc_create_with_header("00000000-0000-0000-0000-000000000099", 2, 0, "test-builder", "FI_239");
 
     // Add framing intent
     fdl_doc_add_framing_intent(doc, "FI_239", "2.39:1", 239, 100, 0.0);
@@ -75,23 +67,19 @@ TEST_CASE("Build FDL with full hierarchy", "[builder]") {
     REQUIRE(ctx != nullptr);
 
     // Add canvas to context
-    auto* canvas = fdl_context_add_canvas(ctx, "CVS_OCF", "OCF", "CVS_OCF",
-                                          4096, 2160, 1.0);
+    auto* canvas = fdl_context_add_canvas(ctx, "CVS_OCF", "OCF", "CVS_OCF", 4096, 2160, 1.0);
     REQUIRE(canvas != nullptr);
 
     // Set effective dimensions on canvas
-    fdl_canvas_set_effective_dimensions(canvas,
-        {4000, 2100}, {48.0, 30.0});
+    fdl_canvas_set_effective_dimensions(canvas, {4000, 2100}, {48.0, 30.0});
 
     // Add framing decision to canvas
-    auto* fd = fdl_canvas_add_framing_decision(canvas,
-        "CVS_OCF-FI_239", "2.39:1", "FI_239",
-        3800.0, 1600.0, 100.0, 250.0);
+    auto* fd =
+        fdl_canvas_add_framing_decision(canvas, "CVS_OCF-FI_239", "2.39:1", "FI_239", 3800.0, 1600.0, 100.0, 250.0);
     REQUIRE(fd != nullptr);
 
     // Set protection on framing decision
-    fdl_framing_decision_set_protection(fd,
-        {3900.0, 1700.0}, {50.0, 200.0});
+    fdl_framing_decision_set_protection(fd, {3900.0, 1700.0}, {50.0, 200.0});
 
     // Serialize and re-parse to verify
     char* json = fdl_doc_to_json(doc, 2);
@@ -129,18 +117,13 @@ TEST_CASE("Build FDL with full hierarchy", "[builder]") {
 
 TEST_CASE("Built document roundtrips through parse", "[builder][roundtrip]") {
     // Build a document, serialize, re-parse, verify accessors match
-    auto* doc = fdl_doc_create_with_header(
-        "00000000-0000-0000-0000-000000000099",
-        2, 0, "test-builder", nullptr);
+    auto* doc = fdl_doc_create_with_header("00000000-0000-0000-0000-000000000099", 2, 0, "test-builder", nullptr);
 
     fdl_doc_add_framing_intent(doc, "FI_178", "1.78:1", 16, 9, 0.0);
 
     auto* ctx = fdl_doc_add_context(doc, "Camera B", nullptr);
-    auto* canvas = fdl_context_add_canvas(ctx, "CVS_ANA", "Anamorphic",
-                                          "CVS_ANA", 4096, 3432, 2.0);
-    fdl_canvas_add_framing_decision(canvas,
-        "CVS_ANA-FI_178", "1.78:1", "FI_178",
-        4096.0, 2304.0, 0.0, 564.0);
+    auto* canvas = fdl_context_add_canvas(ctx, "CVS_ANA", "Anamorphic", "CVS_ANA", 4096, 3432, 2.0);
+    fdl_canvas_add_framing_decision(canvas, "CVS_ANA-FI_178", "1.78:1", "FI_178", 4096.0, 2304.0, 0.0, 564.0);
 
     // Serialize
     char* json = fdl_doc_to_json(doc, 2);
@@ -173,8 +156,7 @@ TEST_CASE("Built document roundtrips through parse", "[builder][roundtrip]") {
 }
 
 TEST_CASE("Document setters modify existing fields", "[builder][setters]") {
-    auto* doc = fdl_doc_create_with_header(
-        "old-uuid", 2, 0, "old-creator", nullptr);
+    auto* doc = fdl_doc_create_with_header("old-uuid", 2, 0, "old-creator", nullptr);
 
     fdl_doc_set_uuid(doc, "new-uuid");
     fdl_doc_set_fdl_creator(doc, "new-creator");
@@ -189,16 +171,20 @@ TEST_CASE("Document setters modify existing fields", "[builder][setters]") {
 }
 
 TEST_CASE("Build FDL with canvas template", "[builder][canvas_template]") {
-    auto* doc = fdl_doc_create_with_header(
-        "00000000-0000-0000-0000-000000000099",
-        2, 0, "test-builder", nullptr);
+    auto* doc = fdl_doc_create_with_header("00000000-0000-0000-0000-000000000099", 2, 0, "test-builder", nullptr);
 
     fdl_round_strategy_t rounding = {FDL_ROUNDING_EVEN_EVEN, FDL_ROUNDING_MODE_UP};
     auto* ct = fdl_doc_add_canvas_template(
-        doc, "CT_HD", "HD",
-        1920, 1080, 1.0,
-        FDL_GEOMETRY_PATH_FRAMING_DIMENSIONS, FDL_FIT_METHOD_WIDTH,
-        FDL_HALIGN_CENTER, FDL_VALIGN_CENTER,
+        doc,
+        "CT_HD",
+        "HD",
+        1920,
+        1080,
+        1.0,
+        FDL_GEOMETRY_PATH_FRAMING_DIMENSIONS,
+        FDL_FIT_METHOD_WIDTH,
+        FDL_HALIGN_CENTER,
+        FDL_VALIGN_CENTER,
         rounding);
 
     REQUIRE(ct != nullptr);
@@ -229,16 +215,20 @@ TEST_CASE("Build FDL with canvas template", "[builder][canvas_template]") {
 }
 
 TEST_CASE("Canvas template setters", "[builder][canvas_template]") {
-    auto* doc = fdl_doc_create_with_header(
-        "00000000-0000-0000-0000-000000000099",
-        2, 0, "test-builder", nullptr);
+    auto* doc = fdl_doc_create_with_header("00000000-0000-0000-0000-000000000099", 2, 0, "test-builder", nullptr);
 
     fdl_round_strategy_t rounding = {FDL_ROUNDING_EVEN_WHOLE, FDL_ROUNDING_MODE_ROUND};
     auto* ct = fdl_doc_add_canvas_template(
-        doc, "CT_UHD", "UHD",
-        3840, 2160, 1.0,
-        FDL_GEOMETRY_PATH_CANVAS_DIMENSIONS, FDL_FIT_METHOD_FIT_ALL,
-        FDL_HALIGN_LEFT, FDL_VALIGN_TOP,
+        doc,
+        "CT_UHD",
+        "UHD",
+        3840,
+        2160,
+        1.0,
+        FDL_GEOMETRY_PATH_CANVAS_DIMENSIONS,
+        FDL_FIT_METHOD_FIT_ALL,
+        FDL_HALIGN_LEFT,
+        FDL_VALIGN_TOP,
         rounding);
     REQUIRE(ct != nullptr);
 
@@ -283,19 +273,35 @@ TEST_CASE("Canvas template setters", "[builder][canvas_template]") {
 TEST_CASE("Canvas template builder NULL safety", "[builder][canvas_template][null]") {
     fdl_round_strategy_t rounding = {FDL_ROUNDING_EVEN_WHOLE, FDL_ROUNDING_MODE_ROUND};
 
-    REQUIRE(fdl_doc_add_canvas_template(nullptr, "CT_HD", "HD",
-        1920, 1080, 1.0,
-        FDL_GEOMETRY_PATH_FRAMING_DIMENSIONS, FDL_FIT_METHOD_WIDTH,
-        FDL_HALIGN_CENTER, FDL_VALIGN_CENTER, rounding) == nullptr);
+    REQUIRE(
+        fdl_doc_add_canvas_template(
+            nullptr,
+            "CT_HD",
+            "HD",
+            1920,
+            1080,
+            1.0,
+            FDL_GEOMETRY_PATH_FRAMING_DIMENSIONS,
+            FDL_FIT_METHOD_WIDTH,
+            FDL_HALIGN_CENTER,
+            FDL_VALIGN_CENTER,
+            rounding) == nullptr);
 
-    auto* doc = fdl_doc_create_with_header(
-        "00000000-0000-0000-0000-000000000099",
-        2, 0, "test-builder", nullptr);
+    auto* doc = fdl_doc_create_with_header("00000000-0000-0000-0000-000000000099", 2, 0, "test-builder", nullptr);
 
-    REQUIRE(fdl_doc_add_canvas_template(doc, nullptr, "HD",
-        1920, 1080, 1.0,
-        FDL_GEOMETRY_PATH_FRAMING_DIMENSIONS, FDL_FIT_METHOD_WIDTH,
-        FDL_HALIGN_CENTER, FDL_VALIGN_CENTER, rounding) == nullptr);
+    REQUIRE(
+        fdl_doc_add_canvas_template(
+            doc,
+            nullptr,
+            "HD",
+            1920,
+            1080,
+            1.0,
+            FDL_GEOMETRY_PATH_FRAMING_DIMENSIONS,
+            FDL_FIT_METHOD_WIDTH,
+            FDL_HALIGN_CENTER,
+            FDL_VALIGN_CENTER,
+            rounding) == nullptr);
 
     // Setter NULL safety
     fdl_canvas_template_set_preserve_from_source_canvas(nullptr, FDL_GEOMETRY_PATH_CANVAS_DIMENSIONS);

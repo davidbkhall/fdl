@@ -1,101 +1,24 @@
 # SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 # SPDX-License-Identifier: Apache-2.0
 """
-Language-neutral context builders for code generation.
+Python-specific context builders for code generation.
 
-These functions transform the parsed IDL and IR into template-ready
-dictionaries consumed by Jinja2 templates.  They are independent of
-any specific target language — type resolution is delegated to type_maps.
+These functions produce template-ready dictionaries for the Python facade
+and FFI bindings.  Type resolution is delegated to PythonAdapter.
 """
 
 from __future__ import annotations
 
+from .adapters import PythonAdapter
 from .fdl_idl import IDL, EnumType, FreeFunctionDef, ValueType, VTMethod, VTOperator
-from .type_maps import PYTHON_CONVERTERS, PYTHON_TYPES, resolve_python_type
+from .shared_context import camel_to_upper_snake
 
-# -----------------------------------------------------------------------
-# Utilities
-# -----------------------------------------------------------------------
-
-
-def camel_to_upper_snake(name: str) -> str:
-    """Convert CamelCase to UPPER_SNAKE: GeometryPath → GEOMETRY_PATH."""
-    result = ""
-    for i, ch in enumerate(name):
-        if ch.isupper() and i > 0:
-            result += "_"
-        result += ch.upper()
-    return result
+_py = PythonAdapter()
 
 
 # -----------------------------------------------------------------------
-# Value type helpers
+# Enum context builders (Python-specific)
 # -----------------------------------------------------------------------
-
-# C type → Python type and default for value type generation
-_C_FIELD_TYPES: dict[str, tuple[str, str, str]] = {
-    # c_type: (python_type, default_value, coerce_function)
-    "int64_t": ("int", "0", "int"),
-    "double": ("float", "0.0", "float"),
-    "int": ("int", "0", "int"),
-    "uint32_t": ("int", "0", "int"),
-}
-
-
-def _resolve_vt_python_type(idl_type: str, idl: IDL, *, for_self_class: str = "") -> str:
-    """Resolve an IDL type used in value type methods to a Python type string."""
-    if idl_type == "self":
-        return for_self_class
-    if idl_type == "bool":
-        return "bool"
-    if idl_type == "string":
-        return "str"
-    if idl_type in ("double", "float", "f64"):
-        return "float"
-    if idl_type in ("int", "int64_t"):
-        return "int"
-    # Check if it's a known value type
-    py = PYTHON_TYPES.get(idl_type)
-    if py:
-        return py
-    # Check enum IDL short names — all enums are passed as str in Python
-    _ENUM_SHORT_NAMES = {"rounding_even", "rounding_mode", "fit_method", "geometry_path", "halign", "valign"}
-    if idl_type in _ENUM_SHORT_NAMES:
-        return "str"
-    return idl_type
-
-
-def _vt_field_names_for_type(idl_type: str, idl: IDL) -> list[str]:
-    """Get field names for a value type by IDL type name."""
-    for vt in idl.value_types:
-        if vt.name == idl_type:
-            return [f.name for f in vt.fields]
-    return []
-
-
-# -----------------------------------------------------------------------
-# Enum context builders
-# -----------------------------------------------------------------------
-
-
-def build_enum_context(idl_enum: EnumType) -> dict:
-    """Build template context for one enum's forward/reverse maps."""
-    prefix = idl_enum.facade_prefix
-    values = []
-    for ev in idl_enum.values:
-        member = ev.name[len(prefix) :]  # strip prefix to get Python member name
-        values.append({"name": ev.name, "member": member})
-
-    python_class = idl_enum.facade_class
-    map_name = camel_to_upper_snake(python_class)
-
-    return {
-        "idl_name": idl_enum.name,
-        "python_class": python_class,
-        "prefix": prefix,
-        "map_name": map_name,
-        "entries": values,
-    }
 
 
 def build_constants_enum_context(idl_enum: EnumType) -> dict:
@@ -112,6 +35,52 @@ def build_constants_enum_context(idl_enum: EnumType) -> dict:
         "python_class": idl_enum.facade_class,
         "members": members,
     }
+
+
+# -----------------------------------------------------------------------
+# Value type helpers
+# -----------------------------------------------------------------------
+
+# C type → Python type and default for value type generation
+_C_FIELD_TYPES: dict[str, tuple[str, str, str]] = {
+    # c_type: (python_type, default_value, coerce_function)
+    "int64_t": ("int", "0", "int"),
+    "double": ("float", "0.0", "float"),
+    "int": ("int", "0", "int"),
+    "uint32_t": ("int", "0", "int"),
+}
+
+# Enum IDL short names — all enums are passed as str in Python VT methods
+_ENUM_SHORT_NAMES = {"rounding_even", "rounding_mode", "fit_method", "geometry_path", "halign", "valign"}
+
+
+def _resolve_vt_python_type(idl_type: str, idl: IDL, *, for_self_class: str = "") -> str:
+    """Resolve an IDL type used in value type methods to a Python type string."""
+    if idl_type == "self":
+        return for_self_class
+    if idl_type == "bool":
+        return "bool"
+    if idl_type == "string":
+        return "str"
+    if idl_type in ("double", "float", "f64"):
+        return "float"
+    if idl_type in ("int", "int64_t"):
+        return "int"
+    # Check if it's a known value type
+    py = _py.TYPES.get(idl_type)
+    if py:
+        return py
+    if idl_type in _ENUM_SHORT_NAMES:
+        return "str"
+    return idl_type
+
+
+def _vt_field_names_for_type(idl_type: str, idl: IDL) -> list[str]:
+    """Get field names for a value type by IDL type name."""
+    for vt in idl.value_types:
+        if vt.name == idl_type:
+            return [f.name for f in vt.fields]
+    return []
 
 
 # -----------------------------------------------------------------------
@@ -164,7 +133,7 @@ def build_vt_method_context(method: VTMethod, vt: ValueType, idl: IDL) -> dict:
     c_call_args: list[str] = ["_c"]
 
     for p in method.params:
-        if p.param_type.startswith("fdl_") and p.param_type in PYTHON_TYPES:
+        if p.param_type.startswith("fdl_") and p.param_type in _py.TYPES:
             needed_c_structs.add(p.param_type)
             p_fields = _vt_field_names_for_type(p.param_type, idl)
             field_assigns = ", ".join(f"{fn}={p.name}.{fn}" for fn in p_fields)
@@ -254,7 +223,7 @@ def build_vt_operator_context(op: VTOperator, vt: ValueType, idl: IDL) -> dict:
     needed_c_structs: set[str] = set()
     if op.c_function:
         needed_c_structs.add(c_struct)
-        if op.param_type and op.param_type in PYTHON_TYPES and op.param_type.startswith("fdl_"):
+        if op.param_type and op.param_type in _py.TYPES and op.param_type.startswith("fdl_"):
             needed_c_structs.add(op.param_type)
 
     return {
@@ -300,7 +269,7 @@ def build_value_type_context(vt: ValueType, idl: IDL) -> dict:
                 default = "None"
             coerce = ""
         else:
-            py_type = PYTHON_TYPES.get(c_type, "object")
+            py_type = _py.TYPES.get(c_type, "object")
             default = "None"
             coerce = ""
 
@@ -458,8 +427,8 @@ def build_builder_method_context(method, idl: IDL, enum_contexts: list[dict]) ->
     c_args: list[str] = []
 
     for p in method.params:
-        python_type = resolve_python_type(p.type_key, nullable=p.nullable)
-        default = "None" if p.nullable and p.default is None else p.default
+        python_type = _py.resolve_type(p.type_key, nullable=p.nullable)
+        default = "None" if p.nullable and p.default is None else (_py.render_default(p.default) if p.default else None)
         params.append(
             {
                 "name": p.name,
@@ -564,8 +533,8 @@ def build_lifecycle_method_context(method, idl: IDL, enum_contexts: list[dict]) 
         elif p.type_key in enum_to_c_maps:
             python_type = "str"
         else:
-            python_type = resolve_python_type(p.type_key, nullable=p.nullable)
-        default = "None" if p.nullable and p.default is None else p.default
+            python_type = _py.resolve_type(p.type_key, nullable=p.nullable)
+        default = "None" if p.nullable and p.default is None else (_py.render_default(p.default) if p.default else None)
         param_ctx = {
             "name": p.name,
             "type_key": p.type_key,
@@ -612,7 +581,7 @@ def build_lifecycle_method_context(method, idl: IDL, enum_contexts: list[dict]) 
                     "extract": rf.extract,
                     "wrap_class": rf.wrap_class,
                     "converter": rf.converter,
-                    "python_type": rf.python_type,
+                    "scalar_type": rf.scalar_type,
                     "private": rf.private,
                 }
                 for rf in eh.result_fields
@@ -621,7 +590,7 @@ def build_lifecycle_method_context(method, idl: IDL, enum_contexts: list[dict]) 
             "pattern": eh.pattern,
             "error_field": eh.error_field,
             "success_field": eh.success_field,
-            "error_class": eh.error_class,
+            "error_class": _py.resolve_error_class(eh.error_class),
             "free_fn": eh.free_fn,
             "count_fn": eh.count_fn,
             "at_fn": eh.at_fn,
@@ -685,8 +654,8 @@ def build_init_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_class_by_
                 }
             )
         else:
-            python_type = resolve_python_type(p.type_key, nullable=p.nullable)
-            default = p.default
+            python_type = _py.resolve_type(p.type_key, nullable=p.nullable)
+            default = _py.render_default(p.default) if p.default else None
             if p.nullable and default is None:
                 default = "None"
             init_params.append(
@@ -754,8 +723,8 @@ def build_facade_class_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_c
 
     properties = []
     for prop in ir_cls.properties:
-        python_type = resolve_python_type(prop.type_key, nullable=prop.nullable)
-        converter = prop.converter or PYTHON_CONVERTERS.get(prop.type_key, "raw")
+        python_type = _py.resolve_type(prop.type_key, nullable=prop.nullable)
+        converter = _py.resolve_converter(prop.type_key)
 
         # For enum converters, resolve the FROM_C / TO_C map names
         enum_from_c = type_key_to_from_c.get(prop.type_key, "")
@@ -865,7 +834,7 @@ def build_free_function_context(ff: FreeFunctionDef, idl: IDL) -> dict:
         py_type = _resolve_vt_python_type(p.param_type, idl)
         params.append({"name": p.name, "python_type": py_type})
 
-        if p.param_type.startswith("fdl_") and p.param_type in PYTHON_TYPES:
+        if p.param_type.startswith("fdl_") and p.param_type in _py.TYPES:
             needed_c_structs.add(p.param_type)
             p_fields = _vt_field_names_for_type(p.param_type, idl)
             field_assigns = ", ".join(f"{fn}={p.name}.{fn}" for fn in p_fields)
@@ -885,7 +854,7 @@ def build_free_function_context(ff: FreeFunctionDef, idl: IDL) -> dict:
     python_return = _resolve_vt_python_type(ff.returns, idl)
 
     return {
-        "python_name": ff.python_name,
+        "display_name": ff.display_name,
         "c_function": ff.c_function,
         "doc": ff.doc,
         "params": params,

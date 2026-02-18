@@ -26,6 +26,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      # --- Python linting ---
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -39,6 +40,37 @@ jobs:
 
       - name: Run ruff format check
         run: uvx ruff format --check .
+
+      # --- C++ linting ---
+      - name: Install clang tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format clang-tidy
+
+      - name: Run clang-format check
+        run: |
+          find native/core/src native/core/include native/core/tests \
+            native/bindings/cpp/ \
+            -type f \( -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) \
+            -print0 | xargs -0 -P"$(nproc)" -n 5 clang-format --dry-run --Werror
+
+      - name: Install CMake
+        run: sudo apt-get install -y cmake
+
+      - name: Install codegen dependencies
+        run: uv pip install pyyaml jinja2 ruff --system
+
+      - name: Run codegen (with drift check)
+        run: python scripts/run_codegen.py --check
+
+      - name: CMake configure (for compile_commands.json)
+        run: |
+          cmake -S native/core -B native/core/build \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DFDL_BUILD_TESTS=OFF
+
+      - name: Run clang-tidy
+        run: run-clang-tidy -p native/core/build -j"$(nproc)" native/core/src/
 
   # ---------------------------------------------------------------------------
   # Tests — gate for all downstream jobs
@@ -112,15 +144,15 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v4
 
-      # --- CMake ---
-      - name: Install CMake (Linux)
+      # --- CMake & clang-format ---
+      - name: Install CMake and clang-format (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get install -y cmake
+        run: sudo apt-get install -y cmake clang-format
 
-      - name: Install CMake (macOS)
+      - name: Install CMake and clang-format (macOS)
         if: runner.os == 'macOS'
-        run: brew install cmake || true
-      # Windows runners already have CMake
+        run: brew install cmake clang-format || true
+      # Windows runners already have CMake and LLVM (clang-format)
 
       # --- Codegen ---
       - name: Install codegen dependencies
@@ -132,6 +164,10 @@ jobs:
       # --- Build native library ---
       - name: Build native library and run C++ tests
         run: python scripts/build_native.py --run-tests
+
+      - name: Check ABI symbol parity
+        if: runner.os != 'Windows'
+        run: python scripts/check_abi_symbols.py
 
       # --- Python environment ---
       - name: Install Python packages
@@ -250,14 +286,15 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v4
 
-      # --- CMake ---
-      - name: Install CMake (Linux)
+      # --- CMake & clang-format ---
+      - name: Install CMake and clang-format (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get install -y cmake
+        run: sudo apt-get install -y cmake clang-format
 
-      - name: Install CMake (macOS)
+      - name: Install CMake and clang-format (macOS)
         if: runner.os == 'macOS'
-        run: brew install cmake || true
+        run: brew install cmake clang-format || true
+      # Windows runners already have CMake and LLVM (clang-format)
 
       # --- Codegen ---
       - name: Install codegen dependencies

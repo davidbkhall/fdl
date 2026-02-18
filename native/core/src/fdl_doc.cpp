@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_doc.cpp
+ * @brief Document class implementation -- parsing, header accessors, canonical serialization.
+ */
 #include "fdl_doc.h"
 
 #include "fdl_canonical.h"
@@ -28,8 +32,8 @@ std::string Document::get_fdl_creator() const {
 }
 
 std::string Document::to_canonical_json(int indent) const {
-    ojson cleaned = strip_nulls(data_);
-    ojson ordered = reorder_object(cleaned, "root");
+    ojson const cleaned = strip_nulls(data_);
+    ojson const ordered = reorder_object(cleaned, "root");
     std::string buffer;
     if (indent > 0) {
         jsoncons::json_options options;

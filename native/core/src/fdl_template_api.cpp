@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 // SPDX-License-Identifier: Apache-2.0
+/**
+ * @file fdl_template_api.cpp
+ * @brief C ABI wrapper for canvas template application and result management.
+ */
 #include "fdl/fdl_core.h"
 #include "fdl_template.h"
 
@@ -16,32 +20,35 @@ fdl_template_result_t fdl_apply_canvas_template(
     const char* source_context_label,
     const char* context_creator) {
     return fdl::detail::apply_canvas_template(
-        tmpl, source_canvas, source_framing,
-        new_canvas_id, new_fd_name, source_context_label, context_creator);
+        tmpl, source_canvas, source_framing, new_canvas_id, new_fd_name, source_context_label, context_creator);
 }
 
 void fdl_template_result_free(fdl_template_result_t* result) {
-    if (!result) return;
-    if (result->output_fdl) {
+    if (result == nullptr) {
+        return;
+    }
+    if (result->output_fdl != nullptr) {
         fdl_doc_free(result->output_fdl);
         result->output_fdl = nullptr;
     }
-    if (result->context_label) {
+    // NOLINTBEGIN(cppcoreguidelines-no-malloc,cppcoreguidelines-pro-type-const-cast)
+    if (result->context_label != nullptr) {
         free(const_cast<char*>(result->context_label));
         result->context_label = nullptr;
     }
-    if (result->canvas_id) {
+    if (result->canvas_id != nullptr) {
         free(const_cast<char*>(result->canvas_id));
         result->canvas_id = nullptr;
     }
-    if (result->framing_decision_id) {
+    if (result->framing_decision_id != nullptr) {
         free(const_cast<char*>(result->framing_decision_id));
         result->framing_decision_id = nullptr;
     }
-    if (result->error) {
+    if (result->error != nullptr) {
         free(const_cast<char*>(result->error));
         result->error = nullptr;
     }
+    // NOLINTEND(cppcoreguidelines-no-malloc,cppcoreguidelines-pro-type-const-cast)
 }
 
 } // extern "C"

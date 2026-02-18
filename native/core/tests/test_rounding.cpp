@@ -11,13 +11,19 @@
 using json = jsoncons::ojson;
 
 static fdl_rounding_mode_t parse_mode(const std::string& s) {
-    if (s == "up") return FDL_ROUNDING_MODE_UP;
-    if (s == "down") return FDL_ROUNDING_MODE_DOWN;
+    if (s == "up") {
+        return FDL_ROUNDING_MODE_UP;
+    }
+    if (s == "down") {
+        return FDL_ROUNDING_MODE_DOWN;
+    }
     return FDL_ROUNDING_MODE_ROUND;
 }
 
 static fdl_rounding_even_t parse_even(const std::string& s) {
-    if (s == "even") return FDL_ROUNDING_EVEN_EVEN;
+    if (s == "even") {
+        return FDL_ROUNDING_EVEN_EVEN;
+    }
     return FDL_ROUNDING_EVEN_WHOLE;
 }
 
