@@ -185,7 +185,7 @@ fdl_template_result_t apply_canvas_template(
     // --- Validate that fit_source and preserve paths exist in source ---
     auto validate_path_exists = [&](fdl_geometry_path_t path, const char* field_name) -> bool {
         if (path == FDL_GEOMETRY_PATH_CANVAS_EFFECTIVE_DIMENSIONS &&
-            !fdl_canvas_has_effective_dimensions(source_canvas)) {
+            fdl_canvas_has_effective_dimensions(source_canvas) == 0) {
             std::string msg = "Template ";
             msg += field_name;
             msg += " references 'canvas.effective_dimensions' but the source canvas "
@@ -194,7 +194,7 @@ fdl_template_result_t apply_canvas_template(
             return false;
         }
         if (path == FDL_GEOMETRY_PATH_FRAMING_PROTECTION_DIMENSIONS &&
-            !fdl_framing_decision_has_protection(source_framing)) {
+            fdl_framing_decision_has_protection(source_framing) == 0) {
             std::string msg = "Template ";
             msg += field_name;
             msg += " references 'framing_decision.protection_dimensions' but the source "

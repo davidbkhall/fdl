@@ -49,6 +49,7 @@ thread_local std::unordered_map<AttrBufKey, std::string, AttrBufKeyHash> tl_bufs
 // -----------------------------------------------------------------------
 
 std::string make_key(const char* name) {
+    // NOLINTNEXTLINE(readability-magic-numbers,cppcoreguidelines-avoid-magic-numbers)
     std::string key(1, fdl::constants::kCustomAttrPrefix);
     key += name;
     return key;
@@ -400,6 +401,7 @@ const char* name_at(const ojson* node, uint32_t index) {
                 // Return the name without the '_' prefix
                 const AttrBufKey bk{reinterpret_cast<uintptr_t>(node), m.key()};
                 auto& buf = tl_bufs[bk];
+                // NOLINTNEXTLINE(readability-magic-numbers,cppcoreguidelines-avoid-magic-numbers)
                 buf = m.key().substr(1);
                 return buf.c_str();
             }

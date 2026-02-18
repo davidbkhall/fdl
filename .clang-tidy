@@ -59,7 +59,7 @@ Checks: >
   -misc-include-cleaner,
   -misc-no-recursion,
 
-WarningsAsErrors: 'readability-magic-numbers,cppcoreguidelines-avoid-magic-numbers'
+WarningsAsErrors: 'readability-magic-numbers,cppcoreguidelines-avoid-magic-numbers,readability-implicit-bool-conversion'
 
 HeaderFilterRegex: 'native/core/(include|src)/.*\.h$'
 
