@@ -1,6 +1,6 @@
 # Contributions
 
-Contributions come in many forms — reporting bugs, giving feedback, or submitting code.
+Contributions come in many forms -- reporting bugs, giving feedback, or submitting code.
 Our goal is to provide a useful toolkit that suits the needs of its users.
 
 ## Architecture
@@ -22,8 +22,8 @@ driven by `fdl_api.yaml`.
 
 | Task | Guide |
 |------|-------|
-| Add a field to an existing class | [Code Generation → Add a Field](codegen.md#how-to-add-a-field-to-an-existing-class) |
-| Add a new FDL class | [Code Generation → Add a Class](codegen.md#how-to-add-a-new-class) |
+| Add a field to an existing class | [Code Generation -> Add a Field](codegen.md#how-to-add-a-field-to-an-existing-class) |
+| Add a new FDL class | [Code Generation -> Add a Class](codegen.md#how-to-add-a-new-class) |
 | Write a new language binding | [C ABI Design](c_abi.md) |
 | Understand the template pipeline | [Template Implementer Guide](FDL_Template_Implementer_Guide.md) |
 
@@ -31,7 +31,7 @@ driven by `fdl_api.yaml`.
 
 - The top-level document class is named **`FDL`**, not "Document". Client code
   reads as `FDL.parse(...)` or `fdl::FDL::parse(...)`.
-- C ABI uses `fdl_doc_t` / `fdl_doc_*` — `doc` is the internal handle name.
+- C ABI uses `fdl_doc_t` / `fdl_doc_*` -- `doc` is the internal handle name.
 - Python facade: `FDL`. C++ RAII: `fdl::FDL`.
 
 ## Generated File Boundaries
@@ -40,15 +40,15 @@ Most files in `native/bindings/python/fdl/` and all of `fdl_ffi/` are
 auto-generated and marked with:
 
 ```python
-# AUTO-GENERATED from fdl_api.yaml — DO NOT EDIT
+# AUTO-GENERATED from fdl_api.yaml -- DO NOT EDIT
 ```
 
-**Do not edit these files by hand** — your changes will be overwritten.
+**Do not edit these files by hand** -- your changes will be overwritten.
 
 Hand-written files (safe to edit):
 
-- `native/bindings/python/fdl/base.py` — handle wrappers, collection protocol
-- `native/bindings/python/fdl/cli.py` — `fdl-validate` CLI
+- `native/bindings/python/fdl/base.py` -- handle wrappers, collection protocol
+- `native/bindings/python/fdl/cli.py` -- `fdl-validate` CLI
 
 See [Code Generation](codegen.md#generated-vs-hand-written-files) for the full list.
 
@@ -87,11 +87,11 @@ python scripts/lint.py
 
 This mirrors the CI lint job and runs 5 checks:
 
-1. **ruff-check** — Python lint
-2. **ruff-format** — Python format check
-3. **clang-format** — C++ format check
-4. **codegen-drift** — verifies generated bindings match `fdl_api.yaml`
-5. **clang-tidy** — C++ static analysis
+1. **ruff-check** -- Python lint
+2. **ruff-format** -- Python format check
+3. **clang-format** -- C++ format check
+4. **codegen-drift** -- verifies generated bindings match `fdl_api.yaml`
+5. **clang-tidy** -- C++ static analysis
 
 You can run a single step: `python scripts/lint.py --step ruff-check`
 

@@ -36,13 +36,13 @@ Link against `libfdl_core` (built via CMake from `native/core/`).
 
 | Feature                    | Python | C++ | Notes                                                |
 |:---------------------------|:------:|:---:|------------------------------------------------------|
-| Parse & write FDL files    |   ✔    |  ✔  |                                                      |
-| Validate IDs & relations   |   ✔    |  ✔  | Enforces unique IDs and valid cross-references       |
-| JSON Schema validation     |   ✔    |  ✔  |                                                      |
-| Canvas templates           |   ✔    |  ✔  | Apply templates to produce new canvases              |
-| Rounding strategies        |   ✔    |  ✔  | Global and per-dimension rounding control            |
-| Custom attributes          |   ✔    |  ✔  | Scalar + composite types (PointFloat, DimensionsFloat, DimensionsInt) |
-| CLI tool                   |   ✔    |     | `fdl-validate` for command-line validation           |
+| Parse & write FDL files    |   Y    |  Y  |                                                      |
+| Validate IDs & relations   |   Y    |  Y  | Enforces unique IDs and valid cross-references       |
+| JSON Schema validation     |   Y    |  Y  |                                                      |
+| Canvas templates           |   Y    |  Y  | Apply templates to produce new canvases              |
+| Rounding strategies        |   Y    |  Y  | Global and per-dimension rounding control            |
+| Custom attributes          |   Y    |  Y  | Scalar + composite types (PointFloat, DimensionsFloat, DimensionsInt) |
+| CLI tool                   |   Y    |     | `fdl-validate` for command-line validation           |
 
 ## Documentation
 
@@ -59,5 +59,5 @@ Link against `libfdl_core` (built via CMake from `native/core/`).
 
 ## API Reference
 
-- **Python API** — see the [FDL Classes](FDL Classes/fdl.md) section
-- **C/C++ API** — [Doxygen Reference](api/index.html) (auto-generated from source)
+- **Python API** -- see the [FDL Classes](FDL Classes/fdl.md) section
+- **C/C++ API** -- [Doxygen Reference](api/index.html) (auto-generated from source)

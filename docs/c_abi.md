@@ -45,7 +45,7 @@ Small data structures are passed **by value** (not as opaque handles):
 | `fdl_round_strategy_t` | `even`, `mode` (uint32) | Rounding configuration |
 | `fdl_geometry_t` | 4 dims + 3 anchors | Template pipeline geometry container |
 
-These are stack-allocated — no heap management required.
+These are stack-allocated -- no heap management required.
 
 ## String Ownership
 
@@ -69,20 +69,20 @@ functions in `fdl_api.yaml`.
 
 The ABI uses three error-reporting patterns:
 
-**Null return** — factory functions return `NULL` on failure:
+**Null return** -- factory functions return `NULL` on failure:
 ```c
 fdl_doc_t* doc = fdl_doc_create();  // NULL on allocation failure
 ```
 
-**Result structs** — operations that can fail return a struct with both a
+**Result structs** -- operations that can fail return a struct with both a
 success value and an error string:
 ```c
 fdl_parse_result_t r = fdl_doc_parse_json(json, len);
-if (r.doc)   { /* success — caller owns r.doc */ }
-if (r.error) { /* failure — caller must fdl_free(r.error) */ }
+if (r.doc)   { /* success -- caller owns r.doc */ }
+if (r.error) { /* failure -- caller must fdl_free(r.error) */ }
 ```
 
-**Validation result** — `fdl_doc_validate()` returns an opaque result handle
+**Validation result** -- `fdl_doc_validate()` returns an opaque result handle
 with `error_count` + `error_at(index)`:
 ```c
 fdl_validation_result_t* v = fdl_doc_validate(doc);
@@ -124,7 +124,7 @@ fdl_context_t* ctx = fdl_doc_context_find_by_label(doc, "Camera A");
 
 Custom attributes use a macro-generated API providing 19 functions per handle
 type across all 8 handle types (152 functions total). Attribute names are passed
-**without** the underscore prefix — the library prepends `_` internally.
+**without** the underscore prefix -- the library prepends `_` internally.
 
 Type-safe: setting an attribute with a different type than its current value
 returns `-1`. Remove first, then set with the new type.
@@ -135,9 +135,9 @@ The library reports its ABI version at runtime:
 
 ```c
 fdl_abi_version_t v = fdl_abi_version();
-// v.major — breaking changes
-// v.minor — backwards-compatible additions
-// v.patch — bug fixes
+// v.major -- breaking changes
+// v.minor -- backwards-compatible additions
+// v.patch -- bug fixes
 ```
 
 CI enforces ABI parity between `fdl_api.yaml` and the compiled library via

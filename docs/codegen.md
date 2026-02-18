@@ -7,24 +7,24 @@ and how to extend it.
 ## Overview
 
 ```
-native/api/fdl_api.yaml        ← Single source of truth (IDL)
-         │
-         ▼
-   fdl_idl.py  (parse +        ← Parsed IDL dataclasses + synthesized
+native/api/fdl_api.yaml        <- Single source of truth (IDL)
+         |
+         v
+   fdl_idl.py  (parse +        <- Parsed IDL dataclasses + synthesized
                 synthesize)       accessor/collection functions
-         │
-         ▼
-     ir.py  (transform)        ← Language-neutral IR (IRClass, IRProperty, …)
-         │
-         ▼
-   adapters.py (resolve)       ← Language-specific type names, defaults
-         │
-         ▼
-   Jinja2 templates            ← Per-language templates
-         │
-         ├── python-ffi  →  native/bindings/python/fdl_ffi/
-         ├── python-facade →  native/bindings/python/fdl/
-         └── cpp-raii     →  native/bindings/cpp/fdl/fdl.hpp
+         |
+         v
+     ir.py  (transform)        <- Language-neutral IR (IRClass, IRProperty, ...)
+         |
+         v
+   adapters.py (resolve)       <- Language-specific type names, defaults
+         |
+         v
+   Jinja2 templates            <- Per-language templates
+         |
+         +-- python-ffi  ->  native/bindings/python/fdl_ffi/
+         +-- python-facade ->  native/bindings/python/fdl/
+         +-- cpp-raii     ->  native/bindings/cpp/fdl/fdl.hpp
 ```
 
 **Running codegen:**
@@ -78,7 +78,7 @@ enums:
 
 ### `functions`
 
-Declares C ABI functions that **cannot be derived** from `object_model` —
+Declares C ABI functions that **cannot be derived** from `object_model` --
 typically parsing, serialization, validation, template application, and other
 non-accessor operations:
 
@@ -100,7 +100,7 @@ functions:
 
 Accessor functions (property getters/setters/has/removers) and collection
 functions (count/at/find) are **synthesized automatically** from the
-`object_model` section by `fdl_idl.py` — they do not need to be listed here.
+`object_model` section by `fdl_idl.py` -- they do not need to be listed here.
 Explicit entries in `functions` take precedence over synthesized ones.
 
 ### `object_model`
@@ -131,7 +131,7 @@ object_model:
 
 ## Pipeline Stages
 
-### 1. Parse & Synthesize — `fdl_idl.py`
+### 1. Parse & Synthesize -- `fdl_idl.py`
 
 `parse_idl(path)` reads the YAML and returns a structured `IDL` object
 containing parsed value types, enums, functions, and the object model.
@@ -140,31 +140,31 @@ As a final step, `_synthesize_functions()` derives C ABI function signatures
 for property accessors (getter, setter, has, remover) and collection
 traversal (count, at, find_by_id, find_by_label) from the `object_model`
 section. These synthesized functions are merged with the explicit `functions`
-list — explicit entries take precedence. This means adding a property to
+list -- explicit entries take precedence. This means adding a property to
 `object_model` automatically generates the corresponding C ABI declarations
 without duplicating them in the `functions` section.
 
-### 2. Transform — `ir.py`
+### 2. Transform -- `ir.py`
 
 The IDL object model is transformed into language-neutral IR dataclasses:
 
-- **`IRClass`** — one per object model class (FDL, Canvas, Context, …)
-- **`IRProperty`** — a readable/writable property with getter/setter C function names
-- **`IRCollection`** — a typed collection (count/at/find patterns)
-- **`IRMethod`** — a class or instance method with parameters
-- **`DefaultDescriptor`** — structured default values (enum members, constructors, literals)
+- **`IRClass`** -- one per object model class (FDL, Canvas, Context, ...)
+- **`IRProperty`** -- a readable/writable property with getter/setter C function names
+- **`IRCollection`** -- a typed collection (count/at/find patterns)
+- **`IRMethod`** -- a class or instance method with parameters
+- **`DefaultDescriptor`** -- structured default values (enum members, constructors, literals)
 
-### 3. Resolve — `adapters.py`
+### 3. Resolve -- `adapters.py`
 
 Language adapters translate IR type keys into concrete language types:
 
-- **`PythonAdapter`** — maps `DimensionsInt` → `DimensionsInt`, `string` → `str`, etc.
-- **`CppAdapter`** — maps `DimensionsInt` → `fdl_dimensions_i64_t`, `string` → `std::string`, etc.
+- **`PythonAdapter`** -- maps `DimensionsInt` -> `DimensionsInt`, `string` -> `str`, etc.
+- **`CppAdapter`** -- maps `DimensionsInt` -> `fdl_dimensions_i64_t`, `string` -> `std::string`, etc.
 
 Adapters also handle default value rendering (e.g., `FitMethod.WIDTH` becomes
 `fdl::FitMethod::Width` in C++).
 
-### 4. Render — Jinja2 Templates
+### 4. Render -- Jinja2 Templates
 
 Templates live in `native/tools/codegen/templates/`:
 
@@ -183,7 +183,7 @@ Templates live in `native/tools/codegen/templates/`:
 | `errors.py.j2` | `fdl/errors.py` | Exception classes |
 | `utils.py.j2` | `fdl/utils.py` | Utility functions |
 | `rounding.py.j2` | `fdl/rounding.py` | Rounding strategy helpers |
-| `enum_maps.py.j2` | `fdl/enum_maps.py` | Enum ↔ string maps |
+| `enum_maps.py.j2` | `fdl/enum_maps.py` | Enum <-> string maps |
 | `header.py.j2` | `fdl/header.py` | Version/header class |
 | `clipid.py.j2` | `fdl/clip_id.py` | ClipID class |
 
@@ -199,7 +199,7 @@ In the Python facade (`native/bindings/python/fdl/`), almost every file is
 auto-generated and marked with:
 
 ```python
-# AUTO-GENERATED from fdl_api.yaml — DO NOT EDIT
+# AUTO-GENERATED from fdl_api.yaml -- DO NOT EDIT
 ```
 
 **Hand-written files** (safe to edit, not overwritten by codegen):
@@ -210,17 +210,17 @@ auto-generated and marked with:
 | `cli.py` | `fdl-validate` command-line tool |
 
 Everything else in `fdl/` and all of `fdl_ffi/` is generated. Never edit
-these files by hand — your changes will be overwritten on the next codegen
+these files by hand -- your changes will be overwritten on the next codegen
 run.
 
 ## How To: Add a Field to an Existing Class
 
-1. **Edit `fdl_api.yaml`** — add the property under the appropriate class in
+1. **Edit `fdl_api.yaml`** -- add the property under the appropriate class in
    `object_model` with getter/setter function names. You do **not** need to
-   add these functions to the `functions` section — they are synthesized
+   add these functions to the `functions` section -- they are synthesized
    automatically.
 
-2. **Add C ABI functions** — implement the getter/setter in the appropriate
+2. **Add C ABI functions** -- implement the getter/setter in the appropriate
    `_api.cpp` file in `native/core/src/` and declare them in `fdl_core.h`.
 
 3. **Run codegen:**
@@ -239,7 +239,7 @@ run.
 
 ## How To: Add a New Class
 
-1. **Add the C implementation** — create `fdl_foo.cpp`, `fdl_foo.h`,
+1. **Add the C implementation** -- create `fdl_foo.cpp`, `fdl_foo.h`,
    `fdl_foo_api.cpp` in `native/core/src/`. Declare the opaque handle
    and accessor functions in `fdl_core.h`.
 
@@ -248,11 +248,11 @@ run.
      (accessor/collection functions are synthesized automatically)
    - Add any non-accessor functions (factories, serialization, etc.) to `functions`
 
-3. **Run codegen** — a new facade class file will be generated automatically.
+3. **Run codegen** -- a new facade class file will be generated automatically.
 
-4. **Update `native/core/CMakeLists.txt`** — add the new `.cpp` files.
+4. **Update `native/core/CMakeLists.txt`** -- add the new `.cpp` files.
 
-5. **Write tests** — C++ tests in `native/core/tests/`, Python tests in
+5. **Write tests** -- C++ tests in `native/core/tests/`, Python tests in
    `native/bindings/python/tests/`.
 
 ## Drift Detection
