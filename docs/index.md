@@ -6,6 +6,14 @@ It is built around a shared C core library (`libfdl_core`) with idiomatic bindin
 **Python** and **C++**, and conforms to the official FDL
 [specification](https://github.com/ascmitc/fdl/tree/main/Specification).
 
+## How It Works
+
+The C++ core compiles to a shared library exporting a stable C ABI. Language
+bindings are **auto-generated** from a single IDL file (`fdl_api.yaml`) via a
+Jinja2-based code generation pipeline. This ensures Python and C++ stay in sync
+with the C core and with each other. See [Architecture](architecture.md) for
+the full picture.
+
 ## Install
 
 ### Python
@@ -36,7 +44,20 @@ Link against `libfdl_core` (built via CMake from `native/core/`).
 | Custom attributes          |   ✔    |  ✔  | Scalar + composite types (PointFloat, DimensionsFloat, DimensionsInt) |
 | CLI tool                   |   ✔    |     | `fdl-validate` for command-line validation           |
 
+## Documentation
+
+| Section | Description |
+|---------|-------------|
+| [Getting Started](getting_started.md) | Tutorials with Python and C++ examples |
+| [Architecture](architecture.md) | System design, layer diagram, ownership model |
+| [Code Generation](codegen.md) | IDL pipeline, how to extend the data model |
+| [C ABI Design](c_abi.md) | Native interface contract for binding authors |
+| [Template Application](FDL_Apply_Template_Logic.md) | Algorithm overview and formula reference |
+| [Template Implementer Guide](FDL_Template_Implementer_Guide.md) | Deep-dive with worked examples |
+| [Application Packages](packages.md) | fdl-imaging, fdl-frameline-generator, fdl-viewer |
+| [Contributing](contributions.md) | How to contribute, lint, test, and submit PRs |
+
 ## API Reference
 
-- **Python API** — see [Getting Started](getting_started.md) and the [FDL Classes](FDL Classes/fdl.md) section
-- **C/C++ API** — [Doxygen Reference](https://ascmitc.github.io/fdl/api/) (auto-generated from source)
+- **Python API** — see the [FDL Classes](FDL Classes/fdl.md) section
+- **C/C++ API** — [Doxygen Reference](api/index.html) (auto-generated from source)
