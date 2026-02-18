@@ -726,6 +726,14 @@ object_model:
             - { name: canvas, type: handle, source_class: Canvas }
             - { name: framing_intent, type: handle, source_class: FramingIntent }
             - { name: rounding, type: fdl_round_strategy_t, nullable: true, default: "None", global_fallback: get_rounding }
+        populate_from_intent:
+          function: fdl_framing_decision_populate_from_intent
+          kind: compound_setter
+          doc: Populate this framing decision from a canvas and framing intent (in-place).
+          params:
+            - { name: canvas, type: handle, source_class: Canvas }
+            - { name: framing_intent, type: handle, source_class: FramingIntent }
+            - { name: rounding, type: fdl_round_strategy_t, nullable: true, default: "None", global_fallback: get_rounding }
       init:
         depth: 3
         builder_method: add_framing_decision

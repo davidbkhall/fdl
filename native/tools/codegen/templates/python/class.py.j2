@@ -373,6 +373,14 @@ class {{ cls.name }}({{ "OwnedHandle" if cls.owns_handle else "HandleWrapper" }}
     ) -> None:
         """{{ method.doc }}"""
         self._check_handle()
+{% for p in method.params %}
+{% if p.global_fallback is defined and p.global_fallback %}
+        if {{ p.name }} is None:
+            from .utils import {{ p.global_fallback }}
+
+            {{ p.name }} = {{ p.global_fallback }}()
+{% endif %}
+{% endfor %}
         self._lib.{{ method.c_function }}(
             self._handle,
 {% for arg in method.c_args %}

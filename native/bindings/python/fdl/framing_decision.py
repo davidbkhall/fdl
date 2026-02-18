@@ -263,6 +263,25 @@ class FramingDecision(HandleWrapper):
         )
         return instance
 
+    def populate_from_intent(
+        self,
+        canvas: Canvas,
+        framing_intent: FramingIntent,
+        rounding: RoundStrategy | None = None,
+    ) -> None:
+        """Populate this framing decision from a canvas and framing intent (in-place)."""
+        self._check_handle()
+        if rounding is None:
+            from .utils import get_rounding
+
+            rounding = get_rounding()
+        self._lib.fdl_framing_decision_populate_from_intent(
+            self._handle,
+            canvas._handle,
+            framing_intent._handle,
+            _to_c_round_strategy(rounding),
+        )
+
     _CA_PREFIX = "fdl_framing_decision_"
 
     def set_custom_attr(self, name: str, value: str | int | float | bool) -> None:

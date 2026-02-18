@@ -1027,6 +1027,9 @@ public:
     /** Create a FramingDecision from a canvas and framing intent. */
     void from_framing_intent(
         const CanvasRef& canvas, const FramingIntentRef& framing_intent, const fdl_round_strategy_t& rounding);
+    /** Populate this framing decision from a canvas and framing intent (in-place). */
+    void populate_from_intent(
+        const CanvasRef& canvas, const FramingIntentRef& framing_intent, const fdl_round_strategy_t& rounding);
 
     // --- Custom attributes ---
 
@@ -1984,6 +1987,11 @@ inline void FramingDecisionRef::adjust_protection_anchor_point(
 }
 
 inline void FramingDecisionRef::from_framing_intent(
+    const CanvasRef& canvas, const FramingIntentRef& framing_intent, const fdl_round_strategy_t& rounding) {
+    fdl_framing_decision_populate_from_intent(fd_, canvas.get(), framing_intent.get(), rounding);
+}
+
+inline void FramingDecisionRef::populate_from_intent(
     const CanvasRef& canvas, const FramingIntentRef& framing_intent, const fdl_round_strategy_t& rounding) {
     fdl_framing_decision_populate_from_intent(fd_, canvas.get(), framing_intent.get(), rounding);
 }

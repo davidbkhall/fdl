@@ -7,8 +7,16 @@ from __future__ import annotations
 
 import math
 
-_FP_REL_TOL = 1e-9
-_FP_ABS_TOL = 1e-6
+
+def _load_fp_tolerances() -> tuple[float, float]:
+    from fdl_ffi import get_lib
+
+    lib = get_lib()
+    return lib.fdl_fp_rel_tol(), lib.fdl_fp_abs_tol()
+
+
+_FP_REL_TOL, _FP_ABS_TOL = _load_fp_tolerances()
+del _load_fp_tolerances
 
 
 class DimensionsInt:
