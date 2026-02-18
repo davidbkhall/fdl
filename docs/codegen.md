@@ -10,7 +10,8 @@ and how to extend it.
 native/api/fdl_api.yaml        ← Single source of truth (IDL)
          │
          ▼
-   fdl_idl.py  (parse)         ← Parsed IDL dataclasses
+   fdl_idl.py  (parse +        ← Parsed IDL dataclasses + synthesized
+                synthesize)       accessor/collection functions
          │
          ▼
      ir.py  (transform)        ← Language-neutral IR (IRClass, IRProperty, …)
@@ -77,8 +78,9 @@ enums:
 
 ### `functions`
 
-Declares every C ABI function with parameters, return types, and
-ownership annotations:
+Declares C ABI functions that **cannot be derived** from `object_model` —
+typically parsing, serialization, validation, template application, and other
+non-accessor operations:
 
 ```yaml
 functions:
@@ -95,6 +97,11 @@ functions:
     ownership: caller_frees
   # ...
 ```
+
+Accessor functions (property getters/setters/has/removers) and collection
+functions (count/at/find) are **synthesized automatically** from the
+`object_model` section by `fdl_idl.py` — they do not need to be listed here.
+Explicit entries in `functions` take precedence over synthesized ones.
 
 ### `object_model`
 
@@ -124,10 +131,18 @@ object_model:
 
 ## Pipeline Stages
 
-### 1. Parse — `fdl_idl.py`
+### 1. Parse & Synthesize — `fdl_idl.py`
 
 `parse_idl(path)` reads the YAML and returns a structured `IDL` object
 containing parsed value types, enums, functions, and the object model.
+
+As a final step, `_synthesize_functions()` derives C ABI function signatures
+for property accessors (getter, setter, has, remover) and collection
+traversal (count, at, find_by_id, find_by_label) from the `object_model`
+section. These synthesized functions are merged with the explicit `functions`
+list — explicit entries take precedence. This means adding a property to
+`object_model` automatically generates the corresponding C ABI declarations
+without duplicating them in the `functions` section.
 
 ### 2. Transform — `ir.py`
 
@@ -201,11 +216,12 @@ run.
 ## How To: Add a Field to an Existing Class
 
 1. **Edit `fdl_api.yaml`** — add the property under the appropriate class in
-   `object_model`. Reference the getter/setter functions.
+   `object_model` with getter/setter function names. You do **not** need to
+   add these functions to the `functions` section — they are synthesized
+   automatically.
 
-2. **Add C ABI functions** (if new) — implement the getter/setter in the
-   appropriate `_api.cpp` file in `native/core/src/` and declare them in
-   `fdl_core.h`.
+2. **Add C ABI functions** — implement the getter/setter in the appropriate
+   `_api.cpp` file in `native/core/src/` and declare them in `fdl_core.h`.
 
 3. **Run codegen:**
    ```shell
@@ -228,8 +244,9 @@ run.
    and accessor functions in `fdl_core.h`.
 
 2. **Register in `fdl_api.yaml`**:
-   - Add the opaque handle to `functions` (collection traversal, accessors)
    - Add the class to `object_model` with properties, collections, and methods
+     (accessor/collection functions are synthesized automatically)
+   - Add any non-accessor functions (factories, serialization, etc.) to `functions`
 
 3. **Run codegen** — a new facade class file will be generated automatically.
 
