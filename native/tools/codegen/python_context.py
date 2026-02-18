@@ -21,6 +21,7 @@ def _class_to_module(class_name: str) -> str:
     s1 = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", class_name)
     return re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
+
 _py = PythonAdapter()
 
 

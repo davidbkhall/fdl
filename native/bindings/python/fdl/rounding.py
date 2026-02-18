@@ -21,10 +21,7 @@ class RoundStrategy:
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, RoundStrategy):
             return NotImplemented
-        return (
-            self.even == other.even and
-            self.mode == other.mode
-        )
+        return self.even == other.even and self.mode == other.mode
 
     def __hash__(self) -> int:
         return hash((self.even, self.mode))
@@ -41,6 +38,7 @@ def fdl_round(value: float, even: str, mode: str) -> int:
     from fdl_ffi import get_lib
 
     from .enum_maps import ROUNDING_EVEN_TO_C, ROUNDING_MODE_TO_C
+
     return int(get_lib().fdl_round(float(value), ROUNDING_EVEN_TO_C[even], ROUNDING_MODE_TO_C[mode]))
 
 
@@ -50,6 +48,7 @@ def calculate_scale_factor(fit_norm: DimensionsFloat, target_norm: DimensionsFlo
     from fdl_ffi._structs import fdl_dimensions_f64_t
 
     from .enum_maps import FIT_METHOD_TO_C
+
     _c_fit_norm = fdl_dimensions_f64_t(width=fit_norm.width, height=fit_norm.height)
     _c_target_norm = fdl_dimensions_f64_t(width=target_norm.width, height=target_norm.height)
     return float(get_lib().fdl_calculate_scale_factor(_c_fit_norm, _c_target_norm, FIT_METHOD_TO_C[fit_method]))

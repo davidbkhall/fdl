@@ -61,8 +61,13 @@ class Canvas(HandleWrapper):
 
         lib = get_lib()
         from .fdl import FDL
+
         _doc_h = lib.fdl_doc_create_with_header(
-            b"00000000-0000-0000-0000-000000000000", 2, 0, b"_", None,
+            b"00000000-0000-0000-0000-000000000000",
+            2,
+            0,
+            b"_",
+            None,
         )
         _backing = FDL._from_handle(_doc_h, lib)
         _ctx_h = lib.fdl_doc_add_context(_doc_h, b"_", None)
@@ -182,6 +187,7 @@ class Canvas(HandleWrapper):
     def framing_decisions(self) -> CollectionWrapper[FramingDecision]:
         self._check_handle()
         from .framing_decision import FramingDecision
+
         return CollectionWrapper(
             lib=self._lib,
             parent_handle=self._handle,
@@ -223,6 +229,7 @@ class Canvas(HandleWrapper):
         """Add a framing decision to this canvas."""
         self._check_handle()
         from .framing_decision import FramingDecision
+
         handle = self._lib.fdl_canvas_add_framing_decision(
             self._handle,
             id.encode("utf-8"),
@@ -260,6 +267,7 @@ class Canvas(HandleWrapper):
         """Get effective rect or None if not defined."""
         self._check_handle()
         from fdl_ffi._structs import fdl_rect_t
+
         out = fdl_rect_t()
         if not self._lib.fdl_canvas_get_effective_rect(self._handle, ctypes.byref(out)):
             return None

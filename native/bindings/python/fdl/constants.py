@@ -19,9 +19,11 @@ class RoundingMode(_StrEnum):
     DOWN = "down"
     ROUND = "round"
 
+
 class RoundingEven(_StrEnum):
     WHOLE = "whole"
     EVEN = "even"
+
 
 class GeometryPath(_StrEnum):
     CANVAS_DIMENSIONS = "canvas.dimensions"
@@ -29,21 +31,25 @@ class GeometryPath(_StrEnum):
     FRAMING_PROTECTION_DIMENSIONS = "framing_decision.protection_dimensions"
     FRAMING_DIMENSIONS = "framing_decision.dimensions"
 
+
 class FitMethod(_StrEnum):
     WIDTH = "width"
     HEIGHT = "height"
     FIT_ALL = "fit_all"
     FILL = "fill"
 
+
 class HAlign(_StrEnum):
     LEFT = "left"
     CENTER = "center"
     RIGHT = "right"
 
+
 class VAlign(_StrEnum):
     TOP = "top"
     CENTER = "center"
     BOTTOM = "bottom"
+
 
 # ---------------------------------------------------------------------------
 # Floating-point comparison

@@ -278,14 +278,7 @@ class TestRoundtrip:
         """Parse the fixture JSON, verify pre-existing custom attrs, roundtrip."""
         import pathlib
 
-        fixture_path = (
-            pathlib.Path(__file__).resolve().parents[3]
-            / "core"
-            / "tests"
-            / "vectors"
-            / "document"
-            / "custom_attrs_fixture.json"
-        )
+        fixture_path = pathlib.Path(__file__).resolve().parents[3] / "core" / "tests" / "vectors" / "document" / "custom_attrs_fixture.json"
         raw = fixture_path.read_bytes()
         from fdl import FDL
 

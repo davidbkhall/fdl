@@ -28,16 +28,19 @@ def _set(lib, handle, prefix: str, name: str, value: str | int | float | bool | 
     _name = name.encode("utf-8")
     if isinstance(value, PointFloat):
         from fdl_ffi import fdl_point_f64_t
+
         c = fdl_point_f64_t()
         c.x, c.y = float(value.x), float(value.y)
         rc = getattr(lib, f"{prefix}set_custom_attr_point_f64")(handle, _name, c)
     elif isinstance(value, DimensionsFloat):
         from fdl_ffi import fdl_dimensions_f64_t
+
         c = fdl_dimensions_f64_t()
         c.width, c.height = float(value.width), float(value.height)
         rc = getattr(lib, f"{prefix}set_custom_attr_dims_f64")(handle, _name, c)
     elif isinstance(value, DimensionsInt):
         from fdl_ffi import fdl_dimensions_i64_t
+
         c = fdl_dimensions_i64_t()
         c.width, c.height = int(value.width), int(value.height)
         rc = getattr(lib, f"{prefix}set_custom_attr_dims_i64")(handle, _name, c)
@@ -91,16 +94,19 @@ def _get(lib, handle, prefix: str, name: str) -> str | int | float | bool | Poin
         return bool(out.value)
     if attr_type == 5:  # POINT_F64
         from fdl_ffi import fdl_point_f64_t
+
         out = fdl_point_f64_t()
         getattr(lib, f"{prefix}get_custom_attr_point_f64")(handle, _name, ctypes.byref(out))
         return PointFloat(x=out.x, y=out.y)
     if attr_type == 6:  # DIMS_F64
         from fdl_ffi import fdl_dimensions_f64_t
+
         out = fdl_dimensions_f64_t()
         getattr(lib, f"{prefix}get_custom_attr_dims_f64")(handle, _name, ctypes.byref(out))
         return DimensionsFloat(width=out.width, height=out.height)
     if attr_type == 7:  # DIMS_I64
         from fdl_ffi import fdl_dimensions_i64_t
+
         out = fdl_dimensions_i64_t()
         getattr(lib, f"{prefix}get_custom_attr_dims_i64")(handle, _name, ctypes.byref(out))
         return DimensionsInt(width=out.width, height=out.height)

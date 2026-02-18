@@ -112,8 +112,13 @@ class CanvasTemplate(HandleWrapper):
 
         lib = get_lib()
         from .fdl import FDL
+
         _doc_h = lib.fdl_doc_create_with_header(
-            b"00000000-0000-0000-0000-000000000000", 2, 0, b"_", None,
+            b"00000000-0000-0000-0000-000000000000",
+            2,
+            0,
+            b"_",
+            None,
         )
         _backing = FDL._from_handle(_doc_h, lib)
         handle = lib.fdl_doc_add_canvas_template(
@@ -260,6 +265,7 @@ class CanvasTemplate(HandleWrapper):
         """Apply this canvas template to a source canvas/framing decision."""
         self._check_handle()
         from .fdl import FDL
+
         result = self._lib.fdl_apply_canvas_template(
             self._handle,
             source_canvas._handle,

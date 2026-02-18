@@ -52,6 +52,7 @@ class ClipID(HandleWrapper):
         if not self._lib.fdl_clip_id_has_sequence(self._handle):
             return None
         from .file_sequence import FileSequence
+
         handle = self._lib.fdl_clip_id_sequence(self._handle)
         if not handle:
             return None

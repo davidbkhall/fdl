@@ -424,12 +424,14 @@ def _generate_custom_attr_ffi(idl: IDL) -> list[dict]:
         prefix = cls.c_handle.removesuffix("t")  # fdl_doc_t → fdl_doc_
         for suffix, argtypes, restype in _CA_FUNCTIONS:
             fn_name = f"{prefix}{suffix}"
-            contexts.append({
-                "name": fn_name,
-                "doc": f"Custom attr: {suffix} on {cls.name}",
-                "argtypes_str": argtypes,
-                "restype_str": restype,
-            })
+            contexts.append(
+                {
+                    "name": fn_name,
+                    "doc": f"Custom attr: {suffix} on {cls.name}",
+                    "argtypes_str": argtypes,
+                    "restype_str": restype,
+                }
+            )
     return contexts
 
 

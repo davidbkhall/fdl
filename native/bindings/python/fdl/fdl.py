@@ -130,6 +130,7 @@ class FDL(OwnedHandle):
     def contexts(self) -> CollectionWrapper[Context]:
         self._check_handle()
         from .context import Context
+
         return CollectionWrapper(
             lib=self._lib,
             parent_handle=self._handle,
@@ -145,6 +146,7 @@ class FDL(OwnedHandle):
     def framing_intents(self) -> CollectionWrapper[FramingIntent]:
         self._check_handle()
         from .framing_intent import FramingIntent
+
         return CollectionWrapper(
             lib=self._lib,
             parent_handle=self._handle,
@@ -160,6 +162,7 @@ class FDL(OwnedHandle):
     def canvas_templates(self) -> CollectionWrapper[CanvasTemplate]:
         self._check_handle()
         from .canvas_template import CanvasTemplate
+
         return CollectionWrapper(
             lib=self._lib,
             parent_handle=self._handle,
@@ -190,6 +193,7 @@ class FDL(OwnedHandle):
         """Add a framing intent to the document."""
         self._check_handle()
         from .framing_intent import FramingIntent
+
         handle = self._lib.fdl_doc_add_framing_intent(
             self._handle,
             id.encode("utf-8"),
@@ -210,6 +214,7 @@ class FDL(OwnedHandle):
         """Add a context to the document."""
         self._check_handle()
         from .context import Context
+
         handle = self._lib.fdl_doc_add_context(
             self._handle,
             label.encode("utf-8"),
@@ -234,6 +239,7 @@ class FDL(OwnedHandle):
         """Add a canvas template to the document."""
         self._check_handle()
         from .canvas_template import CanvasTemplate
+
         handle = self._lib.fdl_doc_add_canvas_template(
             self._handle,
             id.encode("utf-8"),

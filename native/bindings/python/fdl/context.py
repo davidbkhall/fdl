@@ -60,8 +60,13 @@ class Context(HandleWrapper):
 
         lib = get_lib()
         from .fdl import FDL
+
         _doc_h = lib.fdl_doc_create_with_header(
-            b"00000000-0000-0000-0000-000000000000", 2, 0, b"_", None,
+            b"00000000-0000-0000-0000-000000000000",
+            2,
+            0,
+            b"_",
+            None,
         )
         _backing = FDL._from_handle(_doc_h, lib)
         handle = lib.fdl_doc_add_context(
@@ -91,6 +96,7 @@ class Context(HandleWrapper):
         if not self._lib.fdl_context_has_clip_id(self._handle):
             return None
         from .clip_id import ClipID
+
         handle = self._lib.fdl_context_clip_id(self._handle)
         if not handle:
             return None
@@ -116,6 +122,7 @@ class Context(HandleWrapper):
     def canvases(self) -> CollectionWrapper[Canvas]:
         self._check_handle()
         from .canvas import Canvas
+
         return CollectionWrapper(
             lib=self._lib,
             parent_handle=self._handle,
@@ -157,6 +164,7 @@ class Context(HandleWrapper):
         """Add a canvas to this context."""
         self._check_handle()
         from .canvas import Canvas
+
         handle = self._lib.fdl_context_add_canvas(
             self._handle,
             id.encode("utf-8"),
@@ -180,6 +188,7 @@ class Context(HandleWrapper):
         self._check_handle()
         from .canvas import Canvas
         from .framing_decision import FramingDecision
+
         result = self._lib.fdl_context_resolve_canvas_for_dimensions(
             self._handle,
             _to_c_dims_f64(input_dims),

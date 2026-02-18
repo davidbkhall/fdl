@@ -62,8 +62,13 @@ class FramingDecision(HandleWrapper):
 
         lib = get_lib()
         from .fdl import FDL
+
         _doc_h = lib.fdl_doc_create_with_header(
-            b"00000000-0000-0000-0000-000000000000", 2, 0, b"_", None,
+            b"00000000-0000-0000-0000-000000000000",
+            2,
+            0,
+            b"_",
+            None,
         )
         _backing = FDL._from_handle(_doc_h, lib)
         _ctx_h = lib.fdl_doc_add_context(_doc_h, b"_", None)
@@ -185,6 +190,7 @@ class FramingDecision(HandleWrapper):
         """Get protection rect or None if not defined."""
         self._check_handle()
         from fdl_ffi._structs import fdl_rect_t
+
         out = fdl_rect_t()
         if not self._lib.fdl_framing_decision_get_protection_rect(self._handle, ctypes.byref(out)):
             return None

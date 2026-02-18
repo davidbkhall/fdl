@@ -39,6 +39,7 @@ def _to_c_dims_i64(val: DimensionsInt):
     c.height = int(val.height)
     return c
 
+
 def _dims_f64(c_struct) -> DimensionsFloat:
     """Convert fdl_dimensions_f64_t to DimensionsFloat."""
     return DimensionsFloat(
@@ -56,6 +57,7 @@ def _to_c_dims_f64(val: DimensionsFloat):
     c.height = float(val.height)
     return c
 
+
 def _point_f64(c_struct) -> PointFloat:
     """Convert fdl_point_f64_t to PointFloat."""
     return PointFloat(
@@ -72,6 +74,7 @@ def _to_c_point_f64(val: PointFloat):
     c.x = float(val.x)
     c.y = float(val.y)
     return c
+
 
 def _rect(c_struct) -> Rect:
     """Convert fdl_rect_t to Rect."""
@@ -93,6 +96,7 @@ def _to_c_rect(val: Rect):
     c.width = float(val.width)
     c.height = float(val.height)
     return c
+
 
 def _round_strategy(c_struct) -> RoundStrategy:
     """Convert fdl_round_strategy_t to RoundStrategy."""
