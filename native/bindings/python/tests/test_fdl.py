@@ -3,12 +3,12 @@
 from pathlib import Path
 
 import pytest
-
-from fdl import read_from_file, read_from_string
 from fdl.context import Context
 from fdl.errors import FDLValidationError
 from fdl.fdl import FDL
 from fdl.fdl_types import DimensionsFloat, DimensionsInt, PointFloat
+
+from fdl import read_from_file, read_from_string
 
 SAMPLE_FDL_DIR = Path(__file__).parent.joinpath("sample_data")
 SAMPLE_FDL_FILE = Path(SAMPLE_FDL_DIR, "Scenario-9__FDL_DeliveredToVFXVendor.fdl")

@@ -1,12 +1,12 @@
 # SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 # SPDX-License-Identifier: Apache-2.0
 import pytest
-
-from fdl import set_rounding
 from fdl.canvas import Canvas
 from fdl.fdl_types import DimensionsFloat, DimensionsInt, PointFloat
 from fdl.framing_decision import FramingDecision
 from fdl.rounding import RoundStrategy
+
+from fdl import set_rounding
 
 
 @pytest.mark.parametrize(

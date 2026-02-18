@@ -380,8 +380,9 @@ class TestLibraryLoadingRace:
 
 class TestRoundingStrategyThreadSafety:
     def test_concurrent_get_set_rounding(self):
-        from fdl import RoundStrategy, get_rounding, set_rounding
         from fdl.constants import RoundingEven, RoundingMode
+
+        from fdl import RoundStrategy, get_rounding, set_rounding
 
         strategies = [
             RoundStrategy(even=RoundingEven.EVEN, mode=RoundingMode.UP),

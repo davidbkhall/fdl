@@ -9,6 +9,7 @@ the Pydantic model API, creating an internal backing document transparently.
 from __future__ import annotations
 
 import pytest
+from fdl.constants import FitMethod, GeometryPath, HAlign, RoundingEven, RoundingMode, VAlign
 
 from fdl import (
     FDL,
@@ -22,7 +23,6 @@ from fdl import (
     PointFloat,
     RoundStrategy,
 )
-from fdl.constants import FitMethod, GeometryPath, HAlign, RoundingEven, RoundingMode, VAlign
 
 
 class TestFramingIntentKwargs:
