@@ -881,12 +881,6 @@ class MainWindow(QMainWindow):
             self._show_error("No template FDL available.")
             return
 
-        # Extract transform result components from canvas custom attrs
-        from fdl import ATTR_CONTENT_TRANSLATION, ATTR_SCALED_BOUNDING_BOX
-
-        scaled_bounding_box = transform_result.canvas.get_custom_attr(ATTR_SCALED_BOUNDING_BOX)
-        content_translation = transform_result.canvas.get_custom_attr(ATTR_CONTENT_TRANSLATION)
-
         # Get the next scenario number
         next_scenario = self._unit_test_export_controller.get_next_scenario_number()
 
@@ -936,8 +930,6 @@ class MainWindow(QMainWindow):
                 canvas_id=canvas_id,
                 framing_id=framing_id,
                 input_dims=input_dims,
-                scaled_bounding_box=scaled_bounding_box,
-                content_translation=content_translation,
                 export_config=export_config,
             )
 

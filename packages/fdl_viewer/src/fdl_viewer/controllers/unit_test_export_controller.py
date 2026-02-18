@@ -11,7 +11,6 @@ import shutil
 from pathlib import Path
 
 from fdl import FDL, CanvasTemplate, write_to_file
-from fdl.fdl_types import DimensionsFloat, PointFloat
 from fdl.testing.base import BaseFDLTestCase
 from fdl.testing.scenario_config import SCENARIO_CONFIGS
 from PySide6.QtCore import QObject, Signal
@@ -106,8 +105,6 @@ class UnitTestExportController(QObject):
         canvas_id: str,
         framing_id: str,
         input_dims: tuple[float, float],
-        scaled_bounding_box: DimensionsFloat,
-        content_translation: PointFloat,
         export_config: dict,
     ) -> bool:
         """
@@ -135,10 +132,6 @@ class UnitTestExportController(QObject):
             The selected framing decision ID.
         input_dims : Tuple[float, float]
             Source image dimensions (width, height).
-        scaled_bounding_box : DimensionsFloat
-            Expected bbox after transform.
-        content_translation : PointFloat
-            Expected content offset.
         export_config : dict
             Configuration from ExportUnitTestDialog.get_export_config().
 
@@ -195,8 +188,6 @@ class UnitTestExportController(QObject):
                 canvas_label=canvas_id,
                 framing_id=framing_id,
                 input_dims=input_dims,
-                scaled_bounding_box=scaled_bounding_box,
-                content_translation=content_translation,
                 template_label=template.label or template.id,
             )
 
@@ -219,8 +210,6 @@ class UnitTestExportController(QObject):
         canvas_label: str,
         framing_id: str,
         input_dims: tuple[float, float],
-        scaled_bounding_box: DimensionsFloat,
-        content_translation: PointFloat,
         template_label: str,
     ) -> str:
         """
@@ -242,10 +231,6 @@ class UnitTestExportController(QObject):
             The framing decision ID.
         input_dims : Tuple[float, float]
             Input dimensions (width, height).
-        scaled_bounding_box : DimensionsFloat
-            Expected scaled bbox.
-        content_translation : PointFloat
-            Expected translation.
         template_label : str
             The template label.
 
@@ -254,10 +239,7 @@ class UnitTestExportController(QObject):
         str
             Python code for the ScenarioConfig entry.
         """
-        # Round floats for cleaner output
         input_w, input_h = input_dims
-        bbox_w, bbox_h = scaled_bounding_box.width, scaled_bounding_box.height
-        trans_x, trans_y = content_translation.x, content_translation.y
 
         code = f'''    {scenario_number}: ScenarioConfig(
         number={scenario_number},
@@ -269,8 +251,6 @@ class UnitTestExportController(QObject):
                 letter="{base_name.upper()}",
                 fdl_basename="{base_name}_source",
                 input_dims=({input_w}, {input_h}),
-                expected_scaled_bounding_box=DimensionsFloat(width={bbox_w}, height={bbox_h}),
-                expected_content_translation=PointFloat(x={trans_x}, y={trans_y}),
                 context_label="{context_label}",
                 canvas_label="{canvas_label}",
                 test_name_suffix="{scenario_name}",

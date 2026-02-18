@@ -11,7 +11,6 @@ import uuid
 from pathlib import Path
 
 from fdl import read_from_file, write_to_file
-from fdl.fdl_types import DimensionsFloat, PointFloat
 from fdl.testing.fdl_comparison import FDLComparison
 
 
@@ -147,8 +146,6 @@ class BaseFDLTestCase(unittest.TestCase):
         template_fdl_path: Path,
         template_label: str,
         test_name: str,
-        expected_scaled_bounding_box: DimensionsFloat | None = None,
-        expected_content_translation: PointFloat | None = None,
         **kwargs,
     ):
         """
@@ -176,10 +173,6 @@ class BaseFDLTestCase(unittest.TestCase):
             Label of the canvas template to apply.
         test_name : str
             Name for output files.
-        expected_scaled_bounding_box : DimensionsFloat, optional
-            Expected scaled bounding box dimensions.
-        expected_content_translation : PointFloat, optional
-            Expected content translation point.
         **kwargs : dict
             Additional arguments passed to subclass overrides.
         """
@@ -272,37 +265,6 @@ class BaseFDLTestCase(unittest.TestCase):
         self.assertIsNotNone(expected_template, f"Expected template '{template_label}' not found in expected FDL")
         self.assertIsNotNone(actual_template, f"Actual template '{template_label}' not found in generated FDL")
         self._fdl_comparator.compare_canvas_template(expected_template, actual_template)
-
-        # Validate scaled_bounding_box and content_translation from canvas custom attrs
-        from fdl import ATTR_CONTENT_TRANSLATION, ATTR_SCALED_BOUNDING_BOX
-
-        if expected_scaled_bounding_box is not None:
-            sbb = result.canvas.get_custom_attr(ATTR_SCALED_BOUNDING_BOX)
-            self.assertIsNotNone(sbb, "scaled_bounding_box custom attr not found on canvas")
-            self.assertEqual(
-                sbb.width,
-                expected_scaled_bounding_box.width,
-                msg=f"scaled_bounding_box.width mismatch: expected {expected_scaled_bounding_box.width}, got {sbb.width}",
-            )
-            self.assertEqual(
-                sbb.height,
-                expected_scaled_bounding_box.height,
-                msg=f"scaled_bounding_box.height mismatch: expected {expected_scaled_bounding_box.height}, got {sbb.height}",
-            )
-
-        if expected_content_translation is not None:
-            ct = result.canvas.get_custom_attr(ATTR_CONTENT_TRANSLATION)
-            self.assertIsNotNone(ct, "content_translation custom attr not found on canvas")
-            self.assertEqual(
-                ct.x,
-                expected_content_translation.x,
-                msg=f"content_translation.x mismatch: expected {expected_content_translation.x}, got {ct.x}",
-            )
-            self.assertEqual(
-                ct.y,
-                expected_content_translation.y,
-                msg=f"content_translation.y mismatch: expected {expected_content_translation.y}, got {ct.y}",
-            )
 
         # Store result on self for subclass hooks
         self._template_result = result

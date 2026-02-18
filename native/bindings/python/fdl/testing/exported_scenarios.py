@@ -12,7 +12,6 @@ Usage:
     source FDL, image, and template for debugging and regression testing.
 """
 
-from fdl.fdl_types import DimensionsFloat, PointFloat  # noqa: F401
 from fdl.testing.scenario_config import ScenarioConfig, SourceVariant  # noqa: F401
 
 # Exported scenarios from FDL Viewer UI
