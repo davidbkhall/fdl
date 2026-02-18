@@ -409,6 +409,12 @@ def _generate_custom_attr_ffi(idl: IDL) -> list[dict]:
         ("remove_custom_attr", "ctypes.c_void_p, ctypes.c_char_p", "ctypes.c_int"),
         ("custom_attrs_count", "ctypes.c_void_p", "ctypes.c_uint32"),
         ("custom_attr_name_at", "ctypes.c_void_p, ctypes.c_uint32", "ctypes.c_char_p"),
+        ("set_custom_attr_point_f64", "ctypes.c_void_p, ctypes.c_char_p, fdl_point_f64_t", "ctypes.c_int"),
+        ("get_custom_attr_point_f64", "ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_point_f64_t)", "ctypes.c_int"),
+        ("set_custom_attr_dims_f64", "ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_f64_t", "ctypes.c_int"),
+        ("get_custom_attr_dims_f64", "ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_f64_t)", "ctypes.c_int"),
+        ("set_custom_attr_dims_i64", "ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_i64_t", "ctypes.c_int"),
+        ("get_custom_attr_dims_i64", "ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_i64_t)", "ctypes.c_int"),
     ]
 
     contexts = []
@@ -494,13 +500,13 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
     types_vt_contexts = [ctx for ctx in all_vt_contexts if ctx["python_class"] != "RoundStrategy"]
     rounding_vt_contexts = [ctx for ctx in all_vt_contexts if ctx["python_class"] == "RoundStrategy"]
 
-    # --- _types.py (DimensionsInt, DimensionsFloat, PointFloat — no RoundStrategy) ---
+    # --- fdl_types.py (DimensionsInt, DimensionsFloat, PointFloat — no RoundStrategy) ---
     all_types_enum_imports: set[str] = set()
     for ctx in types_vt_contexts:
         all_types_enum_imports.update(ctx["enum_imports"])
     tmpl = env.get_template("python/types.py.j2")
     types_src = tmpl.render(value_types=types_vt_contexts, enum_imports=sorted(all_types_enum_imports))
-    (output_dir / "types.py").write_text(encoding="utf-8", data=types_src)
+    (output_dir / "fdl_types.py").write_text(encoding="utf-8", data=types_src)
 
     # --- _converters.py (C struct ↔ Python value type converters) ---
     converter_contexts = []
@@ -747,6 +753,9 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
     init_lines.append("from .constants import (  # noqa: F401")
     for name in enum_class_names:
         init_lines.append(f"    {name},")
+    # First-class custom attribute name constants
+    for name in ["ATTR_CONTENT_TRANSLATION", "ATTR_SCALE_FACTOR", "ATTR_SCALED_BOUNDING_BOX"]:
+        init_lines.append(f"    {name},")
     init_lines.append(")")
 
     # Export dataclasses (from their containing class modules)
@@ -770,8 +779,8 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
             init_lines.append(f"    {name},")
         init_lines.append(")")
 
-    # Export value types from _types
-    init_lines.append("from .types import (  # noqa: F401")
+    # Export value types from fdl_types
+    init_lines.append("from .fdl_types import (  # noqa: F401")
     for name in vt_class_names:
         init_lines.append(f"    {name},")
     init_lines.append(")")

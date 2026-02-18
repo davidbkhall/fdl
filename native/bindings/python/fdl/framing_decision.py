@@ -9,7 +9,7 @@ from __future__ import annotations
 import ctypes
 import json
 
-from .types import DimensionsFloat, PointFloat, Rect
+from .fdl_types import DimensionsFloat, PointFloat, Rect
 from .rounding import RoundStrategy
 
 from .base import (

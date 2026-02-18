@@ -38,12 +38,26 @@ extern "C" {
 
 /** @brief Type identifier for custom attributes. */
 typedef uint32_t fdl_custom_attr_type_t;
-#define FDL_CUSTOM_ATTR_TYPE_NONE 0   /**< Attribute not found. */
-#define FDL_CUSTOM_ATTR_TYPE_STRING 1 /**< String attribute. */
-#define FDL_CUSTOM_ATTR_TYPE_INT 2    /**< Integer attribute. */
-#define FDL_CUSTOM_ATTR_TYPE_FLOAT 3  /**< Floating-point attribute. */
-#define FDL_CUSTOM_ATTR_TYPE_BOOL 4   /**< Boolean attribute. */
-#define FDL_CUSTOM_ATTR_TYPE_OTHER 5  /**< Unsupported JSON type. */
+#define FDL_CUSTOM_ATTR_TYPE_NONE 0      /**< Attribute not found. */
+#define FDL_CUSTOM_ATTR_TYPE_STRING 1    /**< String attribute. */
+#define FDL_CUSTOM_ATTR_TYPE_INT 2       /**< Integer attribute. */
+#define FDL_CUSTOM_ATTR_TYPE_FLOAT 3     /**< Floating-point attribute. */
+#define FDL_CUSTOM_ATTR_TYPE_BOOL 4      /**< Boolean attribute. */
+#define FDL_CUSTOM_ATTR_TYPE_POINT_F64 5 /**< Point (x, y) attribute. */
+#define FDL_CUSTOM_ATTR_TYPE_DIMS_F64 6  /**< Dimensions (width, height) float attribute. */
+#define FDL_CUSTOM_ATTR_TYPE_DIMS_I64 7  /**< Dimensions (width, height) integer attribute. */
+#define FDL_CUSTOM_ATTR_TYPE_OTHER 8     /**< Unsupported JSON type. */
+
+/* -----------------------------------------------------------------------
+ * First-class custom attribute name constants
+ * ----------------------------------------------------------------------- */
+
+/** @brief Custom attribute name for the template scale factor (float). */
+#define FDL_ATTR_SCALE_FACTOR "scale_factor"
+/** @brief Custom attribute name for the template content translation (point_f64). */
+#define FDL_ATTR_CONTENT_TRANSLATION "content_translation"
+/** @brief Custom attribute name for the template scaled bounding box (dims_f64). */
+#define FDL_ATTR_SCALED_BOUNDING_BOX "scaled_bounding_box"
 
 /* -----------------------------------------------------------------------
  * ABI version
@@ -1366,14 +1380,11 @@ FDL_API int fdl_framing_decision_get_protection_rect(const fdl_framing_decision_
 
 /** Result of applying a canvas template. */
 typedef struct fdl_template_result_t {
-    fdl_doc_t* output_fdl; /**< Output FDL (caller owns, free with fdl_doc_free or fdl_template_result_free) */
-    double scale_factor;   /**< Computed scale factor */
-    fdl_dimensions_f64_t scaled_bounding_box; /**< Scaled bounding box before crop */
-    fdl_point_f64_t content_translation;      /**< Content translation (shift) */
-    const char* context_label;                /**< Label of the new context (caller frees with fdl_free) */
-    const char* canvas_id;                    /**< ID of the new canvas (caller frees with fdl_free) */
-    const char* framing_decision_id;          /**< ID of the new framing decision (caller frees with fdl_free) */
-    const char* error;                        /**< Error message on failure (free with fdl_free) */
+    fdl_doc_t* output_fdl;     /**< Output FDL (caller owns, free with fdl_doc_free or fdl_template_result_free) */
+    const char* context_label; /**< Label of the new context (caller frees with fdl_free) */
+    const char* canvas_id;     /**< ID of the new canvas (caller frees with fdl_free) */
+    const char* framing_decision_id; /**< ID of the new framing decision (caller frees with fdl_free) */
+    const char* error;               /**< Error message on failure (free with fdl_free) */
 } fdl_template_result_t;
 
 /**
@@ -1866,14 +1877,14 @@ FDL_API void fdl_validation_result_free(fdl_validation_result_t* result);
 FDL_API void fdl_free(void* ptr);
 
 /* -----------------------------------------------------------------------
- * Custom attribute API (11 functions x 8 handle types = 88 functions)
+ * Custom attribute API (19 functions x 8 handle types = 152 functions)
  *
  * Names are passed WITHOUT the '_' prefix; the library prepends it internally.
  * Type-safe: setting an attribute with a different type than its current value
  * returns -1. Remove the attribute first, then set with the new type.
  * ----------------------------------------------------------------------- */
 
-/** @brief Macro to declare all 13 custom attribute functions for a handle type.
+/** @brief Macro to declare all 19 custom attribute functions for a handle type.
  *  @param PREFIX      Function name prefix (e.g., fdl_doc_).
  *  @param HANDLE_TYPE C handle type (e.g., fdl_doc_t). */
 #define FDL_CUSTOM_ATTR_DECL(PREFIX, HANDLE_TYPE)                                                                    \
@@ -1902,7 +1913,19 @@ FDL_API void fdl_free(void* ptr);
     /** @brief Count custom attributes on this object. */                                                            \
     FDL_API uint32_t PREFIX##custom_attrs_count(const HANDLE_TYPE* h);                                               \
     /** @brief Get name of custom attribute at index (without '_' prefix). @return Thread-local pointer, or NULL. */ \
-    FDL_API const char* PREFIX##custom_attr_name_at(const HANDLE_TYPE* h, uint32_t index);
+    FDL_API const char* PREFIX##custom_attr_name_at(const HANDLE_TYPE* h, uint32_t index);                           \
+    /** @brief Set a point_f64 custom attribute. @return 0 on success, -1 on type mismatch. */                       \
+    FDL_API int PREFIX##set_custom_attr_point_f64(HANDLE_TYPE* h, const char* name, fdl_point_f64_t value);          \
+    /** @brief Get a point_f64 custom attribute. @return 0 on success, -1 if absent/wrong type. */                   \
+    FDL_API int PREFIX##get_custom_attr_point_f64(const HANDLE_TYPE* h, const char* name, fdl_point_f64_t* out);     \
+    /** @brief Set a dims_f64 custom attribute. @return 0 on success, -1 on type mismatch. */                        \
+    FDL_API int PREFIX##set_custom_attr_dims_f64(HANDLE_TYPE* h, const char* name, fdl_dimensions_f64_t value);      \
+    /** @brief Get a dims_f64 custom attribute. @return 0 on success, -1 if absent/wrong type. */                    \
+    FDL_API int PREFIX##get_custom_attr_dims_f64(const HANDLE_TYPE* h, const char* name, fdl_dimensions_f64_t* out); \
+    /** @brief Set a dims_i64 custom attribute. @return 0 on success, -1 on type mismatch. */                        \
+    FDL_API int PREFIX##set_custom_attr_dims_i64(HANDLE_TYPE* h, const char* name, fdl_dimensions_i64_t value);      \
+    /** @brief Get a dims_i64 custom attribute. @return 0 on success, -1 if absent/wrong type. */                    \
+    FDL_API int PREFIX##get_custom_attr_dims_i64(const HANDLE_TYPE* h, const char* name, fdl_dimensions_i64_t* out);
 
 FDL_CUSTOM_ATTR_DECL(fdl_doc_, fdl_doc_t)
 FDL_CUSTOM_ATTR_DECL(fdl_context_, fdl_context_t)

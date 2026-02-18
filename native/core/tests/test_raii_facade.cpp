@@ -914,11 +914,15 @@ TEST_CASE("CanvasTemplate apply", "[raii][facade][canvas_template][apply]") {
 
     auto result = ct.apply(canvas, fd, "CV_02", "HD FD", "Source", "test");
 
-    REQUIRE(result.scale_factor == Approx(0.5));
     REQUIRE(static_cast<bool>(result.fdl));
     // Verify the result FDL has the new canvas
     auto result_json = result.fdl.as_json(2);
     REQUIRE(result_json.find("CV_02") != std::string::npos);
+
+    // Verify computed values are stored as custom attrs on the output canvas
+    auto sf = result.canvas().get_custom_attr_float(fdl::ATTR_SCALE_FACTOR);
+    REQUIRE(sf.has_value());
+    REQUIRE(sf.value() == Approx(0.5));
 }
 
 // -----------------------------------------------------------------------

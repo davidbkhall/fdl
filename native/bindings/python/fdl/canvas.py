@@ -9,7 +9,7 @@ from __future__ import annotations
 import ctypes
 import json
 
-from .types import DimensionsFloat, DimensionsInt, PointFloat, Rect
+from .fdl_types import DimensionsFloat, DimensionsInt, PointFloat, Rect
 
 from .base import (
     CollectionWrapper,

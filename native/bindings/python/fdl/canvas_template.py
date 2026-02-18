@@ -9,7 +9,7 @@ from __future__ import annotations
 import ctypes
 import json
 
-from .types import DimensionsFloat, DimensionsInt, PointFloat
+from .fdl_types import DimensionsInt
 from .rounding import RoundStrategy
 
 from .base import (
@@ -17,9 +17,7 @@ from .base import (
     _decode_str,
 )
 from .converters import (
-    _dims_f64,
     _dims_i64,
-    _point_f64,
     _round_strategy,
     _to_c_dims_i64,
     _to_c_round_strategy,
@@ -62,9 +60,6 @@ class TemplateResult:
     """Result of applying a canvas template."""
 
     fdl: object
-    scale_factor: float
-    scaled_bounding_box: DimensionsFloat
-    content_translation: PointFloat
     _context_label: str
     _canvas_id: str
     _framing_decision_id: str
@@ -279,9 +274,6 @@ class CanvasTemplate(HandleWrapper):
             self._lib.fdl_free(result.error)
             raise ValueError(msg)
         _fdl = FDL._from_handle(result.output_fdl, self._lib)
-        _scale_factor = float(result.scale_factor)
-        _scaled_bounding_box = _dims_f64(result.scaled_bounding_box)
-        _content_translation = _point_f64(result.content_translation)
         _context_label = ctypes.string_at(result.context_label).decode("utf-8")
         self._lib.fdl_free(result.context_label)
         _canvas_id = ctypes.string_at(result.canvas_id).decode("utf-8")
@@ -290,9 +282,6 @@ class CanvasTemplate(HandleWrapper):
         self._lib.fdl_free(result.framing_decision_id)
         return TemplateResult(
             fdl=_fdl,
-            scale_factor=_scale_factor,
-            scaled_bounding_box=_scaled_bounding_box,
-            content_translation=_content_translation,
             _context_label=_context_label,
             _canvas_id=_canvas_id,
             _framing_decision_id=_framing_decision_id,

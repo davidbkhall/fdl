@@ -112,9 +112,6 @@ class fdl_parse_result_t(ctypes.Structure):
 class fdl_template_result_t(ctypes.Structure):
     _fields_ = [
         ("output_fdl", ctypes.c_void_p),
-        ("scale_factor", ctypes.c_double),
-        ("scaled_bounding_box", fdl_dimensions_f64_t),
-        ("content_translation", fdl_point_f64_t),
         ("context_label", ctypes.c_void_p),
         ("canvas_id", ctypes.c_void_p),
         ("framing_decision_id", ctypes.c_void_p),

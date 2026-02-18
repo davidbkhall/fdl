@@ -281,6 +281,9 @@ def process_image_with_fdl_template(
         context_creator=context.context_creator,
     )
 
+    # Read computed values from canvas custom attrs
+    from fdl import ATTR_CONTENT_TRANSLATION, ATTR_SCALED_BOUNDING_BOX
+
     # Delegate to the core transformation function
     return transform_image_with_computed_values(
         input_path=input_path,
@@ -289,8 +292,8 @@ def process_image_with_fdl_template(
         source_framing=framing_decision,
         template=template,
         new_canvas=result.canvas,
-        scaled_bounding_box=result.scaled_bounding_box,
-        content_translation=result.content_translation,
+        scaled_bounding_box=result.canvas.get_custom_attr(ATTR_SCALED_BOUNDING_BOX),
+        content_translation=result.canvas.get_custom_attr(ATTR_CONTENT_TRANSLATION),
         filter_name=filter_name,
     )
 

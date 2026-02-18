@@ -181,9 +181,6 @@ value_types:
   fdl_template_result_t:
     fields:
       - { name: output_fdl,            type: "fdl_doc_t*" }
-      - { name: scale_factor,          type: double }
-      - { name: scaled_bounding_box,   type: fdl_dimensions_f64_t }
-      - { name: content_translation,   type: fdl_point_f64_t }
       - { name: context_label,         type: "const char*", ownership: caller_frees }
       - { name: canvas_id,             type: "const char*", ownership: caller_frees }
       - { name: framing_decision_id,   type: "const char*", ownership: caller_frees }
@@ -852,9 +849,6 @@ object_model:
             free_fn: fdl_free
             fields:
               - { name: fdl,                   source: output_fdl,          extract: handle, wrap_class: FDL }
-              - { name: scale_factor,          source: scale_factor,        extract: scalar, scalar_type: float }
-              - { name: scaled_bounding_box,   source: scaled_bounding_box, extract: value_type, converter: dims_f64 }
-              - { name: content_translation,   source: content_translation, extract: value_type, converter: point_f64 }
               - { name: context_label,         source: context_label,       extract: string, private: true }
               - { name: canvas_id,             source: canvas_id,           extract: string, private: true }
               - { name: framing_decision_id,   source: framing_decision_id, extract: string, private: true }
@@ -2401,9 +2395,6 @@ auxiliary_types:
       doc: Result of applying a canvas template.
       fields:
         - { name: fdl,                   type: object }
-        - { name: scale_factor,          type: float }
-        - { name: scaled_bounding_box,   type: DimensionsFloat }
-        - { name: content_translation,   type: PointFloat }
         - { name: context_label,         type: str,   private: true }
         - { name: canvas_id,             type: str,   private: true }
         - { name: framing_decision_id,   type: str,   private: true }

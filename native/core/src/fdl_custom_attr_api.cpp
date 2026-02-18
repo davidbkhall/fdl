@@ -17,7 +17,7 @@ namespace ca = fdl::detail::custom_attr;
 // clang-format off
 
 /**
- * @brief Macro to generate all 13 custom attribute C ABI functions for a handle type.
+ * @brief Macro to generate all 19 custom attribute C ABI functions for a handle type.
  *
  * @param PREFIX      Function name prefix (e.g., fdl_doc_).
  * @param HANDLE_TYPE C handle type (e.g., fdl_doc_t).
@@ -102,6 +102,42 @@ namespace ca = fdl::detail::custom_attr;
         const doc_lock lock(GET_OWNER);                                                                           \
         const auto* node = GET_NODE;                                                                              \
         return ca::name_at(node, index);                                                                          \
+    }                                                                                                             \
+    int PREFIX##set_custom_attr_point_f64(HANDLE_TYPE* h, const char* name, fdl_point_f64_t value) {              \
+        if (h == nullptr) return fdl::constants::kCustomAttrError;                                                \
+        const doc_lock lock(GET_OWNER);                                                                           \
+        auto* node = GET_NODE;                                                                                    \
+        return ca::set_point_f64(node, name, value.x, value.y);                                                   \
+    }                                                                                                             \
+    int PREFIX##get_custom_attr_point_f64(const HANDLE_TYPE* h, const char* name, fdl_point_f64_t* out) {         \
+        if (h == nullptr || out == nullptr) return fdl::constants::kCustomAttrError;                               \
+        const doc_lock lock(GET_OWNER);                                                                           \
+        const auto* node = GET_NODE;                                                                              \
+        return ca::get_point_f64(node, name, &out->x, &out->y);                                                   \
+    }                                                                                                             \
+    int PREFIX##set_custom_attr_dims_f64(HANDLE_TYPE* h, const char* name, fdl_dimensions_f64_t value) {          \
+        if (h == nullptr) return fdl::constants::kCustomAttrError;                                                \
+        const doc_lock lock(GET_OWNER);                                                                           \
+        auto* node = GET_NODE;                                                                                    \
+        return ca::set_dims_f64(node, name, value.width, value.height);                                            \
+    }                                                                                                             \
+    int PREFIX##get_custom_attr_dims_f64(const HANDLE_TYPE* h, const char* name, fdl_dimensions_f64_t* out) {     \
+        if (h == nullptr || out == nullptr) return fdl::constants::kCustomAttrError;                               \
+        const doc_lock lock(GET_OWNER);                                                                           \
+        const auto* node = GET_NODE;                                                                              \
+        return ca::get_dims_f64(node, name, &out->width, &out->height);                                            \
+    }                                                                                                             \
+    int PREFIX##set_custom_attr_dims_i64(HANDLE_TYPE* h, const char* name, fdl_dimensions_i64_t value) {          \
+        if (h == nullptr) return fdl::constants::kCustomAttrError;                                                \
+        const doc_lock lock(GET_OWNER);                                                                           \
+        auto* node = GET_NODE;                                                                                    \
+        return ca::set_dims_i64(node, name, value.width, value.height);                                            \
+    }                                                                                                             \
+    int PREFIX##get_custom_attr_dims_i64(const HANDLE_TYPE* h, const char* name, fdl_dimensions_i64_t* out) {     \
+        if (h == nullptr || out == nullptr) return fdl::constants::kCustomAttrError;                               \
+        const doc_lock lock(GET_OWNER);                                                                           \
+        const auto* node = GET_NODE;                                                                              \
+        return ca::get_dims_i64(node, name, &out->width, &out->height);                                            \
     }
 
 // clang-format on

@@ -19,6 +19,9 @@ from .constants import (  # noqa: F401
     RoundingEven,
     RoundingMode,
     VAlign,
+    ATTR_CONTENT_TRANSLATION,
+    ATTR_SCALE_FACTOR,
+    ATTR_SCALED_BOUNDING_BOX,
 )
 from .context import ResolveCanvasResult  # noqa: F401
 from .canvas_template import TemplateResult  # noqa: F401
@@ -31,7 +34,7 @@ from .rounding import (  # noqa: F401
     calculate_scale_factor,
     fdl_round,
 )
-from .types import (  # noqa: F401
+from .fdl_types import (  # noqa: F401
     DimensionsFloat,
     DimensionsInt,
     PointFloat,

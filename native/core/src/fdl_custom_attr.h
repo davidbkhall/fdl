@@ -118,6 +118,66 @@ int get_float(const ojson* node, const char* name, double* out);
 int get_bool(const ojson* node, const char* name, int* out);
 
 /**
+ * @brief Set a point_f64 custom attribute. Fails if the key exists with a different type.
+ * @param node  Target JSON node.
+ * @param name  User-visible attribute name.
+ * @param x     X coordinate.
+ * @param y     Y coordinate.
+ * @return 0 on success, -1 on type mismatch.
+ */
+int set_point_f64(ojson* node, const char* name, double x, double y);
+
+/**
+ * @brief Get a point_f64 custom attribute.
+ * @param node  Target JSON node.
+ * @param name  User-visible attribute name.
+ * @param x     Output pointer for X coordinate.
+ * @param y     Output pointer for Y coordinate.
+ * @return 0 on success, -1 if absent or wrong type.
+ */
+int get_point_f64(const ojson* node, const char* name, double* x, double* y);
+
+/**
+ * @brief Set a dims_f64 custom attribute. Fails if the key exists with a different type.
+ * @param node    Target JSON node.
+ * @param name    User-visible attribute name.
+ * @param width   Width value.
+ * @param height  Height value.
+ * @return 0 on success, -1 on type mismatch.
+ */
+int set_dims_f64(ojson* node, const char* name, double width, double height);
+
+/**
+ * @brief Get a dims_f64 custom attribute.
+ * @param node    Target JSON node.
+ * @param name    User-visible attribute name.
+ * @param width   Output pointer for width.
+ * @param height  Output pointer for height.
+ * @return 0 on success, -1 if absent or wrong type.
+ */
+int get_dims_f64(const ojson* node, const char* name, double* width, double* height);
+
+/**
+ * @brief Set a dims_i64 custom attribute. Fails if the key exists with a different type.
+ * @param node    Target JSON node.
+ * @param name    User-visible attribute name.
+ * @param width   Width value.
+ * @param height  Height value.
+ * @return 0 on success, -1 on type mismatch.
+ */
+int set_dims_i64(ojson* node, const char* name, int64_t width, int64_t height);
+
+/**
+ * @brief Get a dims_i64 custom attribute.
+ * @param node    Target JSON node.
+ * @param name    User-visible attribute name.
+ * @param width   Output pointer for width.
+ * @param height  Output pointer for height.
+ * @return 0 on success, -1 if absent or wrong type.
+ */
+int get_dims_i64(const ojson* node, const char* name, int64_t* width, int64_t* height);
+
+/**
  * @brief Remove a custom attribute.
  * @param node  Target JSON node.
  * @param name  User-visible attribute name.

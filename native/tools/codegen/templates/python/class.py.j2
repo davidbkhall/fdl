@@ -16,7 +16,7 @@ import json
 {% endif %}
 
 {% if imports.type_imports %}
-from .types import {{ imports.type_imports | join(", ") }}
+from .fdl_types import {{ imports.type_imports | join(", ") }}
 {% endif %}
 {% if imports.rounding_imports %}
 from .rounding import {{ imports.rounding_imports | join(", ") }}

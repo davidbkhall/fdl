@@ -33,6 +33,17 @@
 
 namespace fdl {
 
+// -----------------------------------------------------------------------
+// First-class custom attribute name constants
+// -----------------------------------------------------------------------
+
+/** Custom attribute name for the template scale factor (float). */
+inline constexpr const char* ATTR_SCALE_FACTOR = FDL_ATTR_SCALE_FACTOR;
+/** Custom attribute name for the template content translation (point_f64). */
+inline constexpr const char* ATTR_CONTENT_TRANSLATION = FDL_ATTR_CONTENT_TRANSLATION;
+/** Custom attribute name for the template scaled bounding box (dims_f64). */
+inline constexpr const char* ATTR_SCALED_BOUNDING_BOX = FDL_ATTR_SCALED_BOUNDING_BOX;
+
 {% if value_types %}
 // -----------------------------------------------------------------------
 // Value type wrapper classes
@@ -373,6 +384,39 @@ public:
         const char* p = {{ fdl_class.ca_prefix }}custom_attr_name_at({{ fdl_class.handle_field }}, index);
         return p ? std::string(p) : std::string();
     }
+    /** @brief Set a PointFloat custom attribute. */
+    int set_custom_attr(const std::string& name, PointFloat value) {
+        fdl_point_f64_t c{value.x(), value.y()};
+        return {{ fdl_class.ca_prefix }}set_custom_attr_point_f64({{ fdl_class.handle_field }}, name.c_str(), c);
+    }
+    /** @brief Set a DimensionsFloat custom attribute. */
+    int set_custom_attr(const std::string& name, DimensionsFloat value) {
+        fdl_dimensions_f64_t c{value.width(), value.height()};
+        return {{ fdl_class.ca_prefix }}set_custom_attr_dims_f64({{ fdl_class.handle_field }}, name.c_str(), c);
+    }
+    /** @brief Set a DimensionsInt custom attribute. */
+    int set_custom_attr(const std::string& name, DimensionsInt value) {
+        fdl_dimensions_i64_t c{value.width(), value.height()};
+        return {{ fdl_class.ca_prefix }}set_custom_attr_dims_i64({{ fdl_class.handle_field }}, name.c_str(), c);
+    }
+    /** @brief Get a PointFloat custom attribute. */
+    std::optional<PointFloat> get_custom_attr_point_f64(const std::string& name) const {
+        fdl_point_f64_t out{};
+        if ({{ fdl_class.ca_prefix }}get_custom_attr_point_f64({{ fdl_class.handle_field }}, name.c_str(), &out) != 0) return std::nullopt;
+        return PointFloat(out.x, out.y);
+    }
+    /** @brief Get a DimensionsFloat custom attribute. */
+    std::optional<DimensionsFloat> get_custom_attr_dims_f64(const std::string& name) const {
+        fdl_dimensions_f64_t out{};
+        if ({{ fdl_class.ca_prefix }}get_custom_attr_dims_f64({{ fdl_class.handle_field }}, name.c_str(), &out) != 0) return std::nullopt;
+        return DimensionsFloat(out.width, out.height);
+    }
+    /** @brief Get a DimensionsInt custom attribute. */
+    std::optional<DimensionsInt> get_custom_attr_dims_i64(const std::string& name) const {
+        fdl_dimensions_i64_t out{};
+        if ({{ fdl_class.ca_prefix }}get_custom_attr_dims_i64({{ fdl_class.handle_field }}, name.c_str(), &out) != 0) return std::nullopt;
+        return DimensionsInt(out.width, out.height);
+    }
 {% endif %}
 
 private:
@@ -609,6 +653,39 @@ public:
     std::string custom_attr_name_at(uint32_t index) const {
         const char* p = {{ cls.ca_prefix }}custom_attr_name_at({{ cls.handle_field }}, index);
         return p ? std::string(p) : std::string();
+    }
+    /** @brief Set a PointFloat custom attribute. */
+    int set_custom_attr(const std::string& name, PointFloat value) {
+        fdl_point_f64_t c{value.x(), value.y()};
+        return {{ cls.ca_prefix }}set_custom_attr_point_f64({{ cls.handle_field }}, name.c_str(), c);
+    }
+    /** @brief Set a DimensionsFloat custom attribute. */
+    int set_custom_attr(const std::string& name, DimensionsFloat value) {
+        fdl_dimensions_f64_t c{value.width(), value.height()};
+        return {{ cls.ca_prefix }}set_custom_attr_dims_f64({{ cls.handle_field }}, name.c_str(), c);
+    }
+    /** @brief Set a DimensionsInt custom attribute. */
+    int set_custom_attr(const std::string& name, DimensionsInt value) {
+        fdl_dimensions_i64_t c{value.width(), value.height()};
+        return {{ cls.ca_prefix }}set_custom_attr_dims_i64({{ cls.handle_field }}, name.c_str(), c);
+    }
+    /** @brief Get a PointFloat custom attribute. */
+    std::optional<PointFloat> get_custom_attr_point_f64(const std::string& name) const {
+        fdl_point_f64_t out{};
+        if ({{ cls.ca_prefix }}get_custom_attr_point_f64({{ cls.handle_field }}, name.c_str(), &out) != 0) return std::nullopt;
+        return PointFloat(out.x, out.y);
+    }
+    /** @brief Get a DimensionsFloat custom attribute. */
+    std::optional<DimensionsFloat> get_custom_attr_dims_f64(const std::string& name) const {
+        fdl_dimensions_f64_t out{};
+        if ({{ cls.ca_prefix }}get_custom_attr_dims_f64({{ cls.handle_field }}, name.c_str(), &out) != 0) return std::nullopt;
+        return DimensionsFloat(out.width, out.height);
+    }
+    /** @brief Get a DimensionsInt custom attribute. */
+    std::optional<DimensionsInt> get_custom_attr_dims_i64(const std::string& name) const {
+        fdl_dimensions_i64_t out{};
+        if ({{ cls.ca_prefix }}get_custom_attr_dims_i64({{ cls.handle_field }}, name.c_str(), &out) != 0) return std::nullopt;
+        return DimensionsInt(out.width, out.height);
     }
 
 {% endif %}

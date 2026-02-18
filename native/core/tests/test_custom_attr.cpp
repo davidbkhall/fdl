@@ -440,3 +440,290 @@ TEST_CASE("Add custom attrs then roundtrip", "[custom_attr][roundtrip]") {
     fdl_doc_free(doc2);
     fdl_doc_free(doc);
 }
+
+// ---------------------------------------------------------------------------
+// Composite type custom attrs (PointFloat, DimensionsFloat, DimensionsInt)
+// ---------------------------------------------------------------------------
+
+TEST_CASE("Custom attrs composite point_f64 on fdl_doc_t", "[custom_attr][composite][doc]") {
+    fdl_doc_t* doc = make_doc();
+
+    SECTION("set and get point_f64") {
+        fdl_point_f64_t pt{128.5, 276.0};
+        REQUIRE(fdl_doc_set_custom_attr_point_f64(doc, "origin", pt) == 0);
+        REQUIRE(fdl_doc_has_custom_attr(doc, "origin") != 0);
+        REQUIRE(fdl_doc_get_custom_attr_type(doc, "origin") == FDL_CUSTOM_ATTR_TYPE_POINT_F64);
+        REQUIRE(fdl_doc_custom_attrs_count(doc) == 1);
+        REQUIRE(std::string(fdl_doc_custom_attr_name_at(doc, 0)) == "origin");
+
+        fdl_point_f64_t out{};
+        REQUIRE(fdl_doc_get_custom_attr_point_f64(doc, "origin", &out) == 0);
+        REQUIRE(out.x == 128.5);
+        REQUIRE(out.y == 276.0);
+    }
+
+    SECTION("set and get zero point") {
+        fdl_point_f64_t pt{0.0, 0.0};
+        REQUIRE(fdl_doc_set_custom_attr_point_f64(doc, "zero_pt", pt) == 0);
+        fdl_point_f64_t out{};
+        REQUIRE(fdl_doc_get_custom_attr_point_f64(doc, "zero_pt", &out) == 0);
+        REQUIRE(out.x == 0.0);
+        REQUIRE(out.y == 0.0);
+    }
+
+    SECTION("update point_f64 same type") {
+        fdl_point_f64_t pt1{1.0, 2.0};
+        REQUIRE(fdl_doc_set_custom_attr_point_f64(doc, "pos", pt1) == 0);
+        fdl_point_f64_t pt2{3.0, 4.0};
+        REQUIRE(fdl_doc_set_custom_attr_point_f64(doc, "pos", pt2) == 0);
+        fdl_point_f64_t out{};
+        REQUIRE(fdl_doc_get_custom_attr_point_f64(doc, "pos", &out) == 0);
+        REQUIRE(out.x == 3.0);
+        REQUIRE(out.y == 4.0);
+    }
+
+    SECTION("get missing point returns error") {
+        fdl_point_f64_t out{};
+        REQUIRE(fdl_doc_get_custom_attr_point_f64(doc, "missing", &out) == -1);
+    }
+
+    fdl_doc_free(doc);
+}
+
+TEST_CASE("Custom attrs composite dims_f64 on fdl_doc_t", "[custom_attr][composite][doc]") {
+    fdl_doc_t* doc = make_doc();
+
+    SECTION("set and get dims_f64") {
+        fdl_dimensions_f64_t dims{3840.0, 2160.0};
+        REQUIRE(fdl_doc_set_custom_attr_dims_f64(doc, "bounding_box", dims) == 0);
+        REQUIRE(fdl_doc_get_custom_attr_type(doc, "bounding_box") == FDL_CUSTOM_ATTR_TYPE_DIMS_F64);
+
+        fdl_dimensions_f64_t out{};
+        REQUIRE(fdl_doc_get_custom_attr_dims_f64(doc, "bounding_box", &out) == 0);
+        REQUIRE(out.width == 3840.0);
+        REQUIRE(out.height == 2160.0);
+    }
+
+    SECTION("update dims_f64") {
+        fdl_dimensions_f64_t d1{1920.0, 1080.0};
+        REQUIRE(fdl_doc_set_custom_attr_dims_f64(doc, "box", d1) == 0);
+        fdl_dimensions_f64_t d2{3840.0, 2160.0};
+        REQUIRE(fdl_doc_set_custom_attr_dims_f64(doc, "box", d2) == 0);
+        fdl_dimensions_f64_t out{};
+        REQUIRE(fdl_doc_get_custom_attr_dims_f64(doc, "box", &out) == 0);
+        REQUIRE(out.width == 3840.0);
+        REQUIRE(out.height == 2160.0);
+    }
+
+    fdl_doc_free(doc);
+}
+
+TEST_CASE("Custom attrs composite dims_i64 on fdl_doc_t", "[custom_attr][composite][doc]") {
+    fdl_doc_t* doc = make_doc();
+
+    SECTION("set and get dims_i64") {
+        fdl_dimensions_i64_t dims{3840, 2160};
+        REQUIRE(fdl_doc_set_custom_attr_dims_i64(doc, "resolution", dims) == 0);
+        REQUIRE(fdl_doc_get_custom_attr_type(doc, "resolution") == FDL_CUSTOM_ATTR_TYPE_DIMS_I64);
+
+        fdl_dimensions_i64_t out{};
+        REQUIRE(fdl_doc_get_custom_attr_dims_i64(doc, "resolution", &out) == 0);
+        REQUIRE(out.width == 3840);
+        REQUIRE(out.height == 2160);
+    }
+
+    fdl_doc_free(doc);
+}
+
+TEST_CASE("Composite type mismatch between composite types", "[custom_attr][composite][mismatch]") {
+    fdl_doc_t* doc = make_doc();
+
+    // Set as point, try to overwrite with dims
+    fdl_point_f64_t pt{1.0, 2.0};
+    REQUIRE(fdl_doc_set_custom_attr_point_f64(doc, "attr", pt) == 0);
+
+    fdl_dimensions_f64_t df{100.0, 200.0};
+    REQUIRE(fdl_doc_set_custom_attr_dims_f64(doc, "attr", df) == -1);
+
+    fdl_dimensions_i64_t di{100, 200};
+    REQUIRE(fdl_doc_set_custom_attr_dims_i64(doc, "attr", di) == -1);
+
+    // Original point preserved
+    fdl_point_f64_t out{};
+    REQUIRE(fdl_doc_get_custom_attr_point_f64(doc, "attr", &out) == 0);
+    REQUIRE(out.x == 1.0);
+    REQUIRE(out.y == 2.0);
+
+    fdl_doc_free(doc);
+}
+
+TEST_CASE("Composite type mismatch between dims_f64 and dims_i64", "[custom_attr][composite][mismatch]") {
+    fdl_doc_t* doc = make_doc();
+
+    fdl_dimensions_f64_t df{100.0, 200.0};
+    REQUIRE(fdl_doc_set_custom_attr_dims_f64(doc, "dims", df) == 0);
+
+    fdl_dimensions_i64_t di{100, 200};
+    REQUIRE(fdl_doc_set_custom_attr_dims_i64(doc, "dims", di) == -1);
+
+    // Original dims_f64 preserved
+    fdl_dimensions_f64_t out{};
+    REQUIRE(fdl_doc_get_custom_attr_dims_f64(doc, "dims", &out) == 0);
+    REQUIRE(out.width == 100.0);
+
+    fdl_doc_free(doc);
+}
+
+TEST_CASE("Composite type mismatch with scalar types", "[custom_attr][composite][mismatch]") {
+    fdl_doc_t* doc = make_doc();
+
+    // Scalar -> composite mismatch
+    REQUIRE(fdl_doc_set_custom_attr_float(doc, "val", 1.5) == 0);
+    fdl_point_f64_t pt{1.0, 2.0};
+    REQUIRE(fdl_doc_set_custom_attr_point_f64(doc, "val", pt) == -1);
+    fdl_dimensions_f64_t df{1.0, 2.0};
+    REQUIRE(fdl_doc_set_custom_attr_dims_f64(doc, "val", df) == -1);
+
+    // Composite -> scalar mismatch
+    fdl_point_f64_t pt2{3.0, 4.0};
+    REQUIRE(fdl_doc_set_custom_attr_point_f64(doc, "pt", pt2) == 0);
+    REQUIRE(fdl_doc_set_custom_attr_float(doc, "pt", 5.0) == -1);
+    REQUIRE(fdl_doc_set_custom_attr_int(doc, "pt", 5) == -1);
+    REQUIRE(fdl_doc_set_custom_attr_string(doc, "pt", "nope") == -1);
+    REQUIRE(fdl_doc_set_custom_attr_bool(doc, "pt", FDL_TRUE) == -1);
+
+    fdl_doc_free(doc);
+}
+
+TEST_CASE("Composite attrs enumerate with count and name_at", "[custom_attr][composite][enumerate]") {
+    fdl_doc_t* doc = make_doc();
+
+    fdl_doc_set_custom_attr_string(doc, "alpha", "a");
+    fdl_point_f64_t pt{1.0, 2.0};
+    fdl_doc_set_custom_attr_point_f64(doc, "beta", pt);
+    fdl_dimensions_f64_t df{3.0, 4.0};
+    fdl_doc_set_custom_attr_dims_f64(doc, "gamma", df);
+    fdl_dimensions_i64_t di{5, 6};
+    fdl_doc_set_custom_attr_dims_i64(doc, "delta", di);
+
+    REQUIRE(fdl_doc_custom_attrs_count(doc) == 4);
+
+    // Verify all names are accessible via name_at
+    bool found_alpha = false, found_beta = false, found_gamma = false, found_delta = false;
+    for (uint32_t i = 0; i < 4; ++i) {
+        std::string name = fdl_doc_custom_attr_name_at(doc, i);
+        if (name == "alpha") {
+            found_alpha = true;
+        }
+        if (name == "beta") {
+            found_beta = true;
+        }
+        if (name == "gamma") {
+            found_gamma = true;
+        }
+        if (name == "delta") {
+            found_delta = true;
+        }
+    }
+    REQUIRE(found_alpha);
+    REQUIRE(found_beta);
+    REQUIRE(found_gamma);
+    REQUIRE(found_delta);
+
+    fdl_doc_free(doc);
+}
+
+TEST_CASE("Composite attrs remove", "[custom_attr][composite]") {
+    fdl_doc_t* doc = make_doc();
+
+    fdl_point_f64_t pt{1.0, 2.0};
+    fdl_doc_set_custom_attr_point_f64(doc, "pos", pt);
+    REQUIRE(fdl_doc_custom_attrs_count(doc) == 1);
+    REQUIRE(fdl_doc_remove_custom_attr(doc, "pos") == 0);
+    REQUIRE(fdl_doc_custom_attrs_count(doc) == 0);
+    REQUIRE(fdl_doc_has_custom_attr(doc, "pos") == 0);
+
+    fdl_doc_free(doc);
+}
+
+TEST_CASE("Composite attrs roundtrip through JSON", "[custom_attr][composite][roundtrip]") {
+    fdl_doc_t* doc = make_doc();
+
+    fdl_point_f64_t pt{128.5, 276.0};
+    fdl_doc_set_custom_attr_point_f64(doc, "translation", pt);
+    fdl_dimensions_f64_t df{3840.0, 2160.0};
+    fdl_doc_set_custom_attr_dims_f64(doc, "bounding_box", df);
+    fdl_dimensions_i64_t di{1920, 1080};
+    fdl_doc_set_custom_attr_dims_i64(doc, "resolution", di);
+    fdl_doc_set_custom_attr_float(doc, "scale", 0.5);
+
+    // Serialize
+    char* json = fdl_doc_to_json(doc, 2);
+    REQUIRE(json != nullptr);
+    std::string serialized(json);
+    fdl_free(json);
+
+    // Re-parse
+    fdl_parse_result_t res = fdl_doc_parse_json(serialized.c_str(), serialized.size());
+    REQUIRE(res.error == nullptr);
+    fdl_doc_t* doc2 = res.doc;
+
+    // Verify composite attrs survived roundtrip
+    REQUIRE(fdl_doc_get_custom_attr_type(doc2, "translation") == FDL_CUSTOM_ATTR_TYPE_POINT_F64);
+    fdl_point_f64_t pt_out{};
+    REQUIRE(fdl_doc_get_custom_attr_point_f64(doc2, "translation", &pt_out) == 0);
+    REQUIRE(pt_out.x == 128.5);
+    REQUIRE(pt_out.y == 276.0);
+
+    REQUIRE(fdl_doc_get_custom_attr_type(doc2, "bounding_box") == FDL_CUSTOM_ATTR_TYPE_DIMS_F64);
+    fdl_dimensions_f64_t df_out{};
+    REQUIRE(fdl_doc_get_custom_attr_dims_f64(doc2, "bounding_box", &df_out) == 0);
+    REQUIRE(df_out.width == 3840.0);
+    REQUIRE(df_out.height == 2160.0);
+
+    REQUIRE(fdl_doc_get_custom_attr_type(doc2, "resolution") == FDL_CUSTOM_ATTR_TYPE_DIMS_I64);
+    fdl_dimensions_i64_t di_out{};
+    REQUIRE(fdl_doc_get_custom_attr_dims_i64(doc2, "resolution", &di_out) == 0);
+    REQUIRE(di_out.width == 1920);
+    REQUIRE(di_out.height == 1080);
+
+    double scale = 0.0;
+    REQUIRE(fdl_doc_get_custom_attr_float(doc2, "scale", &scale) == 0);
+    REQUIRE(scale == 0.5);
+
+    fdl_doc_free(doc2);
+    fdl_doc_free(doc);
+}
+
+TEST_CASE("Composite attrs on sub-handle types", "[custom_attr][composite][subhandle]") {
+    fdl_doc_t* doc = make_doc();
+    fdl_context_t* ctx = fdl_doc_context_at(doc, 0);
+    fdl_canvas_t* cvs = fdl_context_canvas_at(ctx, 0);
+    fdl_framing_decision_t* fd = fdl_canvas_framing_decision_at(cvs, 0);
+
+    // Context
+    fdl_point_f64_t pt{10.0, 20.0};
+    REQUIRE(fdl_context_set_custom_attr_point_f64(ctx, "offset", pt) == 0);
+    fdl_point_f64_t ctx_out{};
+    REQUIRE(fdl_context_get_custom_attr_point_f64(ctx, "offset", &ctx_out) == 0);
+    REQUIRE(ctx_out.x == 10.0);
+    REQUIRE(ctx_out.y == 20.0);
+
+    // Canvas
+    fdl_dimensions_f64_t df{1920.5, 1080.5};
+    REQUIRE(fdl_canvas_set_custom_attr_dims_f64(cvs, "box", df) == 0);
+    fdl_dimensions_f64_t cvs_out{};
+    REQUIRE(fdl_canvas_get_custom_attr_dims_f64(cvs, "box", &cvs_out) == 0);
+    REQUIRE(cvs_out.width == 1920.5);
+    REQUIRE(cvs_out.height == 1080.5);
+
+    // FramingDecision
+    fdl_dimensions_i64_t di{3840, 2160};
+    REQUIRE(fdl_framing_decision_set_custom_attr_dims_i64(fd, "target_res", di) == 0);
+    fdl_dimensions_i64_t fd_out{};
+    REQUIRE(fdl_framing_decision_get_custom_attr_dims_i64(fd, "target_res", &fd_out) == 0);
+    REQUIRE(fd_out.width == 3840);
+    REQUIRE(fd_out.height == 2160);
+
+    fdl_doc_free(doc);
+}

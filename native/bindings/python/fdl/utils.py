@@ -16,8 +16,8 @@ from .rounding import RoundStrategy
 if TYPE_CHECKING:
     from .canvas import Canvas
     from .fdl import FDL
+    from .fdl_types import DimensionsFloat, PointFloat, Rect
     from .framing_decision import FramingDecision
-    from .types import DimensionsFloat, PointFloat, Rect
 
 __all__ = [
     "DEFAULT_ROUNDING_STRATEGY",
@@ -144,7 +144,7 @@ def get_dimensions_from_path(
     -------
     DimensionsFloat or None
     """
-    from .types import DimensionsFloat
+    from .fdl_types import DimensionsFloat
 
     if not path or path == "none":
         return DimensionsFloat(width=0.0, height=0.0)
@@ -193,7 +193,7 @@ def get_anchor_from_path(canvas: Canvas, framing: FramingDecision, path: str) ->
     -------
     PointFloat
     """
-    from .types import PointFloat
+    from .fdl_types import PointFloat
 
     if not path or path == "none" or path == "canvas.dimensions":
         return PointFloat(x=0.0, y=0.0)

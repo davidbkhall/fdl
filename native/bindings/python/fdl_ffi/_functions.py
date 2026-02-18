@@ -834,6 +834,30 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     lib.fdl_doc_custom_attr_name_at.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     lib.fdl_doc_custom_attr_name_at.restype = ctypes.c_char_p
 
+    # Custom attr: set_custom_attr_point_f64 on FDL
+    lib.fdl_doc_set_custom_attr_point_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_point_f64_t]
+    lib.fdl_doc_set_custom_attr_point_f64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_point_f64 on FDL
+    lib.fdl_doc_get_custom_attr_point_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_point_f64_t)]
+    lib.fdl_doc_get_custom_attr_point_f64.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_dims_f64 on FDL
+    lib.fdl_doc_set_custom_attr_dims_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_f64_t]
+    lib.fdl_doc_set_custom_attr_dims_f64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_dims_f64 on FDL
+    lib.fdl_doc_get_custom_attr_dims_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_f64_t)]
+    lib.fdl_doc_get_custom_attr_dims_f64.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_dims_i64 on FDL
+    lib.fdl_doc_set_custom_attr_dims_i64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_i64_t]
+    lib.fdl_doc_set_custom_attr_dims_i64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_dims_i64 on FDL
+    lib.fdl_doc_get_custom_attr_dims_i64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_i64_t)]
+    lib.fdl_doc_get_custom_attr_dims_i64.restype = ctypes.c_int
+
     # Custom attr: set_custom_attr_string on Context
     lib.fdl_context_set_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
     lib.fdl_context_set_custom_attr_string.restype = ctypes.c_int
@@ -885,6 +909,30 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     # Custom attr: custom_attr_name_at on Context
     lib.fdl_context_custom_attr_name_at.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     lib.fdl_context_custom_attr_name_at.restype = ctypes.c_char_p
+
+    # Custom attr: set_custom_attr_point_f64 on Context
+    lib.fdl_context_set_custom_attr_point_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_point_f64_t]
+    lib.fdl_context_set_custom_attr_point_f64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_point_f64 on Context
+    lib.fdl_context_get_custom_attr_point_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_point_f64_t)]
+    lib.fdl_context_get_custom_attr_point_f64.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_dims_f64 on Context
+    lib.fdl_context_set_custom_attr_dims_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_f64_t]
+    lib.fdl_context_set_custom_attr_dims_f64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_dims_f64 on Context
+    lib.fdl_context_get_custom_attr_dims_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_f64_t)]
+    lib.fdl_context_get_custom_attr_dims_f64.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_dims_i64 on Context
+    lib.fdl_context_set_custom_attr_dims_i64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_i64_t]
+    lib.fdl_context_set_custom_attr_dims_i64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_dims_i64 on Context
+    lib.fdl_context_get_custom_attr_dims_i64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_i64_t)]
+    lib.fdl_context_get_custom_attr_dims_i64.restype = ctypes.c_int
 
     # Custom attr: set_custom_attr_string on Canvas
     lib.fdl_canvas_set_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
@@ -938,6 +986,30 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     lib.fdl_canvas_custom_attr_name_at.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     lib.fdl_canvas_custom_attr_name_at.restype = ctypes.c_char_p
 
+    # Custom attr: set_custom_attr_point_f64 on Canvas
+    lib.fdl_canvas_set_custom_attr_point_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_point_f64_t]
+    lib.fdl_canvas_set_custom_attr_point_f64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_point_f64 on Canvas
+    lib.fdl_canvas_get_custom_attr_point_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_point_f64_t)]
+    lib.fdl_canvas_get_custom_attr_point_f64.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_dims_f64 on Canvas
+    lib.fdl_canvas_set_custom_attr_dims_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_f64_t]
+    lib.fdl_canvas_set_custom_attr_dims_f64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_dims_f64 on Canvas
+    lib.fdl_canvas_get_custom_attr_dims_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_f64_t)]
+    lib.fdl_canvas_get_custom_attr_dims_f64.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_dims_i64 on Canvas
+    lib.fdl_canvas_set_custom_attr_dims_i64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_i64_t]
+    lib.fdl_canvas_set_custom_attr_dims_i64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_dims_i64 on Canvas
+    lib.fdl_canvas_get_custom_attr_dims_i64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_i64_t)]
+    lib.fdl_canvas_get_custom_attr_dims_i64.restype = ctypes.c_int
+
     # Custom attr: set_custom_attr_string on FramingDecision
     lib.fdl_framing_decision_set_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
     lib.fdl_framing_decision_set_custom_attr_string.restype = ctypes.c_int
@@ -989,6 +1061,30 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     # Custom attr: custom_attr_name_at on FramingDecision
     lib.fdl_framing_decision_custom_attr_name_at.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     lib.fdl_framing_decision_custom_attr_name_at.restype = ctypes.c_char_p
+
+    # Custom attr: set_custom_attr_point_f64 on FramingDecision
+    lib.fdl_framing_decision_set_custom_attr_point_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_point_f64_t]
+    lib.fdl_framing_decision_set_custom_attr_point_f64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_point_f64 on FramingDecision
+    lib.fdl_framing_decision_get_custom_attr_point_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_point_f64_t)]
+    lib.fdl_framing_decision_get_custom_attr_point_f64.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_dims_f64 on FramingDecision
+    lib.fdl_framing_decision_set_custom_attr_dims_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_f64_t]
+    lib.fdl_framing_decision_set_custom_attr_dims_f64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_dims_f64 on FramingDecision
+    lib.fdl_framing_decision_get_custom_attr_dims_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_f64_t)]
+    lib.fdl_framing_decision_get_custom_attr_dims_f64.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_dims_i64 on FramingDecision
+    lib.fdl_framing_decision_set_custom_attr_dims_i64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_i64_t]
+    lib.fdl_framing_decision_set_custom_attr_dims_i64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_dims_i64 on FramingDecision
+    lib.fdl_framing_decision_get_custom_attr_dims_i64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_i64_t)]
+    lib.fdl_framing_decision_get_custom_attr_dims_i64.restype = ctypes.c_int
 
     # Custom attr: set_custom_attr_string on FramingIntent
     lib.fdl_framing_intent_set_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
@@ -1042,6 +1138,30 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     lib.fdl_framing_intent_custom_attr_name_at.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     lib.fdl_framing_intent_custom_attr_name_at.restype = ctypes.c_char_p
 
+    # Custom attr: set_custom_attr_point_f64 on FramingIntent
+    lib.fdl_framing_intent_set_custom_attr_point_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_point_f64_t]
+    lib.fdl_framing_intent_set_custom_attr_point_f64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_point_f64 on FramingIntent
+    lib.fdl_framing_intent_get_custom_attr_point_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_point_f64_t)]
+    lib.fdl_framing_intent_get_custom_attr_point_f64.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_dims_f64 on FramingIntent
+    lib.fdl_framing_intent_set_custom_attr_dims_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_f64_t]
+    lib.fdl_framing_intent_set_custom_attr_dims_f64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_dims_f64 on FramingIntent
+    lib.fdl_framing_intent_get_custom_attr_dims_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_f64_t)]
+    lib.fdl_framing_intent_get_custom_attr_dims_f64.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_dims_i64 on FramingIntent
+    lib.fdl_framing_intent_set_custom_attr_dims_i64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_i64_t]
+    lib.fdl_framing_intent_set_custom_attr_dims_i64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_dims_i64 on FramingIntent
+    lib.fdl_framing_intent_get_custom_attr_dims_i64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_i64_t)]
+    lib.fdl_framing_intent_get_custom_attr_dims_i64.restype = ctypes.c_int
+
     # Custom attr: set_custom_attr_string on CanvasTemplate
     lib.fdl_canvas_template_set_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
     lib.fdl_canvas_template_set_custom_attr_string.restype = ctypes.c_int
@@ -1093,6 +1213,30 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     # Custom attr: custom_attr_name_at on CanvasTemplate
     lib.fdl_canvas_template_custom_attr_name_at.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     lib.fdl_canvas_template_custom_attr_name_at.restype = ctypes.c_char_p
+
+    # Custom attr: set_custom_attr_point_f64 on CanvasTemplate
+    lib.fdl_canvas_template_set_custom_attr_point_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_point_f64_t]
+    lib.fdl_canvas_template_set_custom_attr_point_f64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_point_f64 on CanvasTemplate
+    lib.fdl_canvas_template_get_custom_attr_point_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_point_f64_t)]
+    lib.fdl_canvas_template_get_custom_attr_point_f64.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_dims_f64 on CanvasTemplate
+    lib.fdl_canvas_template_set_custom_attr_dims_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_f64_t]
+    lib.fdl_canvas_template_set_custom_attr_dims_f64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_dims_f64 on CanvasTemplate
+    lib.fdl_canvas_template_get_custom_attr_dims_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_f64_t)]
+    lib.fdl_canvas_template_get_custom_attr_dims_f64.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_dims_i64 on CanvasTemplate
+    lib.fdl_canvas_template_set_custom_attr_dims_i64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_i64_t]
+    lib.fdl_canvas_template_set_custom_attr_dims_i64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_dims_i64 on CanvasTemplate
+    lib.fdl_canvas_template_get_custom_attr_dims_i64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_i64_t)]
+    lib.fdl_canvas_template_get_custom_attr_dims_i64.restype = ctypes.c_int
 
     # Custom attr: set_custom_attr_string on ClipID
     lib.fdl_clip_id_set_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
@@ -1146,6 +1290,30 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     lib.fdl_clip_id_custom_attr_name_at.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     lib.fdl_clip_id_custom_attr_name_at.restype = ctypes.c_char_p
 
+    # Custom attr: set_custom_attr_point_f64 on ClipID
+    lib.fdl_clip_id_set_custom_attr_point_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_point_f64_t]
+    lib.fdl_clip_id_set_custom_attr_point_f64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_point_f64 on ClipID
+    lib.fdl_clip_id_get_custom_attr_point_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_point_f64_t)]
+    lib.fdl_clip_id_get_custom_attr_point_f64.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_dims_f64 on ClipID
+    lib.fdl_clip_id_set_custom_attr_dims_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_f64_t]
+    lib.fdl_clip_id_set_custom_attr_dims_f64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_dims_f64 on ClipID
+    lib.fdl_clip_id_get_custom_attr_dims_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_f64_t)]
+    lib.fdl_clip_id_get_custom_attr_dims_f64.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_dims_i64 on ClipID
+    lib.fdl_clip_id_set_custom_attr_dims_i64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_i64_t]
+    lib.fdl_clip_id_set_custom_attr_dims_i64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_dims_i64 on ClipID
+    lib.fdl_clip_id_get_custom_attr_dims_i64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_i64_t)]
+    lib.fdl_clip_id_get_custom_attr_dims_i64.restype = ctypes.c_int
+
     # Custom attr: set_custom_attr_string on FileSequence
     lib.fdl_file_sequence_set_custom_attr_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
     lib.fdl_file_sequence_set_custom_attr_string.restype = ctypes.c_int
@@ -1197,3 +1365,27 @@ def bind_functions(lib: ctypes.CDLL) -> None:
     # Custom attr: custom_attr_name_at on FileSequence
     lib.fdl_file_sequence_custom_attr_name_at.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     lib.fdl_file_sequence_custom_attr_name_at.restype = ctypes.c_char_p
+
+    # Custom attr: set_custom_attr_point_f64 on FileSequence
+    lib.fdl_file_sequence_set_custom_attr_point_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_point_f64_t]
+    lib.fdl_file_sequence_set_custom_attr_point_f64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_point_f64 on FileSequence
+    lib.fdl_file_sequence_get_custom_attr_point_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_point_f64_t)]
+    lib.fdl_file_sequence_get_custom_attr_point_f64.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_dims_f64 on FileSequence
+    lib.fdl_file_sequence_set_custom_attr_dims_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_f64_t]
+    lib.fdl_file_sequence_set_custom_attr_dims_f64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_dims_f64 on FileSequence
+    lib.fdl_file_sequence_get_custom_attr_dims_f64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_f64_t)]
+    lib.fdl_file_sequence_get_custom_attr_dims_f64.restype = ctypes.c_int
+
+    # Custom attr: set_custom_attr_dims_i64 on FileSequence
+    lib.fdl_file_sequence_set_custom_attr_dims_i64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_i64_t]
+    lib.fdl_file_sequence_set_custom_attr_dims_i64.restype = ctypes.c_int
+
+    # Custom attr: get_custom_attr_dims_i64 on FileSequence
+    lib.fdl_file_sequence_get_custom_attr_dims_i64.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_i64_t)]
+    lib.fdl_file_sequence_get_custom_attr_dims_i64.restype = ctypes.c_int
