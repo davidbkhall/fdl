@@ -18,6 +18,11 @@ dev = [
     "pytest-cov>=4.0",
     "mktestdocs>=0.2.0",
 ]
+docs = [
+    "mkdocs-material>=9.0",
+    "mkdocstrings[python]>=0.20",
+    "pymdown-extensions>=10.0",
+]
 
 [tool.ruff]
 line-length = 140

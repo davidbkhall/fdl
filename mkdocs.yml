@@ -1,7 +1,12 @@
 site_name: ASC FDL
 
 theme:
-  name: "readthedocs"
+  name: material
+  palette:
+    scheme: default
+  features:
+    - content.tabs.link
+    - content.code.copy
 
 plugins:
   - search
@@ -19,3 +24,10 @@ plugins:
             show_submodules: false
             merge_init_into_class: true
             allow_inspection: false
+
+markdown_extensions:
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
