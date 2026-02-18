@@ -9,7 +9,11 @@ nav:
   - Template Application:
     - Algorithm Overview: FDL_Apply_Template_Logic.md
     - Implementer Guide: FDL_Template_Implementer_Guide.md
-  - Application Packages: packages.md
+  - Application Packages:
+    - Overview: packages.md
+    - FDL Viewer: fdl_viewer.md
+    - Frameline Generator: fdl_frameline_generator.md
+    - FDL Imaging: fdl_imaging.md
   - API Reference:
     - Python:
       - FDL: FDL Classes/fdl.md

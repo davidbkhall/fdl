@@ -4,60 +4,42 @@ Beyond the core `fdl` library, the project includes three application packages
 in the `packages/` directory. Each is a standalone Python package within the
 uv workspace.
 
-## fdl-frameline-generator
-
-Generates frameline overlay images from FDL documents. Supports multiple output
-formats: EXR, PNG, TIFF, and SVG.
-
-**Install:** `pip install fdl-frameline-generator`
-
-**CLI:** `fdl-frameline`
-
-```shell
-fdl-frameline --input scene.fdl --output framelines.exr --context "Camera A"
+```
+fdl-viewer -------------+
+                        +---> fdl-imaging ---> fdl (core)
+fdl-frameline-generator +
 ```
 
-**Architecture:**
+## [Frameline Generator](fdl_frameline_generator.md)
 
-- `cli.py` — command-line entry point
-- `config.py` — rendering configuration
-- `renderer.py` — rasterized output (EXR, PNG, TIFF)
-- `svg_backend.py` — vector SVG output
+Generates pixel-accurate frameline overlay images from FDL files. Supports
+EXR, PNG, TIFF, SVG, and more.
 
-**Source:** `packages/fdl_frameline_generator/`
+```shell
+pip install fdl-frameline-generator
+fdl-frameline input.fdl output.png
+```
 
-## fdl-imaging
+## [FDL Imaging](fdl_imaging.md)
 
-OpenImageIO-based image processing for FDL workflows. Extracts framing regions
-from images, resizes, and compares results.
+OpenImageIO-based image processing library for FDL workflows. Provides
+cropping, extraction, template transformation, drawing primitives, and
+pixel-level image comparison. Used by both the frameline generator and viewer.
 
-**Install:** `pip install fdl-imaging`
+```shell
+pip install fdl-imaging
+```
 
-Requires [OpenImageIO](https://github.com/AcademySoftwareFoundation/OpenImageIO)
-to be available on the system.
+## [FDL Viewer](fdl_viewer.md)
 
-**Key module:** `fdl_imaging._processing` — core image manipulation functions.
+PySide6 desktop application for visualizing and transforming FDL files
+interactively. Displays source and output canvases with geometry overlays,
+supports template application, image overlay, and side-by-side comparison.
 
-**Source:** `packages/fdl_imaging/`
-
-## fdl-viewer
-
-PySide6 desktop application for visualizing FDL documents interactively.
-Displays source and output canvases with HUD overlays, supports template
-transformations, and provides image export.
-
-**Install:** `pip install fdl-viewer`
-
-**Launch:** `fdl-viewer`
-
-**Architecture (MVC):**
-
-- `models/` — data models for FDL documents and rendering state
-- `views/` — Qt widget hierarchy (source/output tabs, comparison, details)
-- `controllers/` — business logic connecting models to views
-- `main.py` — application entry point
-
-**Source:** `packages/fdl_viewer/`
+```shell
+pip install fdl-viewer
+fdl-viewer
+```
 
 ## Core CLI: fdl-validate
 
