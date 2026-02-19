@@ -490,6 +490,21 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install CMake
+        run: brew install cmake || true
+
+      - name: Install codegen dependencies
+        run: uv pip install pyyaml jinja2 --system
+
+      - name: Run codegen
+        run: python scripts/run_codegen.py
+
+      - name: Build native library
+        run: python scripts/build_native.py --no-tests
+
       - name: Build scenario resources zip
         run: python scripts/zip_scenario_resources.py -o Scenarios_For_Implementers.zip
 
