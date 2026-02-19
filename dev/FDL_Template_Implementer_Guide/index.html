@@ -1,0 +1,3607 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../FDL_Apply_Template_Logic/">
+      
+      
+        <link rel="next" href="../packages/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>Implementer Guide - ASC FDL</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#fdl-template-application-implementer-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ASC FDL" class="md-header__button md-logo" aria-label="ASC FDL" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ASC FDL
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Implementer Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ASC FDL" class="md-nav__button md-logo" aria-label="ASC FDL" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ASC FDL
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../codegen/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../c_abi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C ABI Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Template Application
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Template Application
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FDL_Apply_Template_Logic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Algorithm Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementer Guide
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementer Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-core-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Core Concepts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Core Concepts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-the-geometry-hierarchy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 The Geometry Hierarchy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-template-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Template Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-key-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Key Terminology
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-data-structures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Data Structures
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Data Structures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-the-geometry-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 The Geometry Container
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-dimensionsfloat-and-dimensionsint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 DimensionsFloat and DimensionsInt
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-pointfloat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 PointFloat
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-transformationresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 TransformationResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-anamorphic-squeeze-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 Anamorphic Squeeze Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-pipeline-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Pipeline Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-phase-by-phase-breakdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Phase-by-Phase Breakdown
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Phase-by-Phase Breakdown">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-phase-1-derive-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Phase 1: Derive Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-phase-2-populate-source-geometry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Phase 2: Populate Source Geometry
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2 Phase 2: Populate Source Geometry">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-two-pass-mechanism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The two-pass mechanism
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validation-before-population" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation before population
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-stays-zero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What stays zero?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#after-population" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        After population
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-phase-3-fill-hierarchy-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Phase 3: Fill Hierarchy Gaps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-phase-4-calculate-scale-factor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Phase 4: Calculate Scale Factor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.4 Phase 4: Calculate Scale Factor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-fit_source-choice-affects-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How fit_source choice affects scaling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fit-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fit methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-phase-5-normalize-scale-and-round" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Phase 5: Normalize, Scale, and Round
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-phase-6-output-size-and-alignment-shift" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 Phase 6: Output Size and Alignment Shift
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.6 Phase 6: Output Size and Alignment Shift">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-determine-output-size-per-axis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Determine Output Size Per Axis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-calculate-alignment-shift-per-axis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Calculate Alignment Shift Per Axis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2: Calculate Alignment Shift Per Axis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fit-regime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FIT Regime
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pad-crop-regime-unified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PAD / CROP Regime (Unified)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clamp-for-crop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clamp for Crop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualization-pad-with-rightbottom-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visualization: PAD with right/bottom alignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualization-crop-with-centre-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visualization: CROP with centre alignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#47-phase-7-apply-offsets-to-anchors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.7 Phase 7: Apply Offsets to Anchors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#48-phase-8-crop-to-visible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.8 Phase 8: Crop to Visible
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-edge-cases-special-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Edge Cases &amp; Special Handling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Edge Cases &amp; Special Handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-protection-dimensions-never-auto-filled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Protection Dimensions Never Auto-Filled
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-anchor-clamping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Anchor Clamping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-zero-anamorphic-squeeze-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Zero Anamorphic Squeeze Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-validation-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Validation Checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-path-hierarchy-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 Path Hierarchy Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#56-exact-integer-comparison-in-fit-regime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.6 Exact Integer Comparison in FIT Regime
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-output-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Output Generation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Output Generation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-creating-the-output-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Creating the Output Objects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-return-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Return Values
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-complete-formula-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Complete Formula Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#order-of-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Order of Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-design-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Design Decisions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-scenarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Scenarios
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-signature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Function Signature
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Packages
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Application Packages
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../packages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fdl_viewer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FDL Viewer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fdl_frameline_generator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frameline Generator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fdl_imaging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FDL Imaging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_1" id="__nav_8_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Python
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FDL%20Classes/fdl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FDL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FDL%20Classes/canvas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Canvas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FDL%20Classes/canvas_template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Canvas Template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FDL%20Classes/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Context
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FDL%20Classes/framing_decision/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Framing Decision
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FDL%20Classes/framing_intent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Framing Intent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FDL%20Classes/header/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Header
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FDL%20Classes/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FDL%20Classes/errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Errors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C/C++ (Doxygen)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-core-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Core Concepts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Core Concepts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-the-geometry-hierarchy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 The Geometry Hierarchy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-template-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Template Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-key-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Key Terminology
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-data-structures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Data Structures
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Data Structures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-the-geometry-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 The Geometry Container
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-dimensionsfloat-and-dimensionsint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 DimensionsFloat and DimensionsInt
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-pointfloat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 PointFloat
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-transformationresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 TransformationResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-anamorphic-squeeze-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 Anamorphic Squeeze Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-pipeline-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Pipeline Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-phase-by-phase-breakdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Phase-by-Phase Breakdown
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Phase-by-Phase Breakdown">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-phase-1-derive-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Phase 1: Derive Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-phase-2-populate-source-geometry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Phase 2: Populate Source Geometry
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2 Phase 2: Populate Source Geometry">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-two-pass-mechanism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The two-pass mechanism
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validation-before-population" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation before population
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worked-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worked examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-stays-zero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What stays zero?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#after-population" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        After population
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-phase-3-fill-hierarchy-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Phase 3: Fill Hierarchy Gaps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-phase-4-calculate-scale-factor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Phase 4: Calculate Scale Factor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.4 Phase 4: Calculate Scale Factor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-fit_source-choice-affects-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How fit_source choice affects scaling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fit-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fit methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-phase-5-normalize-scale-and-round" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Phase 5: Normalize, Scale, and Round
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-phase-6-output-size-and-alignment-shift" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 Phase 6: Output Size and Alignment Shift
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.6 Phase 6: Output Size and Alignment Shift">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-determine-output-size-per-axis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Determine Output Size Per Axis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-calculate-alignment-shift-per-axis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Calculate Alignment Shift Per Axis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2: Calculate Alignment Shift Per Axis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fit-regime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FIT Regime
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pad-crop-regime-unified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PAD / CROP Regime (Unified)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clamp-for-crop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clamp for Crop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualization-pad-with-rightbottom-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visualization: PAD with right/bottom alignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualization-crop-with-centre-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visualization: CROP with centre alignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#47-phase-7-apply-offsets-to-anchors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.7 Phase 7: Apply Offsets to Anchors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#48-phase-8-crop-to-visible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.8 Phase 8: Crop to Visible
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-edge-cases-special-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Edge Cases &amp; Special Handling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Edge Cases &amp; Special Handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-protection-dimensions-never-auto-filled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Protection Dimensions Never Auto-Filled
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-anchor-clamping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Anchor Clamping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-zero-anamorphic-squeeze-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Zero Anamorphic Squeeze Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-validation-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Validation Checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-path-hierarchy-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 Path Hierarchy Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#56-exact-integer-comparison-in-fit-regime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.6 Exact Integer Comparison in FIT Regime
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-output-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Output Generation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Output Generation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-creating-the-output-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Creating the Output Objects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-return-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Return Values
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-complete-formula-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Complete Formula Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#order-of-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Order of Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-design-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Design Decisions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-scenarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Scenarios
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#function-signature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Function Signature
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="fdl-template-application-implementer-guide">FDL Template Application -- Implementer Guide</h1>
+<h2 id="overview">Overview</h2>
+<p>The <code>CanvasTemplate.apply()</code> method transforms source canvas and framing geometry
+according to a CanvasTemplate specification. It produces a new FDL structure with properly
+scaled, rounded, and positioned geometry suitable for VFX work.</p>
+<p><strong>Location</strong>: <code>packages/fdl/packages/fdl/src/fdl/canvastemplate.py</code></p>
+<p><strong>FDL Spec Reference</strong>: Section 7.4 -- Template Application Algorithm</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#1-core-concepts">Core Concepts</a></li>
+<li><a href="#2-data-structures">Data Structures</a></li>
+<li><a href="#3-pipeline-overview">Pipeline Overview</a></li>
+<li><a href="#4-phase-by-phase-breakdown">Phase-by-Phase Breakdown</a></li>
+<li><a href="#5-edge-cases--special-handling">Edge Cases &amp; Special Handling</a></li>
+<li><a href="#6-output-generation">Output Generation</a></li>
+<li><a href="#7-complete-formula-reference">Complete Formula Reference</a></li>
+<li><a href="#8-summary">Summary</a></li>
+</ol>
+<hr />
+<h2 id="1-core-concepts">1. Core Concepts</h2>
+<h3 id="11-the-geometry-hierarchy">1.1 The Geometry Hierarchy</h3>
+<p>FDL defines a nested hierarchy of rectangles from outermost to innermost:</p>
+<p><img alt="Geometry Hierarchy" src="../svg/01_geometry_hierarchy.svg" /></p>
+<p><strong>Key Paths</strong> (defined in <code>PATH_HIERARCHY</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Anchor</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>canvas.dimensions</code></td>
+<td>(0, 0) always</td>
+<td>Full canvas/sensor size</td>
+</tr>
+<tr>
+<td><code>canvas.effective_dimensions</code></td>
+<td><code>effective_anchor_point</code></td>
+<td>Active image area within canvas</td>
+</tr>
+<tr>
+<td><code>framing_decision.protection_dimensions</code></td>
+<td><code>protection_anchor_point</code></td>
+<td>Protected zone -- should not be cropped</td>
+</tr>
+<tr>
+<td><code>framing_decision.dimensions</code></td>
+<td><code>anchor_point</code></td>
+<td>Creative framing area</td>
+</tr>
+</tbody>
+</table>
+<p>The hierarchy must always satisfy: <strong>canvas &gt;= effective &gt;= protection &gt;= framing</strong>.</p>
+<h3 id="12-template-parameters">1.2 Template Parameters</h3>
+<p>A <code>CanvasTemplate</code> controls the transformation:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fit_source</code></td>
+<td><code>GeometryPath</code></td>
+<td>Which source dimension to fit into target</td>
+</tr>
+<tr>
+<td><code>target_dimensions</code></td>
+<td><code>DimensionsInt</code></td>
+<td>Target canvas size</td>
+</tr>
+<tr>
+<td><code>fit_method</code></td>
+<td><code>FitMethod</code></td>
+<td>How to fit: <code>fit_all</code>, <code>fill</code>, <code>width</code>, <code>height</code></td>
+</tr>
+<tr>
+<td><code>preserve_from_source_canvas</code></td>
+<td><code>GeometryPath</code></td>
+<td>Which hierarchy levels to preserve</td>
+</tr>
+<tr>
+<td><code>maximum_dimensions</code></td>
+<td><code>DimensionsInt</code></td>
+<td>Hard crop/pad limit</td>
+</tr>
+<tr>
+<td><code>pad_to_maximum</code></td>
+<td><code>bool</code></td>
+<td>Whether to pad output to maximum_dimensions</td>
+</tr>
+<tr>
+<td><code>alignment_method_horizontal</code></td>
+<td><code>HAlign</code></td>
+<td>Horizontal positioning: <code>left</code>, <code>center</code>, <code>right</code></td>
+</tr>
+<tr>
+<td><code>alignment_method_vertical</code></td>
+<td><code>VAlign</code></td>
+<td>Vertical positioning: <code>top</code>, <code>center</code>, <code>bottom</code></td>
+</tr>
+<tr>
+<td><code>round</code></td>
+<td><code>RoundStrategy</code></td>
+<td>Rounding rules (even/whole, up/down/round)</td>
+</tr>
+<tr>
+<td><code>target_anamorphic_squeeze</code></td>
+<td><code>float</code></td>
+<td>Target squeeze (0 = preserve source)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-key-terminology">1.3 Key Terminology</h3>
+<ul>
+<li><strong>Fit Source</strong>: The source dimension layer that will be scaled to match the target.</li>
+<li><strong>Preserve Source</strong>: Additional source layers to carry through the transformation.</li>
+<li><strong>Anchor Point</strong>: The position of a layer relative to the canvas origin.</li>
+<li><strong>Anamorphic Squeeze</strong>: Horizontal compression factor for anamorphic content.</li>
+<li><strong>Bounding Box</strong>: The scaled canvas dimensions before any crop or pad -- the outer boundary of all content.</li>
+<li><strong>Content Translation</strong>: The pixel shift applied to the entire scaled content to position it within the output canvas.</li>
+</ul>
+<hr />
+<h2 id="2-data-structures">2. Data Structures</h2>
+<h3 id="21-the-geometry-container">2.1 The Geometry Container</h3>
+<p>The <code>Geometry</code> dataclass holds all dimensions and anchor points during processing:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Geometry</span><span class="p">:</span>
+    <span class="c1"># Dimensions (all as DimensionsFloat for precision)</span>
+    <span class="n">canvas_dims</span><span class="p">:</span> <span class="n">DimensionsFloat</span>
+    <span class="n">effective_dims</span><span class="p">:</span> <span class="n">DimensionsFloat</span>
+    <span class="n">protection_dims</span><span class="p">:</span> <span class="n">DimensionsFloat</span>
+    <span class="n">framing_dims</span><span class="p">:</span> <span class="n">DimensionsFloat</span>
+
+    <span class="c1"># Anchor points (position relative to canvas origin)</span>
+    <span class="n">effective_anchor</span><span class="p">:</span> <span class="n">PointFloat</span>
+    <span class="n">protection_anchor</span><span class="p">:</span> <span class="n">PointFloat</span>
+    <span class="n">framing_anchor</span><span class="p">:</span> <span class="n">PointFloat</span>
+</code></pre></div>
+<p><strong>Design Rationale</strong>: Using float throughout allows precise intermediate calculations before
+final rounding. This prevents cumulative rounding errors.</p>
+<p><strong>Key Methods</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fill_hierarchy_gaps(anchor_offset)</code></td>
+<td>Propagate populated layers upward to fill zero layers</td>
+</tr>
+<tr>
+<td><code>normalize_and_scale(squeeze, factor, target_squeeze)</code></td>
+<td>Apply anamorphic normalization + scale factor</td>
+</tr>
+<tr>
+<td><code>round(strategy)</code></td>
+<td>Apply FDL rounding rules to all values</td>
+</tr>
+<tr>
+<td><code>validate()</code></td>
+<td>Check framing non-zero and effective &gt;= protection</td>
+</tr>
+<tr>
+<td><code>apply_offset(offset)</code></td>
+<td>Apply content translation to all anchors</td>
+</tr>
+<tr>
+<td><code>crop(theo_eff, theo_prot, theo_fram)</code></td>
+<td>Crop dimensions to visible portion within canvas</td>
+</tr>
+<tr>
+<td><code>get_dimensions_and_anchors_from_path(path)</code></td>
+<td>Look up dimensions/anchor by path string</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-dimensionsfloat-and-dimensionsint">2.2 DimensionsFloat and DimensionsInt</h3>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DimensionsInt</span><span class="p">:</span>
+    <span class="n">width</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">height</span><span class="p">:</span> <span class="nb">int</span>
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DimensionsFloat</span><span class="p">:</span>
+    <span class="n">width</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">height</span><span class="p">:</span> <span class="nb">float</span>
+</code></pre></div>
+<p>Both classes provide:</p>
+<ul>
+<li><code>is_zero()</code> -- Check if dimensions are zero</li>
+<li><code>normalize(squeeze)</code> -- Apply anamorphic squeeze: <code>width *= squeeze</code></li>
+<li><code>normalize_and_scale(input_squeeze, factor, target_squeeze)</code> -- Combined operation</li>
+<li><code>round(even, mode)</code> -- Apply FDL rounding rules</li>
+<li><code>clamp_to_dims(max_dims)</code> -- Clamp to upper bounds, returning delta</li>
+<li><code>from_dimensions(other)</code> -- Copy constructor</li>
+</ul>
+<h3 id="23-pointfloat">2.3 PointFloat</h3>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PointFloat</span><span class="p">:</span>
+    <span class="n">x</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">y</span><span class="p">:</span> <span class="nb">float</span>
+</code></pre></div>
+<p>Provides arithmetic operations (<code>+</code>, <code>-</code>, <code>*</code>) and:</p>
+<ul>
+<li><code>normalize_and_scale()</code> -- Same transformation as dimensions</li>
+<li><code>round(even, mode)</code> -- Apply FDL rounding rules</li>
+<li><code>clamp(min_val)</code> -- Constrain to lower bounds (typically 0.0)</li>
+</ul>
+<h3 id="24-transformationresult">2.4 TransformationResult</h3>
+<p>The output of <code>CanvasTemplate.apply()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TransformationResult</span><span class="p">:</span>
+    <span class="n">fdl</span><span class="p">:</span> <span class="n">FDL</span>                              <span class="c1"># Complete output FDL</span>
+    <span class="n">context_label</span><span class="p">:</span> <span class="nb">str</span>                    <span class="c1"># Label of the created context</span>
+    <span class="n">canvas_id</span><span class="p">:</span> <span class="nb">str</span>                        <span class="c1"># ID of the created canvas</span>
+    <span class="n">framing_decision_id</span><span class="p">:</span> <span class="nb">str</span>              <span class="c1"># ID of the created framing decision</span>
+    <span class="n">scale_factor</span><span class="p">:</span> <span class="nb">float</span>                   <span class="c1"># Scale factor applied</span>
+    <span class="n">scaled_bounding_box</span><span class="p">:</span> <span class="n">DimensionsFloat</span>  <span class="c1"># Scaled canvas before crop/pad</span>
+    <span class="n">content_translation</span><span class="p">:</span> <span class="n">PointFloat</span>       <span class="c1"># Pixel shift for image processing</span>
+</code></pre></div>
+<p><strong>Convenience properties</strong>: <code>.context</code>, <code>.canvas</code>, <code>.framing_decision</code> resolve the objects
+by their IDs from the contained FDL.</p>
+<h3 id="25-anamorphic-squeeze-handling">2.5 Anamorphic Squeeze Handling</h3>
+<p>Dimensions must be normalized before scaling to handle anamorphic content:</p>
+<div class="highlight"><pre><span></span><code># Normalize: Apply squeeze to get true aspect ratio
+normalized_width = width * anamorphic_squeeze
+
+# Scale: Apply scale factor then target squeeze
+scaled_width = (normalized_width * scale_factor) / target_squeeze
+scaled_height = height * scale_factor
+</code></pre></div>
+<p>Per ASC FDL Spec 7.4.5: <em>"All applications reading an ASC FDL will apply the squeeze factor
+before any scaling to ensure consistency."</em></p>
+<hr />
+<h2 id="3-pipeline-overview">3. Pipeline Overview</h2>
+<p>The transformation follows a strict order of operations:</p>
+<p><img alt="Pipeline Overview" src="../svg/02_pipeline_overview.svg" /></p>
+<hr />
+<h2 id="4-phase-by-phase-breakdown">4. Phase-by-Phase Breakdown</h2>
+<h3 id="41-phase-1-derive-configuration">4.1 Phase 1: Derive Configuration</h3>
+<p><strong>Location</strong>: Inline at the top of <code>CanvasTemplate.apply()</code></p>
+<p>All template parameters are read once and stored as local variables. There is no
+separate context object -- values are threaded through helper methods via arguments.</p>
+<div class="highlight"><pre><span></span><code><span class="n">input_squeeze</span> <span class="o">=</span> <span class="n">source_canvas</span><span class="o">.</span><span class="n">anamorphic_squeeze</span> <span class="ow">or</span> <span class="mf">1.0</span>
+<span class="n">target_squeeze</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_anamorphic_squeeze</span> <span class="ow">or</span> <span class="mf">1.0</span>
+<span class="k">if</span> <span class="n">target_squeeze</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+    <span class="n">target_squeeze</span> <span class="o">=</span> <span class="n">input_squeeze</span>  <span class="c1"># Preserve source squeeze</span>
+
+<span class="n">fit_method</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_method</span> <span class="ow">or</span> <span class="n">FitMethod</span><span class="o">.</span><span class="n">FIT_ALL</span>
+<span class="n">preserve_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preserve_from_source_canvas</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+<span class="n">max_dims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximum_dimensions</span>
+<span class="n">has_max_dims</span> <span class="o">=</span> <span class="n">max_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">max_dims</span><span class="o">.</span><span class="n">is_zero</span><span class="p">()</span>
+<span class="n">h_align</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alignment_method_horizontal</span> <span class="ow">or</span> <span class="n">HAlign</span><span class="o">.</span><span class="n">CENTER</span>
+<span class="n">v_align</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alignment_method_vertical</span> <span class="ow">or</span> <span class="n">VAlign</span><span class="o">.</span><span class="n">CENTER</span>
+<span class="n">target_dims_float</span> <span class="o">=</span> <span class="n">DimensionsFloat</span><span class="o">.</span><span class="n">from_dimensions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_dimensions</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="42-phase-2-populate-source-geometry">4.2 Phase 2: Populate Source Geometry</h3>
+<p><strong>Method</strong>: <code>CanvasTemplate._populate_source_geometry</code></p>
+<p>Builds a <code>Geometry</code> object by reading dimensions and anchors from the source FDL.
+Two template paths control what is read:</p>
+<ol>
+<li><strong><code>preserve_from_source_canvas</code></strong> (preserve path) -- the outermost layer to keep.
+   Populates this level and all layers <strong>below</strong> it in the hierarchy.</li>
+<li><strong><code>fit_source</code></strong> (fit path) -- the layer that will be fitted to the target.
+   Populates this level and all layers <strong>below</strong> it, <strong>overwriting</strong> any overlap
+   with preserve.</li>
+</ol>
+<h4 id="the-two-pass-mechanism">The two-pass mechanism</h4>
+<p>Population starts with an all-zeros geometry dictionary, then calls
+<code>_populate_geometry_from_path</code> <strong>twice</strong> into the same dictionary:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Pass 1: preserve paints first (the &quot;background&quot;)</span>
+<span class="k">if</span> <span class="n">preserve_path</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_populate_geometry_from_path</span><span class="p">(</span><span class="n">source_canvas</span><span class="p">,</span> <span class="n">source_framing</span><span class="p">,</span>
+                                      <span class="n">preserve_path</span><span class="p">,</span> <span class="n">geometry_dict</span><span class="p">)</span>
+
+<span class="c1"># Pass 2: fit paints second (the &quot;foreground&quot; -- overwrites on overlap)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">_populate_geometry_from_path</span><span class="p">(</span><span class="n">source_canvas</span><span class="p">,</span> <span class="n">source_framing</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">fit_source</span><span class="p">,</span> <span class="n">geometry_dict</span><span class="p">)</span>
+</code></pre></div>
+<p>Each call to <code>_populate_geometry_from_path</code> starts at the given path's index in
+<code>PATH_HIERARCHY</code> and iterates <strong>downward</strong> to the innermost layer:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_populate_geometry_from_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canvas</span><span class="p">,</span> <span class="n">framing</span><span class="p">,</span> <span class="n">start_path</span><span class="p">,</span> <span class="n">geometry</span><span class="p">):</span>
+    <span class="n">start_index</span> <span class="o">=</span> <span class="n">PATH_HIERARCHY</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">start_path</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">PATH_HIERARCHY</span><span class="p">[</span><span class="n">start_index</span><span class="p">:]:</span>
+        <span class="n">dims</span> <span class="o">=</span> <span class="n">get_dimensions_from_path</span><span class="p">(</span><span class="n">canvas</span><span class="p">,</span> <span class="n">framing</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">anchor</span> <span class="o">=</span> <span class="n">get_anchor_from_path</span><span class="p">(</span><span class="n">canvas</span><span class="p">,</span> <span class="n">framing</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Store in geometry based on path...</span>
+</code></pre></div>
+<p><code>required=False</code> means that if the source FDL doesn't have a given layer (e.g., no
+protection defined), the call returns <code>None</code> and that slot stays at its zero default.</p>
+<p>Both passes read from the <strong>same</strong> <code>source_canvas</code> and <code>source_framing</code>. When the
+paths overlap, the second pass re-writes the same values -- the overwrite is a no-op
+in practice. The two-pass design matters when the paths <em>don't</em> overlap: preserve
+brings in the outer layers, fit brings in the inner layers.</p>
+<h4 id="validation-before-population">Validation before population</h4>
+<p>Before any population happens, both paths are validated with <code>required=True</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="n">preserve_path</span><span class="p">:</span>
+    <span class="n">get_dimensions_from_path</span><span class="p">(</span><span class="n">source_canvas</span><span class="p">,</span> <span class="n">source_framing</span><span class="p">,</span> <span class="n">preserve_path</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">get_dimensions_from_path</span><span class="p">(</span><span class="n">source_canvas</span><span class="p">,</span> <span class="n">source_framing</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_source</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+<p>This catches mismatches early -- for example, if the template references
+<code>framing_decision.protection_dimensions</code> but the source has no protection, a
+descriptive error is raised explaining the problem and suggesting alternatives.</p>
+<h4 id="worked-examples">Worked examples</h4>
+<p><strong>Example A</strong> -- <code>preserve = "canvas.effective_dimensions"</code>, <code>fit = "framing_decision.dimensions"</code> (common VFX pull):</p>
+<table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Path</th>
+<th>Pass 1 (preserve, start=1)</th>
+<th>Pass 2 (fit, start=3)</th>
+<th>Final</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>canvas.dimensions</code></td>
+<td>not reached</td>
+<td>not reached</td>
+<td><strong>zero</strong></td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>canvas.effective_dimensions</code></td>
+<td><strong>written</strong></td>
+<td>not reached</td>
+<td>from preserve</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>framing_decision.protection_dimensions</code></td>
+<td><strong>written</strong> (if exists)</td>
+<td>not reached</td>
+<td>from preserve</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>framing_decision.dimensions</code></td>
+<td><strong>written</strong></td>
+<td><strong>overwritten</strong> (same values)</td>
+<td>from fit</td>
+</tr>
+</tbody>
+</table>
+<p>Canvas stays zero -- filled by Phase 3.</p>
+<p><strong>Example B</strong> -- <code>preserve = "canvas.effective_dimensions"</code>, <code>fit = "framing_decision.protection_dimensions"</code> (fit to safe zone):</p>
+<table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Path</th>
+<th>Pass 1 (preserve, start=1)</th>
+<th>Pass 2 (fit, start=2)</th>
+<th>Final</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>canvas.dimensions</code></td>
+<td>not reached</td>
+<td>not reached</td>
+<td><strong>zero</strong></td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>canvas.effective_dimensions</code></td>
+<td><strong>written</strong></td>
+<td>not reached</td>
+<td>from preserve</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>framing_decision.protection_dimensions</code></td>
+<td><strong>written</strong></td>
+<td><strong>overwritten</strong> (same values)</td>
+<td>from fit</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>framing_decision.dimensions</code></td>
+<td><strong>written</strong></td>
+<td><strong>overwritten</strong> (same values)</td>
+<td>from fit</td>
+</tr>
+</tbody>
+</table>
+<p>Canvas stays zero -- filled by Phase 3. The key difference from Example A is <strong>not</strong>
+in population (both produce the same geometry), but in what happens <strong>downstream</strong>:
+<code>fit_source</code> determines which layer drives the scale factor in Phase 4. See
+<a href="#44-phase-4-calculate-scale-factor">Phase 4</a> for the consequences.</p>
+<p><strong>Example C</strong> -- <code>preserve = "canvas.dimensions"</code>, <code>fit = "framing_decision.protection_dimensions"</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Path</th>
+<th>Pass 1 (preserve, start=0)</th>
+<th>Pass 2 (fit, start=2)</th>
+<th>Final</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>canvas.dimensions</code></td>
+<td><strong>written</strong></td>
+<td>not reached</td>
+<td>from preserve</td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>canvas.effective_dimensions</code></td>
+<td><strong>written</strong></td>
+<td>not reached</td>
+<td>from preserve</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>framing_decision.protection_dimensions</code></td>
+<td><strong>written</strong></td>
+<td><strong>overwritten</strong> (same values)</td>
+<td>from fit</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>framing_decision.dimensions</code></td>
+<td><strong>written</strong></td>
+<td><strong>overwritten</strong> (same values)</td>
+<td>from fit</td>
+</tr>
+</tbody>
+</table>
+<p>All four layers populated by pass 1; Phase 3 has no gaps to fill.</p>
+<h4 id="what-stays-zero">What stays zero?</h4>
+<p>Any layer <strong>above</strong> both the preserve path and the fit path is never reached and
+stays zero. This is by design -- the template doesn't ask for it, so it's not
+included. Phase 3 fills these gaps by propagating the outermost populated layer
+upward.</p>
+<h4 id="after-population">After population</h4>
+<p>The resulting geometry is <strong>validated</strong>:
+- Framing dimensions must be non-zero.
+- Effective must not be smaller than protection (if both are present).</p>
+<h3 id="43-phase-3-fill-hierarchy-gaps">4.3 Phase 3: Fill Hierarchy Gaps</h3>
+<p><strong>Method</strong>: <code>CanvasTemplate._prepare_geometry_hierarchy</code> -&gt; <code>Geometry.fill_hierarchy_gaps</code></p>
+<p>After population, some layers may be zero (not present in the source). The hierarchy
+is completed by propagating the outermost populated layer upward:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fill_hierarchy_gaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor_offset</span><span class="p">):</span>
+    <span class="c1"># Find the highest-ranking non-zero dimension</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">canvas</span><span class="o">.</span><span class="n">is_zero</span><span class="p">():</span>
+        <span class="n">reference_dims</span> <span class="o">=</span> <span class="n">canvas</span>
+        <span class="n">reference_anchor</span> <span class="o">=</span> <span class="n">PointFloat</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>  <span class="c1"># Canvas has no anchor</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">effective</span><span class="o">.</span><span class="n">is_zero</span><span class="p">():</span>
+        <span class="n">reference_dims</span> <span class="o">=</span> <span class="n">effective</span>
+        <span class="n">reference_anchor</span> <span class="o">=</span> <span class="n">effective_anchor</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">protection</span><span class="o">.</span><span class="n">is_zero</span><span class="p">():</span>
+        <span class="n">reference_dims</span> <span class="o">=</span> <span class="n">protection</span>
+        <span class="n">reference_anchor</span> <span class="o">=</span> <span class="n">protection_anchor</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">reference_dims</span> <span class="o">=</span> <span class="n">framing</span>
+        <span class="n">reference_anchor</span> <span class="o">=</span> <span class="n">framing_anchor</span>
+
+    <span class="c1"># Fill gaps upward</span>
+    <span class="k">if</span> <span class="n">canvas</span><span class="o">.</span><span class="n">is_zero</span><span class="p">():</span>
+        <span class="n">canvas</span> <span class="o">=</span> <span class="n">DimensionsFloat</span><span class="o">.</span><span class="n">from_dimensions</span><span class="p">(</span><span class="n">reference_dims</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">effective</span><span class="o">.</span><span class="n">is_zero</span><span class="p">():</span>
+        <span class="n">effective</span> <span class="o">=</span> <span class="n">DimensionsFloat</span><span class="o">.</span><span class="n">from_dimensions</span><span class="p">(</span><span class="n">reference_dims</span><span class="p">)</span>
+        <span class="n">effective_anchor</span> <span class="o">=</span> <span class="n">PointFloat</span><span class="p">(</span><span class="n">reference_anchor</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">reference_anchor</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># CRITICAL: Protection is NEVER filled from framing</span>
+    <span class="c1"># It stays zero if not explicitly provided</span>
+</code></pre></div>
+<p><strong>Why Protection Is Special</strong>: Protection dimensions represent an optional safe zone that
+must be explicitly defined. If the source FDL doesn't have protection, the output shouldn't
+fabricate it.</p>
+<p><strong>Anchor Offset Calculation</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Determine reference anchor for relative positioning</span>
+<span class="n">fit_dims</span><span class="p">,</span> <span class="n">fit_anchor</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">get_dimensions_and_anchors_from_path</span><span class="p">(</span><span class="n">fit_source</span><span class="p">)</span>
+<span class="n">preserve_dims</span><span class="p">,</span> <span class="n">preserve_anchor</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">get_dimensions_and_anchors_from_path</span><span class="p">(</span><span class="n">preserve_path</span><span class="p">)</span>
+
+<span class="c1"># Use preserve anchor if specified, otherwise fit anchor</span>
+<span class="n">anchor_offset</span> <span class="o">=</span> <span class="n">fit_anchor</span> <span class="k">if</span> <span class="n">preserve_dims</span><span class="o">.</span><span class="n">is_zero</span><span class="p">()</span> <span class="k">else</span> <span class="n">preserve_anchor</span>
+</code></pre></div>
+<p>All anchors are then made relative to this offset:</p>
+<div class="highlight"><pre><span></span><code><span class="n">effective_anchor</span> <span class="o">-=</span> <span class="n">anchor_offset</span>
+<span class="n">protection_anchor</span> <span class="o">-=</span> <span class="n">anchor_offset</span>
+<span class="n">framing_anchor</span> <span class="o">-=</span> <span class="n">anchor_offset</span>
+</code></pre></div>
+<h3 id="44-phase-4-calculate-scale-factor">4.4 Phase 4: Calculate Scale Factor</h3>
+<p><strong>Function</strong>: <code>calculate_scale_factor</code></p>
+<p>Determine the uniform scale factor that transforms the <code>fit_source</code> layer to match
+the target dimensions. The <code>fit_dims</code> used here are the ones extracted for the
+<code>fit_source</code> path during Phase 3 (<code>_prepare_geometry_hierarchy</code>).</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Normalize dimensions for proper aspect ratio comparison</span>
+<span class="n">fit_dims_norm</span> <span class="o">=</span> <span class="n">fit_dims</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">input_squeeze</span><span class="p">)</span>
+<span class="n">target_dims_norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_dimensions</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">target_squeeze</span><span class="p">)</span>
+
+<span class="n">scale_factor</span> <span class="o">=</span> <span class="n">calculate_scale_factor</span><span class="p">(</span><span class="n">fit_dims_norm</span><span class="p">,</span> <span class="n">target_dims_norm</span><span class="p">,</span> <span class="n">fit_method</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="how-fit_source-choice-affects-scaling">How <code>fit_source</code> choice affects scaling</h4>
+<p>Because <strong>all</strong> layers are scaled by the same uniform factor, the choice of
+<code>fit_source</code> determines which layer ends up matching the target -- and consequently
+whether the other layers overflow or underflow:</p>
+<table>
+<thead>
+<tr>
+<th><code>fit_source</code></th>
+<th>Scaled to target</th>
+<th>Layers <strong>smaller</strong> than target</th>
+<th>Layers <strong>larger</strong> than target (overflow)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>framing_decision.dimensions</code></td>
+<td>framing</td>
+<td>--</td>
+<td>protection, effective, canvas</td>
+</tr>
+<tr>
+<td><code>framing_decision.protection_dimensions</code></td>
+<td>protection</td>
+<td>framing</td>
+<td>effective, canvas</td>
+</tr>
+<tr>
+<td><code>canvas.effective_dimensions</code></td>
+<td>effective</td>
+<td>framing, protection</td>
+<td>canvas</td>
+</tr>
+<tr>
+<td><code>canvas.dimensions</code></td>
+<td>canvas</td>
+<td>framing, protection, effective</td>
+<td>--</td>
+</tr>
+</tbody>
+</table>
+<p>Overflow layers extend beyond the target and may require cropping (Phase 6).
+Underflow layers are smaller than the target and sit inside it, positioned by
+alignment.</p>
+<p><strong>Example</strong>: With <code>fit_source = "framing_decision.protection_dimensions"</code>:
+- Protection is scaled to match the target exactly.
+- Framing (smaller than protection) ends up smaller than the target.
+- Effective and canvas (larger than protection) overflow the target.
+- In Phase 6, the alignment shift positions <strong>protection</strong> within the output
+  (<code>gap ~= 0</code> since protection matches the target), while the bounding box
+  overflow is handled by crop clamping or padding.</p>
+<h4 id="fit-methods">Fit methods</h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_scale_factor</span><span class="p">(</span><span class="n">fit_norm</span><span class="p">,</span> <span class="n">target_norm</span><span class="p">,</span> <span class="n">fit_method</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">fit_method</span> <span class="o">==</span> <span class="s2">&quot;fit_all&quot;</span><span class="p">:</span>
+        <span class="c1"># Fit entirely within target (letterbox/pillarbox if needed)</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">target_norm</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="n">fit_norm</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
+                   <span class="n">target_norm</span><span class="o">.</span><span class="n">height</span> <span class="o">/</span> <span class="n">fit_norm</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">fit_method</span> <span class="o">==</span> <span class="s2">&quot;fill&quot;</span><span class="p">:</span>
+        <span class="c1"># Fill target completely (may crop)</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">target_norm</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="n">fit_norm</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
+                   <span class="n">target_norm</span><span class="o">.</span><span class="n">height</span> <span class="o">/</span> <span class="n">fit_norm</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">fit_method</span> <span class="o">==</span> <span class="s2">&quot;width&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">target_norm</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="n">fit_norm</span><span class="o">.</span><span class="n">width</span>
+    <span class="k">elif</span> <span class="n">fit_method</span> <span class="o">==</span> <span class="s2">&quot;height&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">target_norm</span><span class="o">.</span><span class="n">height</span> <span class="o">/</span> <span class="n">fit_norm</span><span class="o">.</span><span class="n">height</span>
+</code></pre></div>
+<p><strong>Visual Examples</strong>:</p>
+<p><img alt="fit_all -- Letterbox" src="../svg/03_fit_all_letterbox.svg" /></p>
+<p><img alt="fill -- Crop" src="../svg/04_fill_crop.svg" /></p>
+<h3 id="45-phase-5-normalize-scale-and-round">4.5 Phase 5: Normalize, Scale, and Round</h3>
+<p><strong>Methods</strong>: <code>Geometry.normalize_and_scale</code> + <code>Geometry.round</code></p>
+<p>Apply the scale factor to <strong>all</strong> dimensions and anchors uniformly, then round.</p>
+<div class="highlight"><pre><span></span><code><span class="n">geometry</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">normalize_and_scale</span><span class="p">(</span>
+    <span class="n">source_canvas_anamorphic_squeeze</span><span class="o">=</span><span class="n">input_squeeze</span><span class="p">,</span>
+    <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+    <span class="n">target_anamorphic_squeeze</span><span class="o">=</span><span class="n">target_squeeze</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">geometry</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">round</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>The Normalize-and-Scale Formula</strong> (per ASC FDL spec 7.4.5):</p>
+<p>For dimensions:
+<div class="highlight"><pre><span></span><code>width_out  = (width_in  x source_squeeze x scale_factor) / target_squeeze
+height_out = height_in x scale_factor
+</code></pre></div></p>
+<p>For anchor points:
+<div class="highlight"><pre><span></span><code>x_out = (x_in x source_squeeze x scale_factor) / target_squeeze
+y_out = y_in x scale_factor
+</code></pre></div></p>
+<p><strong>Rounding Configuration</strong> (<code>RoundStrategy</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Values</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>even</code></td>
+<td><code>"whole"</code>, <code>"even"</code></td>
+<td>Round to any integer vs even integers only</td>
+</tr>
+<tr>
+<td><code>mode</code></td>
+<td><code>"up"</code>, <code>"down"</code>, <code>"round"</code></td>
+<td>Ceiling, floor, or nearest</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>even="whole", mode="up"</th>
+<th>even="even", mode="up"</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1919.5</td>
+<td>1920</td>
+<td>1920</td>
+</tr>
+<tr>
+<td>1919.1</td>
+<td>1920</td>
+<td>1920</td>
+</tr>
+<tr>
+<td>1921.1</td>
+<td>1922</td>
+<td>1922</td>
+</tr>
+<tr>
+<td>1920.0</td>
+<td>1920</td>
+<td>1920</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why Round Before Alignment</strong>: Clean integer dimensions ensure that alignment
+calculations produce precise pixel positions, avoiding sub-pixel positioning issues.</p>
+<p>After rounding, the scaled values are extracted for use in Phase 6:</p>
+<div class="highlight"><pre><span></span><code><span class="n">scaled_fit_raw</span><span class="p">,</span> <span class="n">scaled_fit_anchor_raw</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">get_dimensions_and_anchors_from_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_source</span><span class="p">)</span>
+<span class="n">scaled_fit</span> <span class="o">=</span> <span class="n">DimensionsFloat</span><span class="o">.</span><span class="n">from_dimensions</span><span class="p">(</span><span class="n">scaled_fit_raw</span><span class="p">)</span>
+<span class="n">scaled_fit_anchor</span> <span class="o">=</span> <span class="n">scaled_fit_anchor_raw</span> <span class="ow">or</span> <span class="n">PointFloat</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="n">scaled_bounding_box</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">canvas_dims</span>  <span class="c1"># Full bounding box before crop/pad</span>
+</code></pre></div>
+<h3 id="46-phase-6-output-size-and-alignment-shift">4.6 Phase 6: Output Size and Alignment Shift</h3>
+<p><strong>Method</strong>: <code>CanvasTemplate._calculate_output_canvas_and_translation</code></p>
+<p>This phase combines what were previously separate "crop to max", "pad", and "align" phases
+into a single unified calculation, evaluated independently per axis.</p>
+<h4 id="step-1-determine-output-size-per-axis">Step 1: Determine Output Size Per Axis</h4>
+<p><strong>Function</strong>: <code>_output_size_for_axis</code></p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_output_size_for_axis</span><span class="p">(</span><span class="n">canvas_size</span><span class="p">,</span> <span class="n">max_size</span><span class="p">,</span> <span class="n">has_max</span><span class="p">,</span> <span class="n">pad_to_max</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">has_max</span> <span class="ow">and</span> <span class="n">pad_to_max</span><span class="p">:</span>     <span class="k">return</span> <span class="n">max_size</span>   <span class="c1"># PAD</span>
+    <span class="k">if</span> <span class="n">has_max</span> <span class="ow">and</span> <span class="n">canvas</span> <span class="o">&gt;</span> <span class="nb">max</span><span class="p">:</span>   <span class="k">return</span> <span class="n">max_size</span>   <span class="c1"># CROP</span>
+    <span class="k">return</span> <span class="n">canvas_size</span>                                <span class="c1"># FIT</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Condition</th>
+<th>Output size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>PAD</strong></td>
+<td><code>has_max</code> and <code>pad_to_maximum</code></td>
+<td><code>max_dims</code></td>
+<td>Expand to maximum dimensions</td>
+</tr>
+<tr>
+<td><strong>CROP</strong></td>
+<td><code>has_max</code> and <code>canvas &gt; max</code></td>
+<td><code>max_dims</code></td>
+<td>Clamp canvas to maximum</td>
+</tr>
+<tr>
+<td><strong>FIT</strong></td>
+<td>No max constraint</td>
+<td><code>canvas</code></td>
+<td>Use canvas as-is</td>
+</tr>
+</tbody>
+</table>
+<p>Note: each axis is evaluated independently -- one axis may PAD while the other CROPs.</p>
+<h4 id="step-2-calculate-alignment-shift-per-axis">Step 2: Calculate Alignment Shift Per Axis</h4>
+<p><strong>Function</strong>: <code>_alignment_shift</code></p>
+<p>The content translation (how many pixels to shift the entire scaled content) is calculated
+using a unified formula that handles PAD and CROP identically.</p>
+<p><strong>Alignment factors</strong> are computed by <code>_alignment_factor(align_str)</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Alignment</th>
+<th>Factor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>left</code> / <code>top</code></td>
+<td>0.0</td>
+</tr>
+<tr>
+<td><code>center</code></td>
+<td>0.5</td>
+</tr>
+<tr>
+<td><code>right</code> / <code>bottom</code></td>
+<td>1.0</td>
+</tr>
+</tbody>
+</table>
+<h5 id="fit-regime">FIT Regime</h5>
+<p>If <code>output_size == canvas_size</code> and <code>pad_to_maximum</code> is off: the geometry is already
+correctly positioned. <strong>Return 0.</strong></p>
+<h5 id="pad-crop-regime-unified">PAD / CROP Regime (Unified)</h5>
+<p>The shift is the sum of three independent offsets:</p>
+<div class="highlight"><pre><span></span><code>shift = target_offset + alignment_offset - fit_anchor
+</code></pre></div>
+<p><strong>1. Target offset</strong> -- where the target region starts in the output:</p>
+<div class="highlight"><pre><span></span><code>center_target = pad_to_maximum OR is_center
+target_offset = (output_size - target_size) x 0.5   if center_target
+              = 0                                    otherwise
+</code></pre></div>
+<p>When padding (<code>pad_to_maximum</code>), the target region is always centred in the larger
+output canvas. When using centre alignment, centring in the output is mathematically
+equivalent. When neither applies, the target sits at the output origin.</p>
+<p><strong>2. Alignment offset</strong> -- where the fit sits within the target:</p>
+<div class="highlight"><pre><span></span><code>gap = target_size - fit_size
+alignment_offset = gap x align_factor
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Alignment</th>
+<th>Effect</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>left/top (0.0)</td>
+<td><code>0</code></td>
+<td>Fit snapped to target left/top edge</td>
+</tr>
+<tr>
+<td>center (0.5)</td>
+<td><code>gap x 0.5</code></td>
+<td>Fit centred within target</td>
+</tr>
+<tr>
+<td>right/bottom (1.0)</td>
+<td><code>gap</code></td>
+<td>Fit snapped to target right/bottom edge</td>
+</tr>
+</tbody>
+</table>
+<p>When <code>gap &gt; 0</code>, the fit is smaller than the target and there is room.
+When <code>gap &lt; 0</code>, the fit is larger (overflow), and the alignment determines which part
+is visible.</p>
+<p><strong>3. Fit anchor compensation</strong> -- <code>-fit_anchor</code>:</p>
+<p>The fit_source may not start at position (0, 0) within the bounding box. The
+<code>fit_anchor</code> is the offset from the canvas origin to the fit_source origin. This is
+subtracted to align the fit_source itself (not the bounding box).</p>
+<h5 id="clamp-for-crop">Clamp for Crop</h5>
+<p>When cropping without padding (<code>pad_to_maximum</code> is off and <code>overflow &gt; 0</code>), the content
+must fill the entire output -- no empty space allowed:</p>
+<div class="highlight"><pre><span></span><code>shift = max(min(shift, 0.0), -overflow)
+</code></pre></div>
+<p>This ensures:
+- <code>shift &lt;= 0</code>: content starts at or before the output origin (no left/top gap)
+- <code>shift &gt;= -overflow</code>: content extends to or beyond the output end (no right/bottom gap)</p>
+<h5 id="visualization-pad-with-rightbottom-alignment">Visualization: PAD with right/bottom alignment</h5>
+<p><img alt="PAD -- right/bottom alignment" src="../svg/05_pad_right_bottom.svg" /></p>
+<h5 id="visualization-crop-with-centre-alignment">Visualization: CROP with centre alignment</h5>
+<p><img alt="CROP -- centre alignment" src="../svg/06_crop_centre.svg" /></p>
+<h3 id="47-phase-7-apply-offsets-to-anchors">4.7 Phase 7: Apply Offsets to Anchors</h3>
+<p><strong>Method</strong>: <code>Geometry.apply_offset</code></p>
+<p>The content translation from Phase 6 is applied to <strong>all</strong> anchor points:</p>
+<div class="highlight"><pre><span></span><code><span class="n">new_anchor</span> <span class="o">=</span> <span class="n">original_anchor</span> <span class="o">+</span> <span class="n">content_translation</span>
+</code></pre></div>
+<p>This produces two versions of each anchor:</p>
+<ul>
+<li><strong>Clamped anchors</strong> (stored in the geometry): <code>max(new_anchor, 0)</code> -- used in the
+  output FDL where anchors cannot be negative.</li>
+<li><strong>Theoretical anchors</strong> (returned separately): the raw unclamped values -- used in
+  Phase 8 to calculate how much of each layer is visible.</li>
+</ul>
+<p>Theoretical anchors can be <strong>negative</strong> when content extends off the left/top edge
+of the output canvas (e.g., right-aligned crop).</p>
+<h3 id="48-phase-8-crop-to-visible">4.8 Phase 8: Crop to Visible</h3>
+<p><strong>Method</strong>: <code>Geometry.crop</code></p>
+<p>Calculate the <strong>visible portion</strong> of each layer within the output canvas. This is not
+a destructive pixel crop -- it computes what part of each geometry layer falls within the
+canvas boundaries.</p>
+<p><strong>Per-layer visible dimensions</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">crop_dim</span><span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="n">theo_anchor</span><span class="p">,</span> <span class="n">clamped_anchor</span><span class="p">):</span>
+    <span class="n">clip_left</span>  <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">theo_anchor</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">clip_top</span>   <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">theo_anchor</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+    <span class="n">visible_w</span>  <span class="o">=</span> <span class="n">dims</span><span class="o">.</span><span class="n">width</span> <span class="o">-</span> <span class="n">clip_left</span>
+    <span class="n">visible_h</span>  <span class="o">=</span> <span class="n">dims</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="n">clip_top</span>
+    <span class="n">visible_w</span>  <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">visible_w</span><span class="p">,</span> <span class="n">canvas</span><span class="o">.</span><span class="n">width</span> <span class="o">-</span> <span class="n">clamped_anchor</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">visible_h</span>  <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">visible_h</span><span class="p">,</span> <span class="n">canvas</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="n">clamped_anchor</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">DimensionsFloat</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">visible_w</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">visible_h</span><span class="p">))</span>
+</code></pre></div>
+<p>After individual clipping, the <strong>hierarchy is enforced</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">visible_effective</span>  <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">visible_effective</span><span class="p">,</span> <span class="n">canvas</span><span class="p">)</span>
+<span class="n">visible_protection</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">visible_protection</span><span class="p">,</span> <span class="n">visible_effective</span><span class="p">)</span>   <span class="c1"># if exists</span>
+<span class="n">visible_framing</span>    <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">visible_framing</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>                 <span class="c1"># parent = protection or effective</span>
+</code></pre></div>
+<p>This ensures inner layers never exceed their parent boundaries.</p>
+<p><strong>Example</strong> -- right-aligned crop with 400px X overflow:</p>
+<p><img alt="Right-aligned crop -- 400px clipped" src="../svg/07_crop_right_aligned.svg" /></p>
+<hr />
+<h2 id="5-edge-cases-special-handling">5. Edge Cases &amp; Special Handling</h2>
+<h3 id="51-protection-dimensions-never-auto-filled">5.1 Protection Dimensions Never Auto-Filled</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># In fill_hierarchy_gaps:</span>
+<span class="c1"># Protection is NEVER filled from framing -- it stays zero if not provided</span>
+</code></pre></div>
+<p><strong>Rationale</strong>: Protection dimensions represent an intentional safe zone. If the source FDL
+doesn't define protection, it means "no protection required." Auto-filling would create
+incorrect protection zones that weren't in the original spec.</p>
+<h3 id="52-anchor-clamping">5.2 Anchor Clamping</h3>
+<p>All anchors stored in the output FDL are clamped to non-negative values:</p>
+<div class="highlight"><pre><span></span><code><span class="n">effective_anchor</span> <span class="o">=</span> <span class="p">(</span><span class="n">original</span> <span class="o">+</span> <span class="n">offset</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">min_val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>Rationale</strong>: Negative anchors would place content outside the canvas, which is invalid
+in the FDL schema. Clamping ensures all content starts at or within the canvas bounds.
+The unclamped ("theoretical") anchors are used internally for visible area calculations.</p>
+<h3 id="53-zero-anamorphic-squeeze-handling">5.3 Zero Anamorphic Squeeze Handling</h3>
+<div class="highlight"><pre><span></span><code><span class="n">target_squeeze</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_anamorphic_squeeze</span> <span class="ow">or</span> <span class="mf">1.0</span>
+<span class="k">if</span> <span class="n">target_squeeze</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+    <span class="n">target_squeeze</span> <span class="o">=</span> <span class="n">input_squeeze</span>
+</code></pre></div>
+<p><strong>Rationale</strong>: A zero squeeze would cause division-by-zero errors. When explicitly set
+to 0, it means "preserve source squeeze."</p>
+<h3 id="54-validation-checks">5.4 Validation Checks</h3>
+<p>The function validates input geometry before processing:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Framing dimensions must be non-zero</span>
+<span class="k">if</span> <span class="n">source_geometry</span><span class="o">.</span><span class="n">framing_dims</span><span class="o">.</span><span class="n">is_zero</span><span class="p">():</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Framing decision dimensions not provided&quot;</span><span class="p">)</span>
+
+<span class="c1"># Effective must be &gt;= protection (if both specified)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">source_geometry</span><span class="o">.</span><span class="n">effective_dims</span><span class="o">.</span><span class="n">is_zero</span><span class="p">()</span> <span class="ow">and</span> \
+   <span class="ow">not</span> <span class="n">source_geometry</span><span class="o">.</span><span class="n">protection_dims</span><span class="o">.</span><span class="n">is_zero</span><span class="p">():</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">source_geometry</span><span class="o">.</span><span class="n">effective_dims</span><span class="o">.</span><span class="n">width</span> <span class="o">&lt;</span> <span class="n">source_geometry</span><span class="o">.</span><span class="n">protection_dims</span><span class="o">.</span><span class="n">width</span>
+        <span class="ow">or</span> <span class="n">source_geometry</span><span class="o">.</span><span class="n">effective_dims</span><span class="o">.</span><span class="n">height</span> <span class="o">&lt;</span> <span class="n">source_geometry</span><span class="o">.</span><span class="n">protection_dims</span><span class="o">.</span><span class="n">height</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Source effective canvas dimensions are smaller than protection dimensions&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="55-path-hierarchy-validation">5.5 Path Hierarchy Validation</h3>
+<p>Template paths (<code>fit_source</code>, <code>preserve_from_source_canvas</code>) are validated against the
+source FDL. If the source doesn't have the referenced layer (e.g., template references
+<code>framing_decision.protection_dimensions</code> but the source has no protection), a descriptive
+error is raised with guidance on how to fix it.</p>
+<h3 id="56-exact-integer-comparison-in-fit-regime">5.6 Exact Integer Comparison in FIT Regime</h3>
+<p>The FIT regime check uses exact comparison (<code>overflow == 0</code>) rather than float tolerance,
+because all values are rounded integers at this point in the pipeline. This avoids
+false matches where a small sub-pixel overflow would be treated as FIT.</p>
+<hr />
+<h2 id="6-output-generation">6. Output Generation</h2>
+<h3 id="61-creating-the-output-objects">6.1 Creating the Output Objects</h3>
+<p><strong>Method</strong>: <code>CanvasTemplate._create_output_fdl</code></p>
+<p><strong>New Canvas</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">new_canvas</span> <span class="o">=</span> <span class="n">Canvas</span><span class="p">(</span>
+    <span class="nb">id</span><span class="o">=</span><span class="n">new_canvas_id</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="n">canvas_label</span><span class="p">,</span>
+    <span class="n">dimensions</span><span class="o">=</span><span class="n">geometry</span><span class="o">.</span><span class="n">canvas_dims</span><span class="o">.</span><span class="n">to_int</span><span class="p">(),</span>
+    <span class="n">source_canvas_id</span><span class="o">=</span><span class="n">source_canvas</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+    <span class="n">anamorphic_squeeze</span><span class="o">=</span><span class="n">target_squeeze</span><span class="p">,</span>
+    <span class="n">effective_dimensions</span><span class="o">=</span><span class="n">geometry</span><span class="o">.</span><span class="n">effective_dims</span><span class="o">.</span><span class="n">to_int</span><span class="p">(),</span>
+    <span class="n">effective_anchor_point</span><span class="o">=</span><span class="n">geometry</span><span class="o">.</span><span class="n">effective_anchor</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p><strong>New Framing Decision</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">new_fd</span> <span class="o">=</span> <span class="n">FramingDecision</span><span class="p">(</span>
+    <span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">new_canvas_id</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">framing_intent_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">framing_intent_id</span><span class="o">=</span><span class="n">framing_intent_id</span><span class="p">,</span>
+    <span class="n">dimensions</span><span class="o">=</span><span class="n">geometry</span><span class="o">.</span><span class="n">framing_dims</span><span class="p">,</span>
+    <span class="n">anchor_point</span><span class="o">=</span><span class="n">geometry</span><span class="o">.</span><span class="n">framing_anchor</span><span class="p">,</span>
+    <span class="c1"># Protection only included if non-zero</span>
+    <span class="n">protection_dimensions</span><span class="o">=</span><span class="p">(</span><span class="n">geometry</span><span class="o">.</span><span class="n">protection_dims</span>
+                          <span class="k">if</span> <span class="ow">not</span> <span class="n">geometry</span><span class="o">.</span><span class="n">protection_dims</span><span class="o">.</span><span class="n">is_zero</span><span class="p">()</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="n">protection_anchor_point</span><span class="o">=</span><span class="p">(</span><span class="n">geometry</span><span class="o">.</span><span class="n">protection_anchor</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">geometry</span><span class="o">.</span><span class="n">protection_dims</span><span class="o">.</span><span class="n">is_zero</span><span class="p">()</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="n">label</span><span class="o">=</span><span class="n">new_fd_name</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p><strong>New Context and FDL</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">new_context</span><span class="o">.</span><span class="n">canvases</span> <span class="o">=</span> <span class="p">[</span><span class="n">source_canvas</span><span class="p">,</span> <span class="n">new_canvas</span><span class="p">]</span>  <span class="c1"># Source + output</span>
+<span class="n">new_fdl</span> <span class="o">=</span> <span class="n">FDL</span><span class="p">(</span>
+    <span class="n">framing_intents</span><span class="o">=</span><span class="p">[</span><span class="n">default_framing_intent</span><span class="p">],</span>
+    <span class="n">contexts</span><span class="o">=</span><span class="p">[</span><span class="n">new_context</span><span class="p">],</span>
+    <span class="n">canvas_templates</span><span class="o">=</span><span class="p">[</span><span class="n">template</span><span class="p">],</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="62-return-values">6.2 Return Values</h3>
+<p><code>apply()</code> wraps everything into a <code>TransformationResult</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">return</span> <span class="n">TransformationResult</span><span class="p">(</span>
+    <span class="n">fdl</span><span class="o">=</span><span class="n">new_fdl</span><span class="p">,</span>
+    <span class="n">context_label</span><span class="o">=</span><span class="n">new_context</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+    <span class="n">canvas_id</span><span class="o">=</span><span class="n">new_canvas</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+    <span class="n">framing_decision_id</span><span class="o">=</span><span class="n">new_fd</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+    <span class="n">scale_factor</span><span class="o">=</span><span class="n">scale_factor</span><span class="p">,</span>
+    <span class="n">scaled_bounding_box</span><span class="o">=</span><span class="n">scaled_bounding_box</span><span class="p">,</span>
+    <span class="n">content_translation</span><span class="o">=</span><span class="n">content_translation</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fdl</code></td>
+<td>Complete, serializable FDL structure</td>
+</tr>
+<tr>
+<td><code>context_label</code></td>
+<td>Resolves the context via <code>.context</code> property</td>
+</tr>
+<tr>
+<td><code>canvas_id</code></td>
+<td>Resolves the output canvas via <code>.canvas</code> property</td>
+</tr>
+<tr>
+<td><code>framing_decision_id</code></td>
+<td>Resolves the output framing decision via <code>.framing_decision</code> property</td>
+</tr>
+<tr>
+<td><code>scale_factor</code></td>
+<td>The uniform scale factor applied</td>
+</tr>
+<tr>
+<td><code>scaled_bounding_box</code></td>
+<td>Pre-crop/pad canvas size -- used by image processing</td>
+</tr>
+<tr>
+<td><code>content_translation</code></td>
+<td>Pixel shift -- used by image processing to position content</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-complete-formula-reference">7. Complete Formula Reference</h2>
+<p>For a single axis, the full content translation calculation is:</p>
+<div class="highlight"><pre><span></span><code># Inputs (all rounded integers at this point)
+canvas_size  = scaled bounding box on this axis
+target_size  = template target dimensions on this axis
+fit_size     = scaled fit_source dimensions on this axis
+fit_anchor   = scaled fit_source anchor on this axis
+align_factor = 0.0 (left/top), 0.5 (center), 1.0 (right/bottom)
+pad_to_max   = template.pad_to_maximum
+
+# Step 1: Output size
+if has_max and pad_to_max:      output_size = max_size       # PAD
+elif has_max and canvas &gt; max:  output_size = max_size       # CROP
+else:                           output_size = canvas_size    # FIT
+
+# Step 2: Content translation
+overflow = canvas_size - output_size
+
+if overflow == 0 and not pad_to_max:
+    shift = 0                                                # FIT
+
+else:                                                        # PAD / CROP
+    center_target    = pad_to_max or is_center
+    target_offset    = (output - target) x 0.5  if center_target  else 0
+    gap              = target_size - fit_size
+    alignment_offset = gap x align_factor
+    shift            = target_offset + alignment_offset - fit_anchor
+
+    if not pad_to_max and overflow &gt; 0:                      # Clamp for crop
+        shift = max(min(shift, 0), -overflow)
+</code></pre></div>
+<hr />
+<h2 id="8-summary">8. Summary</h2>
+<h3 id="order-of-operations">Order of Operations</h3>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Operation</th>
+<th>Key Consideration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Derive configuration</td>
+<td>Template params -&gt; local variables</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Populate source geometry</td>
+<td><code>fit_source</code> overwrites <code>preserve</code> for overlapping paths</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Fill hierarchy gaps</td>
+<td>Protection is <strong>NEVER</strong> auto-filled</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Calculate scale factor</td>
+<td>Based on normalized (desqueezed) dimensions</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Normalize, scale, round</td>
+<td>All geometry scaled uniformly; round to clean integers</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Output size + alignment</td>
+<td>Unified PAD/CROP formula; each axis independent</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Apply offsets</td>
+<td>Produces clamped + theoretical anchors</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Crop to visible</td>
+<td>Enforce hierarchy containment</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Create output</td>
+<td>Protection only included if non-zero</td>
+</tr>
+</tbody>
+</table>
+<h3 id="key-design-decisions">Key Design Decisions</h3>
+<ol>
+<li><strong>Float throughout</strong>: All calculations use <code>DimensionsFloat</code> to prevent cumulative
+   rounding errors.</li>
+<li><strong>Round early</strong>: Rounding happens after scaling but before alignment to ensure clean
+   pixel boundaries.</li>
+<li><strong>Protection is sacred</strong>: Never auto-generate protection dimensions; they must be
+   explicitly specified.</li>
+<li><strong>Unified alignment</strong>: PAD and CROP use the same formula
+   (<code>target_offset + alignment_offset - fit_anchor</code>), eliminating special-case bugs.</li>
+<li><strong>Exact integer comparison</strong>: FIT regime uses <code>overflow == 0</code> (not float tolerance)
+   because all values are rounded integers at this point.</li>
+<li><strong>Anchors are relative</strong>: After hierarchy preparation, anchors represent positions
+   relative to the canvas origin.</li>
+</ol>
+<h3 id="common-scenarios">Common Scenarios</h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Configuration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VFX Pull</td>
+<td><code>fit_source="framing_decision.dimensions"</code>, <code>fit_method="fit_all"</code></td>
+</tr>
+<tr>
+<td>Full Frame</td>
+<td><code>fit_source="canvas.dimensions"</code>, <code>fit_method="fill"</code></td>
+</tr>
+<tr>
+<td>Width Match</td>
+<td><code>fit_source="canvas.effective_dimensions"</code>, <code>fit_method="width"</code></td>
+</tr>
+<tr>
+<td>Padded Output</td>
+<td><code>pad_to_maximum=True</code>, <code>maximum_dimensions</code> set</td>
+</tr>
+<tr>
+<td>Preserve Protection</td>
+<td><code>preserve_from_source_canvas="framing_decision.protection_dimensions"</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="function-signature">Function Signature</h3>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CanvasTemplate</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">source_canvas</span><span class="p">:</span> <span class="n">Canvas</span><span class="p">,</span>
+        <span class="n">source_framing</span><span class="p">:</span> <span class="n">FramingDecision</span><span class="p">,</span>
+        <span class="n">new_fd_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">source_context</span><span class="p">:</span> <span class="n">Context</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">context_creator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransformationResult</span><span class="p">:</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source_canvas</code></td>
+<td><code>Canvas</code></td>
+<td>The source canvas to transform</td>
+</tr>
+<tr>
+<td><code>source_framing</code></td>
+<td><code>FramingDecision</code></td>
+<td>The source framing decision</td>
+</tr>
+<tr>
+<td><code>new_fd_name</code></td>
+<td><code>str</code></td>
+<td>Label for the new framing decision</td>
+</tr>
+<tr>
+<td><code>source_context</code></td>
+<td><code>Context</code></td>
+<td>Optional source context for label generation</td>
+</tr>
+<tr>
+<td><code>context_creator</code></td>
+<td><code>str</code></td>
+<td>Optional creator name for new context</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Return</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>result</td>
+<td><code>TransformationResult</code></td>
+<td>Complete result with output FDL, IDs, and computed values</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.tabs.link", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
