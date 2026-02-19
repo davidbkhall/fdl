@@ -41,7 +41,7 @@ jobs:
         run: |
           uv venv .venv
           source .venv/bin/activate
-          uv pip install -e ".[docs]"
+          uv pip install mkdocs-material "mkdocstrings[python]" pymdown-extensions
 
       - name: Build MkDocs site
         run: |
