@@ -11,11 +11,12 @@
  * Usage:
  *   #include "fdl/fdl.hpp"
  *
- *   auto doc = fdl::FDL::parse(json_str);
+ *   auto doc = fdl::read_from_file("my_document.fdl");
  *   for (uint32_t i = 0; i < doc.contexts_count(); ++i) {
  *       auto ctx = doc.context_at(i);
  *       // ...
  *   }
+ *   fdl::write_to_file(doc, "output.fdl");
  */
 
 #ifndef FDL_HPP
@@ -24,6 +25,8 @@
 #include "fdl/fdl_core.h"
 
 #include <cstdint>
+#include <fstream>
+#include <iterator>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
@@ -2131,6 +2134,85 @@ inline std::optional<ResolvedLayer> resolve_geometry_layer(
         return std::nullopt;
     }
     return ResolvedLayer{DimensionsFloat(dims), PointFloat(anchor)};
+}
+
+// --- I/O convenience functions ---
+
+/** Parse an FDL document from a JSON string.
+ *  @param json     JSON string to parse.
+ *  @param validate Run schema + semantic validation after parsing (default true).
+ *  @return Parsed FDL document.
+ *  @throws std::runtime_error on parse failure or validation errors.
+ */
+inline FDL read_from_string(const std::string& json, bool validate = true) {
+    auto doc = FDL::parse(json);
+    if (validate) {
+        auto errors = doc.validate();
+        if (!errors.empty()) {
+            std::string msg;
+            for (size_t i = 0; i < errors.size(); ++i) {
+                if (i > 0) {
+                    msg += "; ";
+                }
+                msg += errors[i];
+            }
+            throw std::runtime_error(msg);
+        }
+    }
+    return doc;
+}
+
+/** Read an FDL document from a file on disk.
+ *  @param path     Path to the FDL file.
+ *  @param validate Run schema + semantic validation after parsing (default true).
+ *  @return Parsed FDL document.
+ *  @throws std::runtime_error if the file cannot be opened, or on parse/validation errors.
+ */
+inline FDL read_from_file(const std::string& path, bool validate = true) {
+    std::ifstream ifs(path, std::ios::binary);
+    if (!ifs) {
+        throw std::runtime_error("File not found: " + path);
+    }
+    std::string json((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    return read_from_string(json, validate);
+}
+
+/** Serialize an FDL document to a JSON string.
+ *  @param doc      The FDL document to serialize.
+ *  @param validate Run schema + semantic validation before serializing (default true).
+ *  @return JSON string.
+ *  @throws std::runtime_error on validation errors.
+ */
+inline std::string write_to_string(const FDL& doc, bool validate = true) {
+    if (validate) {
+        auto errors = doc.validate();
+        if (!errors.empty()) {
+            std::string msg;
+            for (size_t i = 0; i < errors.size(); ++i) {
+                if (i > 0) {
+                    msg += "; ";
+                }
+                msg += errors[i];
+            }
+            throw std::runtime_error(msg);
+        }
+    }
+    return doc.as_json();
+}
+
+/** Write an FDL document to a file on disk.
+ *  @param doc      The FDL document to serialize.
+ *  @param path     Destination file path.
+ *  @param validate Run schema + semantic validation before writing (default true).
+ *  @throws std::runtime_error on validation errors or if the file cannot be opened.
+ */
+inline void write_to_file(const FDL& doc, const std::string& path, bool validate = true) {
+    std::string json = write_to_string(doc, validate);
+    std::ofstream ofs(path, std::ios::binary);
+    if (!ofs) {
+        throw std::runtime_error("Cannot open file for writing: " + path);
+    }
+    ofs.write(json.data(), static_cast<std::streamsize>(json.size()));
 }
 
 } // namespace fdl
