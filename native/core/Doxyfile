@@ -9,8 +9,9 @@ PROJECT_NUMBER         =
 OUTPUT_DIRECTORY       = docs/api
 
 # Input sources
-INPUT                  = include/fdl src
-FILE_PATTERNS          = *.h *.hpp *.cpp
+INPUT                  = include/fdl src mainpage.md
+FILE_PATTERNS          = *.h *.hpp *.cpp *.md
+USE_MDFILE_AS_MAINPAGE = mainpage.md
 RECURSIVE              = YES
 EXCLUDE_PATTERNS       = */build/*
 
