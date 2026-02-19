@@ -43,6 +43,11 @@ plugins:
       default_handler: python
       handlers:
         python:
+          paths:
+            - native/bindings/python
+            - packages/fdl_imaging/src
+            - packages/fdl_frameline_generator/src
+            - packages/fdl_viewer/src
           options:
             show_source: false
             inherited_members: true

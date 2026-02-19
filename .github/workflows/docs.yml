@@ -33,6 +33,11 @@ jobs:
           mkdir -p docs/api
           doxygen Doxyfile
 
+      - name: Nest Doxygen output into MkDocs source tree
+        run: |
+          mkdir -p docs/api
+          cp -r native/core/docs/api/html/* docs/api/
+
       # -- MkDocs (Python user guide) --
       - name: Install uv
         uses: astral-sh/setup-uv@v6
@@ -41,18 +46,12 @@ jobs:
         run: |
           uv venv .venv
           source .venv/bin/activate
-          uv pip install mkdocs-material "mkdocstrings[python]" pymdown-extensions
+          uv pip install "mkdocs<2" mkdocs-material "mkdocstrings[python]" pymdown-extensions
 
       - name: Build MkDocs site
         run: |
           source .venv/bin/activate
           mkdocs build --strict --site-dir _site
-
-      # -- Combine: nest Doxygen under /api/ --
-      - name: Nest Doxygen output under /api/
-        run: |
-          mkdir -p _site/api
-          cp -r native/core/docs/api/html/* _site/api/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
