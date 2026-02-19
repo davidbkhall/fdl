@@ -38,10 +38,15 @@ jobs:
         uses: astral-sh/setup-uv@v6
 
       - name: Install Python dependencies
-        run: uv pip install --system -e ".[docs]"
+        run: |
+          uv venv .venv
+          source .venv/bin/activate
+          uv pip install -e ".[docs]"
 
       - name: Build MkDocs site
-        run: mkdocs build --strict --site-dir _site
+        run: |
+          source .venv/bin/activate
+          mkdocs build --strict --site-dir _site
 
       # -- Combine: nest Doxygen under /api/ --
       - name: Nest Doxygen output under /api/
