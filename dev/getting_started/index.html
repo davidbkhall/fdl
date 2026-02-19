@@ -1293,24 +1293,19 @@ the simplest workflow is:</p>
 </div>
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;fdl/fdl.hpp&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fstream&gt;</span>
 
-<span class="c1">// Load from a file</span>
-<span class="n">std</span><span class="o">::</span><span class="n">ifstream</span><span class="w"> </span><span class="n">ifs</span><span class="p">(</span><span class="s">&quot;my_document.fdl&quot;</span><span class="p">);</span>
-<span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="nf">json</span><span class="p">((</span><span class="n">std</span><span class="o">::</span><span class="n">istreambuf_iterator</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="p">(</span><span class="n">ifs</span><span class="p">)),</span>
-<span class="w">                  </span><span class="n">std</span><span class="o">::</span><span class="n">istreambuf_iterator</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="p">());</span>
-<span class="k">auto</span><span class="w"> </span><span class="n">doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fdl</span><span class="o">::</span><span class="n">FDL</span><span class="o">::</span><span class="n">parse</span><span class="p">(</span><span class="n">json</span><span class="p">);</span>
+<span class="c1">// Load from a file (validates automatically)</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fdl</span><span class="o">::</span><span class="n">read_from_file</span><span class="p">(</span><span class="s">&quot;my_document.fdl&quot;</span><span class="p">);</span>
 
-<span class="c1">// Save to a file</span>
-<span class="n">std</span><span class="o">::</span><span class="n">ofstream</span><span class="w"> </span><span class="n">ofs</span><span class="p">(</span><span class="s">&quot;output.fdl&quot;</span><span class="p">);</span>
-<span class="n">ofs</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">doc</span><span class="p">.</span><span class="n">to_json</span><span class="p">();</span>
+<span class="c1">// Save to a file (validates automatically)</span>
+<span class="n">fdl</span><span class="o">::</span><span class="n">write_to_file</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;output.fdl&quot;</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
 </div>
 <p>For string-based workflows (e.g., network transfer), use <code>read_from_string()</code> and
-<code>write_to_string()</code>. Pass <code>validate=False</code> if you want to skip validation, or call
-<code>validate()</code> manually:</p>
+<code>write_to_string()</code>. Pass <code>validate=false</code> (<code>False</code> in Python) if you want to skip
+validation, or call <code>validate()</code> manually:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Python</label><label for="__tabbed_2_2">C++</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
@@ -1334,13 +1329,15 @@ the simplest workflow is:</p>
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;fdl/fdl.hpp&quot;</span>
 
-<span class="k">auto</span><span class="w"> </span><span class="n">doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fdl</span><span class="o">::</span><span class="n">FDL</span><span class="o">::</span><span class="n">parse</span><span class="p">(</span><span class="n">json_string</span><span class="p">);</span>
+<span class="c1">// Parse from a JSON string (validates automatically)</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fdl</span><span class="o">::</span><span class="n">read_from_string</span><span class="p">(</span><span class="n">json_string</span><span class="p">);</span>
 
-<span class="c1">// Validate explicitly</span>
-<span class="k">auto</span><span class="w"> </span><span class="n">errors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">doc</span><span class="p">.</span><span class="n">validate</span><span class="p">();</span><span class="w">  </span><span class="c1">// returns vector&lt;string&gt;, empty on success</span>
+<span class="c1">// Serialize to string (skip validation since we just loaded a valid doc)</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fdl</span><span class="o">::</span><span class="n">write_to_string</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span><span class="w"> </span><span class="cm">/*validate=*/</span><span class="nb">false</span><span class="p">);</span>
 
-<span class="c1">// Serialize to string</span>
-<span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">doc</span><span class="p">.</span><span class="n">to_json</span><span class="p">();</span>
+<span class="c1">// Parse without validation, then validate manually</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">doc2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fdl</span><span class="o">::</span><span class="n">read_from_string</span><span class="p">(</span><span class="n">json</span><span class="p">,</span><span class="w"> </span><span class="cm">/*validate=*/</span><span class="nb">false</span><span class="p">);</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">errors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">doc2</span><span class="p">.</span><span class="n">validate</span><span class="p">();</span><span class="w">  </span><span class="c1">// returns vector&lt;string&gt;, empty on success</span>
 </code></pre></div>
 </div>
 </div>
@@ -1399,7 +1396,6 @@ the simplest workflow is:</p>
 </div>
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;fdl/fdl.hpp&quot;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fstream&gt;</span>
 
 <span class="c1">// Create a new FDL document</span>
 <span class="k">auto</span><span class="w"> </span><span class="n">doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fdl</span><span class="o">::</span><span class="n">FDL</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="s">&quot;00000000-0000-0000-0000-000000000001&quot;</span><span class="p">);</span>
@@ -1429,9 +1425,7 @@ the simplest workflow is:</p>
 <span class="w">    </span><span class="n">fdl_point_f64_t</span><span class="p">{</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">702.0</span><span class="p">});</span>
 
 <span class="c1">// Save to file (validates automatically)</span>
-<span class="k">auto</span><span class="w"> </span><span class="n">errors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">doc</span><span class="p">.</span><span class="n">validate</span><span class="p">();</span>
-<span class="n">std</span><span class="o">::</span><span class="n">ofstream</span><span class="w"> </span><span class="n">ofs</span><span class="p">(</span><span class="s">&quot;output.fdl&quot;</span><span class="p">);</span>
-<span class="n">ofs</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">doc</span><span class="p">.</span><span class="n">to_json</span><span class="p">();</span>
+<span class="n">fdl</span><span class="o">::</span><span class="n">write_to_file</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;output.fdl&quot;</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
@@ -1478,7 +1472,7 @@ the simplest workflow is:</p>
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;fdl/fdl.hpp&quot;</span>
 
-<span class="k">auto</span><span class="w"> </span><span class="n">doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fdl</span><span class="o">::</span><span class="n">FDL</span><span class="o">::</span><span class="n">parse</span><span class="p">(</span><span class="n">json_string</span><span class="p">);</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fdl</span><span class="o">::</span><span class="n">read_from_string</span><span class="p">(</span><span class="n">json_string</span><span class="p">);</span>
 
 <span class="c1">// Iterate contexts</span>
 <span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">doc</span><span class="p">.</span><span class="n">contexts_count</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -1560,7 +1554,7 @@ the simplest workflow is:</p>
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;fdl/fdl.hpp&quot;</span>
 
-<span class="k">auto</span><span class="w"> </span><span class="n">doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fdl</span><span class="o">::</span><span class="n">FDL</span><span class="o">::</span><span class="n">parse</span><span class="p">(</span><span class="n">json_string</span><span class="p">);</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fdl</span><span class="o">::</span><span class="n">read_from_string</span><span class="p">(</span><span class="n">json_string</span><span class="p">);</span>
 
 <span class="c1">// Select source canvas and framing</span>
 <span class="k">auto</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">doc</span><span class="p">.</span><span class="n">context_at</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
