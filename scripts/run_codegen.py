@@ -65,9 +65,12 @@ def run_codegen() -> int:
             cpp_files.extend(str(f) for f in d.rglob("*.hpp"))
             cpp_files.extend(str(f) for f in d.rglob("*.h"))
     if cpp_files:
-        cfmt = subprocess.run(["clang-format", "-i", *cpp_files], cwd=REPO_ROOT)
-        if cfmt.returncode != 0:
-            print("WARNING: clang-format failed (is clang-format installed?)", file=sys.stderr)
+        try:
+            cfmt = subprocess.run(["clang-format", "-i", *cpp_files], cwd=REPO_ROOT)
+            if cfmt.returncode != 0:
+                print("WARNING: clang-format failed", file=sys.stderr)
+        except FileNotFoundError:
+            print("WARNING: clang-format not found, skipping C++ formatting", file=sys.stderr)
 
     return 0
 
