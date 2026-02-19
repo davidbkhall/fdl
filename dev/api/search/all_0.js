@@ -6,5 +6,7 @@ var searchData=
   ['anchor_5fx_5fjson_3',['anchor_x_json',['../fdl__validate_8cpp.html#acbae2e10318565f13889fa9431d04e69',1,'fdl_validate.cpp']]],
   ['anchor_5fy_4',['anchor_y',['../fdl__validate_8cpp.html#a0fc6f4e0d23ca8058f645a1bb4faf476',1,'fdl_validate.cpp']]],
   ['anchor_5fy_5fjson_5',['anchor_y_json',['../fdl__validate_8cpp.html#adf0286d509bb9e9b24759590b775976c',1,'fdl_validate.cpp']]],
-  ['apply_5fcanvas_5ftemplate_6',['apply_canvas_template',['../fdl__template_8cpp.html#a91387c21baea61fb135307a985168e62',1,'fdl::detail']]]
+  ['api_20areas_6',['Key API Areas',['../index.html#autotoc_md1',1,'']]],
+  ['apply_5fcanvas_5ftemplate_7',['apply_canvas_template',['../fdl__template_8cpp.html#a91387c21baea61fb135307a985168e62',1,'fdl::detail']]],
+  ['areas_8',['Key API Areas',['../index.html#autotoc_md1',1,'']]]
 ];
