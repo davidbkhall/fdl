@@ -1,7 +1,10 @@
 # FDL Apply Template Logic
 
-> Step-by-step description of the `CanvasTemplate.apply()` pipeline
-> in `packages/fdl/packages/fdl/src/fdl/canvastemplate.py`.
+> Step-by-step description of the `CanvasTemplate.apply()` pipeline.
+>
+> **Implementation**: `native/core/src/fdl_template.cpp` (C++ core),
+> exposed via `fdl_apply_canvas_template()` in `native/core/include/fdl/fdl_core.h`.
+> Python and C++ RAII bindings call through to this C library.
 >
 > **FDL Spec Reference**: Section 7.4 -- Template Application Algorithm
 
@@ -72,32 +75,32 @@ The hierarchy must always satisfy: `canvas >= effective >= protection >= framing
 
 ### Step 1 -- Derive Configuration
 
-**Location**: inline at the top of `CanvasTemplate.apply()`
+**C++ implementation**: `fdl_template.cpp`, `apply_canvas_template()` lines 153-179
 
 Read all template parameters and derive working values as local variables.
 There is no separate context object -- values are computed once at the start
-of `apply()` and threaded through helper methods via arguments.
+and threaded through helper functions via arguments.
 
 Key derived values:
 
 | Variable                  | Source                                    |
 |---------------------------|-------------------------------------------|
-| `fit_method`              | `self.fit_method` -- `fit_all`, `fill`, `width`, or `height` |
-| `preserve_path`           | `self.preserve_from_source_canvas` -- outermost layer to keep |
-| `target_dims_float`       | `self.target_dimensions` (as `DimensionsFloat`) |
-| `max_dims`, `has_max_dims`| `self.maximum_dimensions`                 |
-| `pad_to_maximum`          | `self.pad_to_maximum` -- expand output to max dims |
-| `h_align`, `v_align`      | `self.alignment_method_horizontal/vertical` |
+| `fit_method`              | `template.fit_method` -- `fit_all`, `fill`, `width`, or `height` |
+| `preserve_path`           | `template.preserve_from_source_canvas` -- outermost layer to keep |
+| `target_dims`             | `template.target_dimensions` (as float) |
+| `max_dims`, `has_max_dims`| `template.maximum_dimensions`                 |
+| `pad_to_maximum`          | `template.pad_to_maximum` -- expand output to max dims |
+| `h_align`, `v_align`      | `template.alignment_method_horizontal/vertical` |
 | `input_squeeze`           | `source_canvas.anamorphic_squeeze` (default 1.0) |
-| `target_squeeze`          | `self.target_anamorphic_squeeze` (default 1.0) |
+| `target_squeeze`          | `template.target_anamorphic_squeeze` (default 1.0) |
 
 ---
 
 ### Step 2 -- Populate Source Geometry
 
-**Method**: `CanvasTemplate._populate_source_geometry`
+**C++ implementation**: `fdl_template.cpp`, `populate_from_path()` + `populate_layer()`
 
-Build a `Geometry` object by reading dimensions and anchors from the source
+Build a `fdl_geometry_t` by reading dimensions and anchors from the source
 canvas and framing decision. Two template paths control what is read:
 
 1. **`preserve_from_source_canvas`** -- the outermost layer to keep (e.g.
@@ -107,8 +110,9 @@ canvas and framing decision. Two template paths control what is read:
    `framing_decision.dimensions`). Populates this level and all layers
    below it, overwriting any overlap with preserve.
 
-Both paths are validated against the source FDL -- if the source does not
-have the referenced layer, an error is raised.
+Both paths are validated against the source FDL using
+`fdl_resolve_geometry_layer()` -- if the source does not have the referenced
+layer, an error is raised.
 
 After population, the geometry is **validated**: framing dimensions must
 not be zero, and effective must not be smaller than protection.
@@ -117,7 +121,8 @@ not be zero, and effective must not be smaller than protection.
 
 ### Step 3 -- Fill Hierarchy Gaps
 
-**Method**: `CanvasTemplate._prepare_geometry_hierarchy` / `Geometry.fill_hierarchy_gaps`
+**C API**: `fdl_geometry_fill_hierarchy_gaps()`
+**C++ implementation**: `fdl_geometry.cpp`, `geometry_fill_hierarchy_gaps()`
 
 After population, some layers may be zero (not present in the source). The
 hierarchy is completed by propagating the outermost populated layer upward:
@@ -143,14 +148,15 @@ layer before scaling) for use in the next step.
 
 ### Step 4 -- Compute Scale Factor
 
-**Function**: `calculate_scale_factor`
+**C API**: `fdl_calculate_scale_factor()`
+**C++ implementation**: `fdl_pipeline.cpp`, `calculate_scale_factor()`
 
 Calculate the single uniform scale factor that transforms the fit_source
 dimensions to match the template's target dimensions.
 
 Both fit and target dimensions are first **normalized** by their respective
 anamorphic squeeze factors to produce square-pixel equivalents (via
-`Dimensions.normalize()`):
+`fdl_dimensions_normalize()`):
 
 ```
 normalized_width = width * anamorphic_squeeze
@@ -169,21 +175,21 @@ The scale factor is then determined by the `fit_method`:
 
 ### Step 5 -- Scale and Round
 
-**Methods**: `Geometry.normalize_and_scale` + `Geometry.round`
+**C API**: `fdl_geometry_normalize_and_scale()` + `fdl_geometry_round()`
+**C++ implementation**: `fdl_geometry.cpp`
 
 Apply the scale factor to **all** dimensions and anchors uniformly.
 
-**Normalize and scale** (`Geometry.normalize_and_scale`, per value):
+**Normalize and scale** (per value):
 
 ```
-scaled_value = (source_value * source_squeeze) * scale_factor / target_squeeze
+scaled_value = (source_value * source_squeeze * scale_factor) / target_squeeze
 ```
 
 This converts from source pixel space through square-pixel space to target
 pixel space in one operation.
 
-**Round** (`Geometry.round`) all dimensions and anchors according to the
-template's `RoundStrategy`:
+**Round** all dimensions and anchors according to the template's `RoundStrategy`:
 
 | Setting | Behaviour                                    |
 |---------|----------------------------------------------|
@@ -196,7 +202,7 @@ template's `RoundStrategy`:
 After rounding, all dimensions and anchors are clean integers (stored as
 float for pipeline consistency).
 
-**Extract scaled values** (as local variables in `apply()`) for use in later steps:
+**Extract scaled values** for use in later steps:
 
 - `scaled_fit` -- fit_source dimensions after scale+round
 - `scaled_fit_anchor` -- fit_source anchor after scale+round
@@ -206,7 +212,8 @@ float for pipeline consistency).
 
 ### Step 6 -- Determine Output Size (per axis)
 
-**Function**: `_output_size_for_axis`
+**C API**: `fdl_output_size_for_axis()`
+**C++ implementation**: `fdl_pipeline.cpp`, `output_size_for_axis()`
 
 For each axis independently, determine the final output canvas size. Three
 modes exist:
@@ -224,9 +231,10 @@ other CROPs.
 
 ### Step 7 -- Calculate Alignment Shift (per axis)
 
-**Function**: `_alignment_shift` (called from `CanvasTemplate._calculate_output_canvas_and_translation`)
+**C API**: `fdl_alignment_shift()`
+**C++ implementation**: `fdl_pipeline.cpp`, `alignment_shift()`
 
-Alignment factors are computed by `_alignment_factor(align_str)` -> `0.0 / 0.5 / 1.0`.
+Alignment factors: `left/top = 0.0`, `center = 0.5`, `right/bottom = 1.0`.
 
 Calculate the content translation (how many pixels to shift the entire
 scaled content) for each axis. This is where PAD, CROP, and alignment
@@ -301,7 +309,8 @@ This ensures:
 
 ### Step 8 -- Apply Offsets to Anchors
 
-**Function**: `Geometry.apply_offset`
+**C API**: `fdl_geometry_apply_offset()`
+**C++ implementation**: `fdl_geometry.cpp`, `geometry_apply_offset()`
 
 The content translation calculated in step 7 is applied to **all** anchor
 points (effective, protection, framing):
@@ -324,7 +333,8 @@ edge of the output canvas (e.g. right-aligned crop).
 
 ### Step 9 -- Crop to Visible
 
-**Function**: `Geometry.crop`
+**C API**: `fdl_geometry_crop()`
+**C++ implementation**: `fdl_geometry.cpp`, `geometry_crop()`
 
 Calculate the **visible portion** of each layer within the output canvas.
 This is not a destructive pixel crop -- it computes what part of each
@@ -370,7 +380,7 @@ This ensures inner layers never exceed their parent boundaries.
 
 ### Step 10 -- Create Output FDL
 
-**Method**: `CanvasTemplate._create_output_fdl`
+**C++ implementation**: `fdl_template.cpp`, lines 298-473
 
 Assemble the final output objects from the processed geometry:
 
@@ -382,28 +392,19 @@ Assemble the final output objects from the processed geometry:
    protection dimensions and anchor (if present), linked to the source
    framing intent.
 
-3. **New Context**: contains both the source canvas (for reference) and the
+3. **Custom Attributes**: `_scale_factor`, `_scaled_bounding_box`, and
+   `_content_translation` are stored on the output canvas for use by
+   image processing pipelines.
+
+4. **New Context**: contains both the source canvas (for reference) and the
    new output canvas.
 
-4. **New FDL**: wraps the context, a default framing intent, and the
+5. **New FDL**: wraps the context, a default framing intent, and the
    applied template.
 
-`apply()` wraps everything into a `TransformationResult` dataclass:
-
-```python
-TransformationResult(
-    fdl=new_fdl,
-    context_label=...,
-    canvas_id=...,
-    framing_decision_id=...,
-    scale_factor=scale_factor,
-    scaled_bounding_box=scaled_bounding_box,
-    content_translation=content_translation,
-)
-```
-
-Where `scaled_bounding_box` and `content_translation` are the values
-needed to transform pixel data (used by the image rendering pipeline).
+The C API returns a `fdl_template_result_t` containing the output FDL
+document and IDs for resolving the created context, canvas, and framing
+decision. Python wraps this as `TemplateResult` with convenience properties.
 
 ---
 

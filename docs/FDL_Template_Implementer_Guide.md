@@ -6,7 +6,16 @@ The `CanvasTemplate.apply()` method transforms source canvas and framing geometr
 according to a CanvasTemplate specification. It produces a new FDL structure with properly
 scaled, rounded, and positioned geometry suitable for VFX work.
 
-**Location**: `packages/fdl/packages/fdl/src/fdl/canvastemplate.py`
+**Implementation**:
+
+| File | Purpose |
+|------|---------|
+| `native/core/src/fdl_template.cpp` | Main 10-phase pipeline |
+| `native/core/src/fdl_geometry.cpp` | Geometry operations (fill, scale, round, offset, crop) |
+| `native/core/src/fdl_pipeline.cpp` | Scale factor, output sizing, alignment shift |
+| `native/core/include/fdl/fdl_core.h` | Public C API declarations |
+
+All language bindings (Python, C++ RAII) call through to the C library above.
 
 **FDL Spec Reference**: Section 7.4 -- Template Application Algorithm
 
@@ -74,94 +83,91 @@ A `CanvasTemplate` controls the transformation:
 
 ### 2.1 The Geometry Container
 
-The `Geometry` dataclass holds all dimensions and anchor points during processing:
+**C API**: `fdl_geometry_t` (defined in `fdl_core.h`)
 
-```python
-@dataclass
-class Geometry:
-    # Dimensions (all as DimensionsFloat for precision)
-    canvas_dims: DimensionsFloat
-    effective_dims: DimensionsFloat
-    protection_dims: DimensionsFloat
-    framing_dims: DimensionsFloat
+The geometry struct holds all dimensions and anchor points during processing:
 
-    # Anchor points (position relative to canvas origin)
-    effective_anchor: PointFloat
-    protection_anchor: PointFloat
-    framing_anchor: PointFloat
+```
+fdl_geometry_t:
+    canvas_dims      : fdl_dimensions_f64_t   // Full canvas dimensions
+    effective_dims   : fdl_dimensions_f64_t   // Effective area dimensions
+    protection_dims  : fdl_dimensions_f64_t   // Protection zone dimensions
+    framing_dims     : fdl_dimensions_f64_t   // Framing area dimensions
+    effective_anchor : fdl_point_f64_t        // Effective area position
+    protection_anchor: fdl_point_f64_t        // Protection zone position
+    framing_anchor   : fdl_point_f64_t        // Framing area position
 ```
 
-**Design Rationale**: Using float throughout allows precise intermediate calculations before
+**Design Rationale**: Using floating-point throughout allows precise intermediate calculations before
 final rounding. This prevents cumulative rounding errors.
 
-**Key Methods**:
+**Operations** (C API):
 
-| Method | Purpose |
-|--------|---------|
-| `fill_hierarchy_gaps(anchor_offset)` | Propagate populated layers upward to fill zero layers |
-| `normalize_and_scale(squeeze, factor, target_squeeze)` | Apply anamorphic normalization + scale factor |
-| `round(strategy)` | Apply FDL rounding rules to all values |
-| `validate()` | Check framing non-zero and effective >= protection |
-| `apply_offset(offset)` | Apply content translation to all anchors |
-| `crop(theo_eff, theo_prot, theo_fram)` | Crop dimensions to visible portion within canvas |
-| `get_dimensions_and_anchors_from_path(path)` | Look up dimensions/anchor by path string |
+| Function | Purpose |
+|----------|---------|
+| `fdl_geometry_fill_hierarchy_gaps()` | Propagate populated layers upward to fill zero layers |
+| `fdl_geometry_normalize_and_scale()` | Apply anamorphic normalization + scale factor |
+| `fdl_geometry_round()` | Apply FDL rounding rules to all values |
+| `fdl_geometry_apply_offset()` | Apply content translation to all anchors |
+| `fdl_geometry_crop()` | Crop dimensions to visible portion within canvas |
+| `fdl_geometry_get_dims_anchor_from_path()` | Look up dimensions/anchor by path string |
 
-### 2.2 DimensionsFloat and DimensionsInt
+### 2.2 Dimensions Types
 
-```python
-@dataclass
-class DimensionsInt:
-    width: int
-    height: int
+**C API**: `fdl_dimensions_i64_t` and `fdl_dimensions_f64_t` (defined in `fdl_core.h`)
 
-@dataclass
-class DimensionsFloat:
-    width: float
-    height: float
+```
+fdl_dimensions_i64_t:       fdl_dimensions_f64_t:
+    width  : int64              width  : double
+    height : int64              height : double
 ```
 
-Both classes provide:
+Both types support:
 
-- `is_zero()` -- Check if dimensions are zero
-- `normalize(squeeze)` -- Apply anamorphic squeeze: `width *= squeeze`
-- `normalize_and_scale(input_squeeze, factor, target_squeeze)` -- Combined operation
-- `round(even, mode)` -- Apply FDL rounding rules
-- `clamp_to_dims(max_dims)` -- Clamp to upper bounds, returning delta
-- `from_dimensions(other)` -- Copy constructor
+- Zero check -- check if dimensions are (0, 0)
+- `fdl_dimensions_normalize()` -- apply anamorphic squeeze: `width *= squeeze`
+- `fdl_dimensions_normalize_and_scale()` -- combined normalize + scale operation
+- `fdl_dimensions_round()` -- apply FDL rounding rules
+- `fdl_dimensions_clamp_to_dims()` -- clamp to upper bounds, returning delta
 
-### 2.3 PointFloat
+### 2.3 Point Type
 
-```python
-@dataclass
-class PointFloat:
-    x: float
-    y: float
+**C API**: `fdl_point_f64_t` (defined in `fdl_core.h`)
+
+```
+fdl_point_f64_t:
+    x : double
+    y : double
 ```
 
-Provides arithmetic operations (`+`, `-`, `*`) and:
+Provides arithmetic operations and:
 
-- `normalize_and_scale()` -- Same transformation as dimensions
-- `round(even, mode)` -- Apply FDL rounding rules
-- `clamp(min_val)` -- Constrain to lower bounds (typically 0.0)
+- `fdl_point_normalize_and_scale()` -- same transformation as dimensions
+- `fdl_point_round()` -- apply FDL rounding rules
+- `fdl_point_clamp()` -- constrain to lower bounds (typically 0.0)
 
-### 2.4 TransformationResult
+### 2.4 Template Result
 
-The output of `CanvasTemplate.apply()`:
+**C API**: `fdl_template_result_t` (defined in `fdl_core.h`)
 
-```python
-@dataclass
-class TransformationResult:
-    fdl: FDL                              # Complete output FDL
-    context_label: str                    # Label of the created context
-    canvas_id: str                        # ID of the created canvas
-    framing_decision_id: str              # ID of the created framing decision
-    scale_factor: float                   # Scale factor applied
-    scaled_bounding_box: DimensionsFloat  # Scaled canvas before crop/pad
-    content_translation: PointFloat       # Pixel shift for image processing
+The output of `fdl_apply_canvas_template()`:
+
+```
+fdl_template_result_t:
+    output_fdl          : fdl_doc_t*      // Complete output FDL document
+    context_label       : string          // Label of the created context
+    canvas_id           : string          // ID of the created canvas
+    framing_decision_id : string          // ID of the created framing decision
+    error               : string          // Error message on failure (NULL on success)
 ```
 
-**Convenience properties**: `.context`, `.canvas`, `.framing_decision` resolve the objects
-by their IDs from the contained FDL.
+**Language bindings**: Python returns `TemplateResult` with convenience properties
+(`.context`, `.canvas`, `.framing_decision`) that resolve the objects by their IDs
+from the contained FDL. The C++ RAII header wraps this as `fdl::TemplateResult`.
+
+The `scale_factor`, `scaled_bounding_box`, and `content_translation` values are
+stored as custom attributes on the output canvas rather than as separate result
+fields.
 
 ### 2.5 Anamorphic Squeeze Handling
 
@@ -193,31 +199,31 @@ The transformation follows a strict order of operations:
 
 ### 4.1 Phase 1: Derive Configuration
 
-**Location**: Inline at the top of `CanvasTemplate.apply()`
+**C++ implementation**: `fdl_template.cpp`, `apply_canvas_template()` lines 153-179
 
 All template parameters are read once and stored as local variables. There is no
-separate context object -- values are threaded through helper methods via arguments.
+separate context object -- values are threaded through helper functions via arguments.
 
-```python
-input_squeeze = source_canvas.anamorphic_squeeze or 1.0
-target_squeeze = self.target_anamorphic_squeeze or 1.0
+```
+input_squeeze  = source_canvas.anamorphic_squeeze  (default 1.0)
+target_squeeze = template.target_anamorphic_squeeze (default 1.0)
 if target_squeeze == 0.0:
-    target_squeeze = input_squeeze  # Preserve source squeeze
+    target_squeeze = input_squeeze    # Preserve source squeeze
 
-fit_method = self.fit_method or FitMethod.FIT_ALL
-preserve_path = self.preserve_from_source_canvas or ""
-max_dims = self.maximum_dimensions
-has_max_dims = max_dims is not None and not max_dims.is_zero()
-h_align = self.alignment_method_horizontal or HAlign.CENTER
-v_align = self.alignment_method_vertical or VAlign.CENTER
-target_dims_float = DimensionsFloat.from_dimensions(self.target_dimensions)
+fit_method    = template.fit_method                 (default FIT_ALL)
+preserve_path = template.preserve_from_source_canvas (default "")
+max_dims      = template.maximum_dimensions
+has_max_dims  = max_dims is not null and not max_dims.is_zero()
+h_align       = template.alignment_method_horizontal (default CENTER)
+v_align       = template.alignment_method_vertical   (default CENTER)
+target_dims   = template.target_dimensions           (as float)
 ```
 
 ### 4.2 Phase 2: Populate Source Geometry
 
-**Method**: `CanvasTemplate._populate_source_geometry`
+**C++ implementation**: `fdl_template.cpp`, `populate_from_path()` + `populate_layer()`
 
-Builds a `Geometry` object by reading dimensions and anchors from the source FDL.
+Builds a `fdl_geometry_t` by reading dimensions and anchors from the source FDL.
 Two template paths control what is read:
 
 1. **`preserve_from_source_canvas`** (preserve path) -- the outermost layer to keep.
@@ -228,35 +234,36 @@ Two template paths control what is read:
 
 #### The two-pass mechanism
 
-Population starts with an all-zeros geometry dictionary, then calls
-`_populate_geometry_from_path` **twice** into the same dictionary:
+Population starts with an all-zeros geometry, then calls
+`populate_from_path` **twice** into the same structure:
 
-```python
+```
 # Pass 1: preserve paints first (the "background")
-if preserve_path:
-    self._populate_geometry_from_path(source_canvas, source_framing,
-                                      preserve_path, geometry_dict)
+if preserve_path is not empty:
+    populate_from_path(source_canvas, source_framing,
+                       preserve_path, geometry)
 
 # Pass 2: fit paints second (the "foreground" -- overwrites on overlap)
-self._populate_geometry_from_path(source_canvas, source_framing,
-                                  self.fit_source, geometry_dict)
+populate_from_path(source_canvas, source_framing,
+                   fit_source, geometry)
 ```
 
-Each call to `_populate_geometry_from_path` starts at the given path's index in
+Each call to `populate_from_path` starts at the given path's index in
 `PATH_HIERARCHY` and iterates **downward** to the innermost layer:
 
-```python
-def _populate_geometry_from_path(self, canvas, framing, start_path, geometry):
+```
+populate_from_path(canvas, framing, start_path, geometry):
     start_index = PATH_HIERARCHY.index(start_path)
     for path in PATH_HIERARCHY[start_index:]:
-        dims = get_dimensions_from_path(canvas, framing, path, required=False)
-        anchor = get_anchor_from_path(canvas, framing, path)
-        if dims is not None:
-            # Store in geometry based on path...
+        dims, anchor = fdl_resolve_geometry_layer(canvas, framing, path)
+        if dims is not null:
+            store dims and anchor in geometry at path's slot
 ```
 
-`required=False` means that if the source FDL doesn't have a given layer (e.g., no
-protection defined), the call returns `None` and that slot stays at its zero default.
+The C API function `fdl_resolve_geometry_layer()` extracts dimensions and anchors
+from the canvas/framing for a given geometry path. If the source FDL doesn't have
+a given layer (e.g., no protection defined), the call returns null and that slot
+stays at its zero default.
 
 Both passes read from the **same** `source_canvas` and `source_framing`. When the
 paths overlap, the second pass re-writes the same values -- the overwrite is a no-op
@@ -265,12 +272,12 @@ brings in the outer layers, fit brings in the inner layers.
 
 #### Validation before population
 
-Before any population happens, both paths are validated with `required=True`:
+Before any population happens, both paths are validated:
 
-```python
-if preserve_path:
-    get_dimensions_from_path(source_canvas, source_framing, preserve_path, required=True)
-get_dimensions_from_path(source_canvas, source_framing, self.fit_source, required=True)
+```
+if preserve_path is not empty:
+    fdl_resolve_geometry_layer(canvas, framing, preserve_path, required=true)
+fdl_resolve_geometry_layer(canvas, framing, fit_source, required=true)
 ```
 
 This catches mismatches early -- for example, if the template references
@@ -330,33 +337,34 @@ The resulting geometry is **validated**:
 
 ### 4.3 Phase 3: Fill Hierarchy Gaps
 
-**Method**: `CanvasTemplate._prepare_geometry_hierarchy` -> `Geometry.fill_hierarchy_gaps`
+**C API**: `fdl_geometry_fill_hierarchy_gaps()`
+**C++ implementation**: `fdl_geometry.cpp`, `geometry_fill_hierarchy_gaps()`
 
 After population, some layers may be zero (not present in the source). The hierarchy
 is completed by propagating the outermost populated layer upward:
 
-```python
-def fill_hierarchy_gaps(self, anchor_offset):
+```
+fill_hierarchy_gaps(geometry, anchor_offset):
     # Find the highest-ranking non-zero dimension
     if not canvas.is_zero():
-        reference_dims = canvas
-        reference_anchor = PointFloat(0.0, 0.0)  # Canvas has no anchor
-    elif not effective.is_zero():
-        reference_dims = effective
+        reference_dims   = canvas
+        reference_anchor = (0.0, 0.0)    # Canvas has no anchor
+    else if not effective.is_zero():
+        reference_dims   = effective
         reference_anchor = effective_anchor
-    elif not protection.is_zero():
-        reference_dims = protection
+    else if not protection.is_zero():
+        reference_dims   = protection
         reference_anchor = protection_anchor
     else:
-        reference_dims = framing
+        reference_dims   = framing
         reference_anchor = framing_anchor
 
     # Fill gaps upward
     if canvas.is_zero():
-        canvas = DimensionsFloat.from_dimensions(reference_dims)
+        canvas = copy(reference_dims)
     if effective.is_zero():
-        effective = DimensionsFloat.from_dimensions(reference_dims)
-        effective_anchor = PointFloat(reference_anchor.x, reference_anchor.y)
+        effective        = copy(reference_dims)
+        effective_anchor = copy(reference_anchor)
 
     # CRITICAL: Protection is NEVER filled from framing
     # It stays zero if not explicitly provided
@@ -368,10 +376,10 @@ fabricate it.
 
 **Anchor Offset Calculation**:
 
-```python
+```
 # Determine reference anchor for relative positioning
-fit_dims, fit_anchor = geometry.get_dimensions_and_anchors_from_path(fit_source)
-preserve_dims, preserve_anchor = geometry.get_dimensions_and_anchors_from_path(preserve_path)
+fit_dims, fit_anchor         = geometry.get_dims_anchor_from_path(fit_source)
+preserve_dims, preserve_anchor = geometry.get_dims_anchor_from_path(preserve_path)
 
 # Use preserve anchor if specified, otherwise fit anchor
 anchor_offset = fit_anchor if preserve_dims.is_zero() else preserve_anchor
@@ -379,26 +387,27 @@ anchor_offset = fit_anchor if preserve_dims.is_zero() else preserve_anchor
 
 All anchors are then made relative to this offset:
 
-```python
-effective_anchor -= anchor_offset
+```
+effective_anchor  -= anchor_offset
 protection_anchor -= anchor_offset
-framing_anchor -= anchor_offset
+framing_anchor    -= anchor_offset
 ```
 
 ### 4.4 Phase 4: Calculate Scale Factor
 
-**Function**: `calculate_scale_factor`
+**C API**: `fdl_calculate_scale_factor()`
+**C++ implementation**: `fdl_pipeline.cpp`, `calculate_scale_factor()`
 
 Determine the uniform scale factor that transforms the `fit_source` layer to match
 the target dimensions. The `fit_dims` used here are the ones extracted for the
-`fit_source` path during Phase 3 (`_prepare_geometry_hierarchy`).
+`fit_source` path during Phase 3.
 
-```python
+```
 # Normalize dimensions for proper aspect ratio comparison
-fit_dims_norm = fit_dims.normalize(input_squeeze)
-target_dims_norm = self.target_dimensions.normalize(target_squeeze)
+fit_dims_norm    = fdl_dimensions_normalize(fit_dims, input_squeeze)
+target_dims_norm = fdl_dimensions_normalize(target_dims, target_squeeze)
 
-scale_factor = calculate_scale_factor(fit_dims_norm, target_dims_norm, fit_method)
+scale_factor = fdl_calculate_scale_factor(fit_dims_norm, target_dims_norm, fit_method)
 ```
 
 #### How `fit_source` choice affects scaling
@@ -428,19 +437,19 @@ alignment.
 
 #### Fit methods
 
-```python
-def calculate_scale_factor(fit_norm, target_norm, fit_method):
-    if fit_method == "fit_all":
+```
+calculate_scale_factor(fit_norm, target_norm, fit_method):
+    if fit_method == FIT_ALL:
         # Fit entirely within target (letterbox/pillarbox if needed)
         return min(target_norm.width / fit_norm.width,
                    target_norm.height / fit_norm.height)
-    elif fit_method == "fill":
+    else if fit_method == FILL:
         # Fill target completely (may crop)
         return max(target_norm.width / fit_norm.width,
                    target_norm.height / fit_norm.height)
-    elif fit_method == "width":
+    else if fit_method == WIDTH:
         return target_norm.width / fit_norm.width
-    elif fit_method == "height":
+    else if fit_method == HEIGHT:
         return target_norm.height / fit_norm.height
 ```
 
@@ -452,17 +461,18 @@ def calculate_scale_factor(fit_norm, target_norm, fit_method):
 
 ### 4.5 Phase 5: Normalize, Scale, and Round
 
-**Methods**: `Geometry.normalize_and_scale` + `Geometry.round`
+**C API**: `fdl_geometry_normalize_and_scale()` + `fdl_geometry_round()`
+**C++ implementation**: `fdl_geometry.cpp`
 
 Apply the scale factor to **all** dimensions and anchors uniformly, then round.
 
-```python
-geometry = geometry.normalize_and_scale(
-    source_canvas_anamorphic_squeeze=input_squeeze,
-    scale_factor=scale_factor,
-    target_anamorphic_squeeze=target_squeeze,
-)
-geometry = geometry.round(self.round)
+```
+geometry = fdl_geometry_normalize_and_scale(geometry,
+    source_squeeze  = input_squeeze,
+    scale_factor    = scale_factor,
+    target_squeeze  = target_squeeze)
+
+geometry = fdl_geometry_round(geometry, round_strategy)
 ```
 
 **The Normalize-and-Scale Formula** (per ASC FDL spec 7.4.5):
@@ -500,29 +510,27 @@ calculations produce precise pixel positions, avoiding sub-pixel positioning iss
 
 After rounding, the scaled values are extracted for use in Phase 6:
 
-```python
-scaled_fit_raw, scaled_fit_anchor_raw = geometry.get_dimensions_and_anchors_from_path(self.fit_source)
-scaled_fit = DimensionsFloat.from_dimensions(scaled_fit_raw)
-scaled_fit_anchor = scaled_fit_anchor_raw or PointFloat(x=0.0, y=0.0)
-scaled_bounding_box = geometry.canvas_dims  # Full bounding box before crop/pad
+```
+scaled_fit, scaled_fit_anchor = fdl_geometry_get_dims_anchor_from_path(geometry, fit_source)
+scaled_bounding_box = geometry.canvas_dims    # Full bounding box before crop/pad
 ```
 
 ### 4.6 Phase 6: Output Size and Alignment Shift
 
-**Method**: `CanvasTemplate._calculate_output_canvas_and_translation`
+**C++ implementation**: `fdl_template.cpp`, lines 256-286
 
 This phase combines what were previously separate "crop to max", "pad", and "align" phases
 into a single unified calculation, evaluated independently per axis.
 
 #### Step 1: Determine Output Size Per Axis
 
-**Function**: `_output_size_for_axis`
+**C API**: `fdl_output_size_for_axis()`
 
-```python
-def _output_size_for_axis(canvas_size, max_size, has_max, pad_to_max):
-    if has_max and pad_to_max:     return max_size   # PAD
-    if has_max and canvas > max:   return max_size   # CROP
-    return canvas_size                                # FIT
+```
+output_size_for_axis(canvas_size, max_size, has_max, pad_to_max):
+    if has_max and pad_to_max:      return max_size    # PAD
+    if has_max and canvas > max:    return max_size    # CROP
+    return canvas_size                                  # FIT
 ```
 
 | Mode | Condition | Output size | Description |
@@ -535,12 +543,12 @@ Note: each axis is evaluated independently -- one axis may PAD while the other C
 
 #### Step 2: Calculate Alignment Shift Per Axis
 
-**Function**: `_alignment_shift`
+**C API**: `fdl_alignment_shift()`
 
 The content translation (how many pixels to shift the entire scaled content) is calculated
 using a unified formula that handles PAD and CROP identically.
 
-**Alignment factors** are computed by `_alignment_factor(align_str)`:
+**Alignment factors**:
 
 | Alignment | Factor |
 |-----------|--------|
@@ -619,11 +627,12 @@ This ensures:
 
 ### 4.7 Phase 7: Apply Offsets to Anchors
 
-**Method**: `Geometry.apply_offset`
+**C API**: `fdl_geometry_apply_offset()`
+**C++ implementation**: `fdl_geometry.cpp`, `geometry_apply_offset()`
 
 The content translation from Phase 6 is applied to **all** anchor points:
 
-```python
+```
 new_anchor = original_anchor + content_translation
 ```
 
@@ -639,7 +648,8 @@ of the output canvas (e.g., right-aligned crop).
 
 ### 4.8 Phase 8: Crop to Visible
 
-**Method**: `Geometry.crop`
+**C API**: `fdl_geometry_crop()`
+**C++ implementation**: `fdl_geometry.cpp`, `geometry_crop()`
 
 Calculate the **visible portion** of each layer within the output canvas. This is not
 a destructive pixel crop -- it computes what part of each geometry layer falls within the
@@ -647,20 +657,20 @@ canvas boundaries.
 
 **Per-layer visible dimensions**:
 
-```python
-def crop_dim(dims, theo_anchor, clamped_anchor):
+```
+crop_dim(dims, theo_anchor, clamped_anchor, canvas):
     clip_left  = max(0, -theo_anchor.x)
     clip_top   = max(0, -theo_anchor.y)
     visible_w  = dims.width - clip_left
     visible_h  = dims.height - clip_top
     visible_w  = min(visible_w, canvas.width - clamped_anchor.x)
     visible_h  = min(visible_h, canvas.height - clamped_anchor.y)
-    return DimensionsFloat(max(0, visible_w), max(0, visible_h))
+    return (max(0, visible_w), max(0, visible_h))
 ```
 
 After individual clipping, the **hierarchy is enforced**:
 
-```python
+```
 visible_effective  = min(visible_effective, canvas)
 visible_protection = min(visible_protection, visible_effective)   # if exists
 visible_framing    = min(visible_framing, parent)                 # parent = protection or effective
@@ -678,10 +688,8 @@ This ensures inner layers never exceed their parent boundaries.
 
 ### 5.1 Protection Dimensions Never Auto-Filled
 
-```python
-# In fill_hierarchy_gaps:
-# Protection is NEVER filled from framing -- it stays zero if not provided
-```
+In `fdl_geometry_fill_hierarchy_gaps()`, protection is **never** filled from framing --
+it stays zero if the source FDL did not explicitly provide protection dimensions.
 
 **Rationale**: Protection dimensions represent an intentional safe zone. If the source FDL
 doesn't define protection, it means "no protection required." Auto-filling would create
@@ -691,8 +699,8 @@ incorrect protection zones that weren't in the original spec.
 
 All anchors stored in the output FDL are clamped to non-negative values:
 
-```python
-effective_anchor = (original + offset).clamp(min_val=0.0)
+```
+effective_anchor = clamp(original + offset, min=0.0)
 ```
 
 **Rationale**: Negative anchors would place content outside the canvas, which is invalid
@@ -701,8 +709,8 @@ The unclamped ("theoretical") anchors are used internally for visible area calcu
 
 ### 5.3 Zero Anamorphic Squeeze Handling
 
-```python
-target_squeeze = self.target_anamorphic_squeeze or 1.0
+```
+target_squeeze = template.target_anamorphic_squeeze  (default 1.0)
 if target_squeeze == 0.0:
     target_squeeze = input_squeeze
 ```
@@ -712,20 +720,19 @@ to 0, it means "preserve source squeeze."
 
 ### 5.4 Validation Checks
 
-The function validates input geometry before processing:
+The pipeline validates input geometry before processing:
 
-```python
+```
 # Framing dimensions must be non-zero
 if source_geometry.framing_dims.is_zero():
-    raise ValueError("Framing decision dimensions not provided")
+    error("Framing decision dimensions not provided")
 
 # Effective must be >= protection (if both specified)
-if not source_geometry.effective_dims.is_zero() and \
-   not source_geometry.protection_dims.is_zero():
-    if (source_geometry.effective_dims.width < source_geometry.protection_dims.width
-        or source_geometry.effective_dims.height < source_geometry.protection_dims.height):
-        raise ValueError(
-            "Source effective canvas dimensions are smaller than protection dimensions")
+if not source_geometry.effective_dims.is_zero()
+   and not source_geometry.protection_dims.is_zero():
+    if effective.width < protection.width
+       or effective.height < protection.height:
+        error("Source effective canvas dimensions are smaller than protection dimensions")
 ```
 
 ### 5.5 Path Hierarchy Validation
@@ -747,75 +754,51 @@ false matches where a small sub-pixel overflow would be treated as FIT.
 
 ### 6.1 Creating the Output Objects
 
-**Method**: `CanvasTemplate._create_output_fdl`
+**C++ implementation**: `fdl_template.cpp`, lines 298-473
+
+The pipeline assembles the final output from the processed geometry:
 
 **New Canvas**:
-
-```python
-new_canvas = Canvas(
-    id=new_canvas_id,
-    label=canvas_label,
-    dimensions=geometry.canvas_dims.to_int(),
-    source_canvas_id=source_canvas.id,
-    anamorphic_squeeze=target_squeeze,
-    effective_dimensions=geometry.effective_dims.to_int(),
-    effective_anchor_point=geometry.effective_anchor,
-)
-```
+- `id` = caller-provided canvas ID
+- `dimensions` = geometry.canvas_dims (as integer)
+- `source_canvas_id` = source canvas ID (traceability link)
+- `anamorphic_squeeze` = target squeeze
+- `effective_dimensions` = geometry.effective_dims (as integer)
+- `effective_anchor_point` = geometry.effective_anchor
 
 **New Framing Decision**:
+- `id` = `"{canvas_id}-{framing_intent_id}"`
+- `dimensions` = geometry.framing_dims
+- `anchor_point` = geometry.framing_anchor
+- `protection_dimensions` = geometry.protection_dims (only if non-zero)
+- `protection_anchor_point` = geometry.protection_anchor (only if protection non-zero)
 
-```python
-new_fd = FramingDecision(
-    id=f"{new_canvas_id}-{framing_intent_id}",
-    framing_intent_id=framing_intent_id,
-    dimensions=geometry.framing_dims,
-    anchor_point=geometry.framing_anchor,
-    # Protection only included if non-zero
-    protection_dimensions=(geometry.protection_dims
-                          if not geometry.protection_dims.is_zero() else None),
-    protection_anchor_point=(geometry.protection_anchor
-                            if not geometry.protection_dims.is_zero() else None),
-    label=new_fd_name,
-)
-```
+**Custom Attributes on Output Canvas**:
+
+The C++ implementation stores three computed values as custom attributes on the
+output canvas for use by image processing pipelines:
+
+| Attribute | Value | Purpose |
+|-----------|-------|---------|
+| `_scale_factor` | Uniform scale factor | Image scaling |
+| `_scaled_bounding_box` | Pre-crop/pad canvas dims | Source content boundary |
+| `_content_translation` | Pixel shift (x, y) | Image positioning |
 
 **New Context and FDL**:
-
-```python
-new_context.canvases = [source_canvas, new_canvas]  # Source + output
-new_fdl = FDL(
-    framing_intents=[default_framing_intent],
-    contexts=[new_context],
-    canvas_templates=[template],
-)
-```
+- Context contains both the source canvas (for reference) and the new output canvas
+- FDL wraps the context, a default framing intent, and the applied template
 
 ### 6.2 Return Values
 
-`apply()` wraps everything into a `TransformationResult`:
-
-```python
-return TransformationResult(
-    fdl=new_fdl,
-    context_label=new_context.label,
-    canvas_id=new_canvas.id,
-    framing_decision_id=new_fd.id,
-    scale_factor=scale_factor,
-    scaled_bounding_box=scaled_bounding_box,
-    content_translation=content_translation,
-)
-```
+The C API returns a `fdl_template_result_t` containing the output FDL document and
+IDs for resolving the created context, canvas, and framing decision.
 
 | Field | Purpose |
 |-------|---------|
-| `fdl` | Complete, serializable FDL structure |
-| `context_label` | Resolves the context via `.context` property |
-| `canvas_id` | Resolves the output canvas via `.canvas` property |
-| `framing_decision_id` | Resolves the output framing decision via `.framing_decision` property |
-| `scale_factor` | The uniform scale factor applied |
-| `scaled_bounding_box` | Pre-crop/pad canvas size -- used by image processing |
-| `content_translation` | Pixel shift -- used by image processing to position content |
+| `output_fdl` | Complete, serializable FDL document |
+| `context_label` | Resolves the context by label |
+| `canvas_id` | Resolves the output canvas by ID |
+| `framing_decision_id` | Resolves the output framing decision by ID |
 
 ---
 
@@ -874,7 +857,7 @@ else:                                                        # PAD / CROP
 
 ### Key Design Decisions
 
-1. **Float throughout**: All calculations use `DimensionsFloat` to prevent cumulative
+1. **Float throughout**: All calculations use `fdl_dimensions_f64_t` to prevent cumulative
    rounding errors.
 2. **Round early**: Rounding happens after scaling but before alignment to ensure clean
    pixel boundaries.
@@ -897,28 +880,39 @@ else:                                                        # PAD / CROP
 | Padded Output | `pad_to_maximum=True`, `maximum_dimensions` set |
 | Preserve Protection | `preserve_from_source_canvas="framing_decision.protection_dimensions"` |
 
-### Function Signature
+### API Entry Points
 
-```python
-class CanvasTemplate(BaseModel):
-    def apply(
-        self,
-        source_canvas: Canvas,
-        source_framing: FramingDecision,
-        new_fd_name: str = "",
-        source_context: Context | None = None,
-        context_creator: str | None = None,
-    ) -> TransformationResult:
+**C API** (`fdl_core.h`):
+
+```c
+fdl_template_result_t fdl_apply_canvas_template(
+    const fdl_canvas_template_t* tmpl,
+    const fdl_canvas_t* source_canvas,
+    const fdl_framing_decision_t* source_framing,
+    const char* new_canvas_id,
+    const char* new_fd_name,
+    const char* source_context_label,
+    const char* context_creator);
 ```
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `source_canvas` | `Canvas` | The source canvas to transform |
-| `source_framing` | `FramingDecision` | The source framing decision |
-| `new_fd_name` | `str` | Label for the new framing decision |
-| `source_context` | `Context` | Optional source context for label generation |
-| `context_creator` | `str` | Optional creator name for new context |
+**Python** (`fdl.CanvasTemplate`):
 
-| Return | Type | Description |
-|--------|------|-------------|
-| result | `TransformationResult` | Complete result with output FDL, IDs, and computed values |
+```python
+result = template.apply(
+    source_canvas,
+    source_framing,
+    new_fd_name="...",
+    source_context=context,       # optional
+    context_creator="...",        # optional
+)
+# result.fdl, result.canvas, result.framing_decision, result.context
+```
+
+**C++ RAII** (`fdl::CanvasTemplate`):
+
+```cpp
+auto result = tmpl.apply(source_canvas, source_framing,
+                         "canvas_id", "fd_name",
+                         "context_label", "creator");
+// result.fdl(), result.canvas(), result.framing_decision()
+```
