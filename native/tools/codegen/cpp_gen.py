@@ -1095,7 +1095,6 @@ def generate_raii(idl: IDL, output_dir: Path) -> None:
         f"Generated C++ RAII header with {1 + len(ref_classes)} classes, "
         f"{len(value_types)} value types ({', '.join(vt_names)}), "
         f"{len(free_functions)} free functions ({', '.join(ff_names)}), "
-        f"{len(c_abi_utils)} utility functions ({', '.join(util_names)})"
-        + (", 4 I/O functions" if has_io_utils else "")
+        f"{len(c_abi_utils)} utility functions ({', '.join(util_names)})" + (", 4 I/O functions" if has_io_utils else "")
     )
     print(f"Output: {output_dir / 'fdl.hpp'}")

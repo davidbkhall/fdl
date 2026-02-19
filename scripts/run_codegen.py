@@ -9,12 +9,22 @@ Usage:
 """
 
 import argparse
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TOOLS_DIR = REPO_ROOT / "native" / "tools"
+
+
+def _project_python() -> str:
+    """Return the Python interpreter inside the project .venv, falling back to sys.executable."""
+    venv_python = REPO_ROOT / ".venv" / "bin" / "python"
+    if venv_python.exists():
+        return str(venv_python)
+    return sys.executable
+
 
 TARGETS = ["python-ffi", "python-facade", "cpp-raii"]
 
@@ -35,10 +45,11 @@ GENERATED_CPP_PATHS = [
 
 
 def run_codegen() -> int:
+    python = _project_python()
     for target in TARGETS:
         print(f"=== Generating: {target} ===")
         result = subprocess.run(
-            [sys.executable, "-m", "codegen.generate", "--target", target],
+            [python, "-m", "codegen.generate", "--target", target],
             cwd=TOOLS_DIR,
         )
         if result.returncode != 0:
@@ -49,8 +60,15 @@ def run_codegen() -> int:
     # Post-process: format generated Python with ruff
     print("=== Formatting generated Python ===")
     abs_py_paths = [str(REPO_ROOT / p) for p in GENERATED_PYTHON_PATHS]
+    # Prefer uvx (used by lint.py), fall back to ruff on PATH
+    if shutil.which("uvx"):
+        ruff_cmd = ["uvx", "ruff"]
+    elif shutil.which("ruff"):
+        ruff_cmd = ["ruff"]
+    else:
+        ruff_cmd = [python, "-m", "ruff"]
     fmt = subprocess.run(
-        [sys.executable, "-m", "ruff", "format", *abs_py_paths],
+        [*ruff_cmd, "format", *abs_py_paths],
         cwd=REPO_ROOT,
     )
     if fmt.returncode != 0:
