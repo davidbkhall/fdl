@@ -21,6 +21,9 @@ jobs:
         with:
           lfs: false
 
+      - name: Fetch LFS objects for doc images
+        run: git lfs pull --include="docs/images/*"
+
       # -- Doxygen (C/C++ API reference) --
       - name: Install Doxygen
         run: sudo apt-get update && sudo apt-get install -y doxygen
