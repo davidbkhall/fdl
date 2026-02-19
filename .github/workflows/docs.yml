@@ -1,0 +1,67 @@
+name: Documentation
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          lfs: false
+
+      # -- Doxygen (C/C++ API reference) --
+      - name: Install Doxygen
+        run: sudo apt-get update && sudo apt-get install -y doxygen
+
+      - name: Build Doxygen docs
+        working-directory: native/core
+        run: |
+          mkdir -p docs/api
+          doxygen Doxyfile
+
+      # -- MkDocs (Python user guide) --
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Python dependencies
+        run: uv pip install --system -e ".[docs]"
+
+      - name: Build MkDocs site
+        run: mkdocs build --strict --site-dir _site
+
+      # -- Combine: nest Doxygen under /api/ --
+      - name: Nest Doxygen output under /api/
+        run: |
+          mkdir -p _site/api
+          cp -r native/core/docs/api/html/* _site/api/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

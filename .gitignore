@@ -1,0 +1,23 @@
+/fdl/
+.idea
+**/__pycache__/
+**/tests/outputs/
+site/**
+
+# C++ build artifacts
+native/core/build/
+native/core/cmake-build-*/
+native/build/
+
+# Doxygen generated docs
+native/core/docs/api/
+
+# Python build artifacts
+native/bindings/python/build/**
+native/bindings/python/fdl.egg-info/**
+
+# Viewer build artifacts
+packages/fdl_viewer/.build_venv/**
+packages/fdl_viewer/build/**
+packages/fdl_viewer/dist/**
+/build/*
