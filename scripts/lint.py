@@ -26,8 +26,9 @@ CLANG_FORMAT_DIRS = [
     "native/core/include",
     "native/core/tests",
     "native/bindings/cpp/",
+    "native/bindings/node/src/addon/",
 ]
-CLANG_FORMAT_EXTENSIONS = (".cpp", ".h", ".hpp")
+CLANG_FORMAT_EXTENSIONS = (".cpp", ".cc", ".h", ".hpp")
 
 WARNING_RE = re.compile(r"^(.+?):(\d+):(\d+): (warning|error): (.+) \[(.+)\]$")
 
@@ -245,12 +246,64 @@ class ClangTidy(LintStep):
         return True, detail
 
 
+class PrettierCheck(LintStep):
+    def __init__(self):
+        super().__init__("prettier-check", "TypeScript format (prettier --check)")
+
+    def check_tools(self) -> str | None:
+        if not shutil.which("npx"):
+            return "npx not found — install Node.js"
+        return None
+
+    def run(self, log_dir: Path) -> tuple[bool, str]:
+        node_dir = REPO_ROOT / "native" / "bindings" / "node"
+        ts_files = []
+        src_dir = node_dir / "src"
+        if src_dir.exists():
+            ts_files.extend(str(f) for f in src_dir.rglob("*.ts"))
+        if not ts_files:
+            return True, "no files found"
+        r = subprocess.run(
+            ["npx", "prettier", "--check", *ts_files],
+            cwd=node_dir,
+            capture_output=True,
+            text=True,
+        )
+        (log_dir / "prettier-check.txt").write_text(r.stdout + r.stderr)
+        return r.returncode == 0, ""
+
+
+class TscCheck(LintStep):
+    def __init__(self):
+        super().__init__("tsc-check", "TypeScript type check (tsc --noEmit)")
+
+    def check_tools(self) -> str | None:
+        if not shutil.which("npx"):
+            return "npx not found — install Node.js"
+        return None
+
+    def run(self, log_dir: Path) -> tuple[bool, str]:
+        node_dir = REPO_ROOT / "native" / "bindings" / "node"
+        if not (node_dir / "tsconfig.json").exists():
+            return True, "no tsconfig.json"
+        r = subprocess.run(
+            ["npx", "tsc", "--noEmit"],
+            cwd=node_dir,
+            capture_output=True,
+            text=True,
+        )
+        (log_dir / "tsc-check.txt").write_text(r.stdout + r.stderr)
+        return r.returncode == 0, ""
+
+
 ALL_STEPS: list[LintStep] = [
     RuffCheck(),
     RuffFormat(),
     ClangFormat(),
     CodegenDrift(),
     ClangTidy(),
+    PrettierCheck(),
+    TscCheck(),
 ]
 
 STEP_NAMES = [s.name for s in ALL_STEPS]

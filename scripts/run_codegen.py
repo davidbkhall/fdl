@@ -26,12 +26,13 @@ def _project_python() -> str:
     return sys.executable
 
 
-TARGETS = ["python-ffi", "python-facade", "cpp-raii"]
+TARGETS = ["python-ffi", "python-facade", "cpp-raii", "node-addon", "node-facade"]
 
 GENERATED_PATHS = [
     "native/bindings/python/fdl_ffi/",
     "native/bindings/python/fdl/",
     "native/bindings/cpp/fdl/",
+    "native/bindings/node/src/",
 ]
 
 GENERATED_PYTHON_PATHS = [
@@ -41,6 +42,14 @@ GENERATED_PYTHON_PATHS = [
 
 GENERATED_CPP_PATHS = [
     "native/bindings/cpp/fdl/",
+]
+
+GENERATED_NODE_TS_PATHS = [
+    "native/bindings/node/src/",
+]
+
+GENERATED_NODE_ADDON_PATHS = [
+    "native/bindings/node/src/addon/",
 ]
 
 
@@ -89,6 +98,41 @@ def run_codegen() -> int:
                 print("WARNING: clang-format failed", file=sys.stderr)
         except FileNotFoundError:
             print("WARNING: clang-format not found, skipping C++ formatting", file=sys.stderr)
+
+    # Post-process: format generated Node.js addon C++ with clang-format
+    print("=== Formatting generated Node.js addon C++ ===")
+    addon_files = []
+    for p in GENERATED_NODE_ADDON_PATHS:
+        d = REPO_ROOT / p
+        if d.exists():
+            addon_files.extend(str(f) for f in d.rglob("*.cc"))
+            addon_files.extend(str(f) for f in d.rglob("*.h"))
+    if addon_files:
+        try:
+            cfmt = subprocess.run(["clang-format", "-i", *addon_files], cwd=REPO_ROOT)
+            if cfmt.returncode != 0:
+                print("WARNING: clang-format failed on addon files", file=sys.stderr)
+        except FileNotFoundError:
+            print("WARNING: clang-format not found, skipping addon formatting", file=sys.stderr)
+
+    # Post-process: format generated TypeScript with prettier
+    print("=== Formatting generated TypeScript ===")
+    ts_files = []
+    for p in GENERATED_NODE_TS_PATHS:
+        d = REPO_ROOT / p
+        if d.exists():
+            ts_files.extend(str(f) for f in d.rglob("*.ts"))
+    if ts_files:
+        node_dir = REPO_ROOT / "native" / "bindings" / "node"
+        try:
+            pfmt = subprocess.run(
+                ["npx", "prettier", "--write", *ts_files],
+                cwd=node_dir,
+            )
+            if pfmt.returncode != 0:
+                print("WARNING: prettier failed", file=sys.stderr)
+        except FileNotFoundError:
+            print("WARNING: npx/prettier not found, skipping TS formatting", file=sys.stderr)
 
     return 0
 

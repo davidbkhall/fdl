@@ -22,6 +22,18 @@ the simplest workflow is:
         write_to_file(my_fdl, f.name)
     ```
 
+=== "TypeScript"
+
+    ```typescript
+    import { readFromFile, writeToFile } from 'fdl';
+
+    // Load from a file (validates automatically)
+    const myFdl = readFromFile('my_document.fdl');
+
+    // Save to a file (validates automatically)
+    writeToFile(myFdl, 'output.fdl');
+    ```
+
 === "C++"
 
     ```cpp
@@ -56,6 +68,21 @@ validation, or call `validate()` manually:
     my_fdl2 = read_from_string(json_str, validate=False)
     my_fdl2.validate()  # raises FDLValidationError on failure
     assert my_fdl2.uuid == my_fdl.uuid
+    ```
+
+=== "TypeScript"
+
+    ```typescript
+    import { readFromFile, readFromString, writeToString } from 'fdl';
+
+    const myFdl = readFromFile('my_document.fdl');
+
+    // Serialize to a JSON string (skip validation since we just loaded a valid file)
+    const jsonStr = writeToString(myFdl, false);
+
+    // Parse from a JSON string and validate manually
+    const myFdl2 = readFromString(jsonStr, false);
+    myFdl2.validate();  // throws FDLValidationError on failure
     ```
 
 === "C++"
@@ -126,6 +153,48 @@ validation, or call `validate()` manually:
     with NamedTemporaryFile(suffix=".fdl", delete=False) as f:
         from fdl import write_to_file
         write_to_file(my_fdl, f.name)
+    ```
+
+=== "TypeScript"
+
+    ```typescript
+    import {
+      FDL, DimensionsInt, DimensionsFloat, PointFloat, writeToFile,
+    } from 'fdl';
+
+    // Create a new FDL document
+    const myFdl = new FDL({});
+
+    // Add a framing intent
+    const fi = myFdl.addFramingIntent(
+      'FI178', '1.78-1 Framing',
+      new DimensionsInt(16, 9), 0.088,
+    );
+
+    // Add a context with a canvas
+    const ctx = myFdl.addContext('PanavisionDXL2', null);
+    const canvas = ctx.addCanvas(
+      'CVS001', 'Open Gate RAW', 'CVS001',
+      new DimensionsInt(5184, 4320), 1.30,
+    );
+
+    // Set optional canvas properties
+    canvas.setEffective(
+      new DimensionsInt(5184, 4320),
+      new PointFloat(0, 0),
+    );
+    canvas.photositeDimensions = new DimensionsInt(5184, 4320);
+    canvas.physicalDimensions = new DimensionsFloat(25.92, 21.60);
+
+    // Add a framing decision referencing the framing intent
+    const fd = canvas.addFramingDecision(
+      'CVS001-FI178', '1.78-1 Framing', fi.id,
+      new DimensionsFloat(5184.0, 2916.0),
+      new PointFloat(0.0, 702.0),
+    );
+
+    // Save to file (validates automatically)
+    writeToFile(myFdl, 'output.fdl');
     ```
 
 === "C++"
@@ -203,6 +272,43 @@ validation, or call `validate()` manually:
     fd = canvas.framing_decisions.get_by_id("20220310-FDLSMP03")
     if fd:
         print(f"Found FD: {fd.label}")
+    ```
+
+=== "TypeScript"
+
+    ```typescript
+    import { readFromFile } from 'fdl';
+
+    const myFdl = readFromFile('my_document.fdl');
+
+    // Iterate contexts
+    for (const ctx of myFdl.contexts) {
+      console.log(`Context: ${ctx.label}`);
+
+      // Iterate canvases within a context
+      for (const canvas of ctx.canvases) {
+        console.log(`  Canvas: ${canvas.label} (${canvas.dimensions.width}x${canvas.dimensions.height})`);
+
+        // Iterate framing decisions within a canvas
+        for (const fd of canvas.framingDecisions) {
+          console.log(`    FD: ${fd.label}`);
+          console.log(`      Dimensions: ${fd.dimensions.width}x${fd.dimensions.height}`);
+          console.log(`      Anchor: (${fd.anchorPoint.x}, ${fd.anchorPoint.y})`);
+        }
+      }
+    }
+
+    // Iterate framing intents
+    for (const fi of myFdl.framingIntents) {
+      console.log(`Framing Intent: ${fi.label} (protection=${fi.protection})`);
+    }
+
+    // Look up by ID
+    const canvas = myFdl.contexts[0].canvases[0];
+    const fd = canvas.framingDecisions.getById('20220310-FDLSMP03');
+    if (fd) {
+      console.log(`Found FD: ${fd.label}`);
+    }
     ```
 
 === "C++"
@@ -287,6 +393,43 @@ validation, or call `validate()` manually:
         print(f"  Content translation: ({content_translation.x}, {content_translation.y})")
     if scaled_bbox:
         print(f"  Scaled bounding box: {scaled_bbox.width}x{scaled_bbox.height}")
+    ```
+
+=== "TypeScript"
+
+    ```typescript
+    import {
+      readFromFile,
+      ATTR_SCALE_FACTOR, ATTR_CONTENT_TRANSLATION, ATTR_SCALED_BOUNDING_BOX,
+    } from 'fdl';
+
+    const myFdl = readFromFile('my_document.fdl');
+
+    // Select the source canvas and framing decision
+    const context = myFdl.contexts[0];
+    const sourceCanvas = context.canvases[0];
+    const sourceFraming = sourceCanvas.framingDecisions[0];
+
+    // Select a canvas template
+    const template = myFdl.canvasTemplates[0];
+    console.log(`Applying template: ${template.label}`);
+
+    // Apply the template
+    const result = template.apply(sourceCanvas, sourceFraming, 'new_canvas', '');
+
+    // Access the output via convenience properties
+    const outputFdl = result.fdl;
+    const outputCanvas = result.canvas;
+    const outputFraming = result.framingDecision;
+
+    console.log(`Output canvas: ${outputCanvas!.label}`);
+    console.log(`  Dimensions: ${outputCanvas!.dimensions.width}x${outputCanvas!.dimensions.height}`);
+
+    // Read computed values from canvas custom attributes
+    const scaleFactor = outputCanvas!.getCustomAttr(ATTR_SCALE_FACTOR);
+    const contentTranslation = outputCanvas!.getCustomAttr(ATTR_CONTENT_TRANSLATION);
+    const scaledBbox = outputCanvas!.getCustomAttr(ATTR_SCALED_BOUNDING_BOX);
+    console.log(`  Scale factor: ${scaleFactor}`);
     ```
 
 === "C++"
@@ -375,6 +518,42 @@ The rounding strategy has two components:
     assert rounded.height == 540
     ```
 
+=== "TypeScript"
+
+    ```typescript
+    import {
+      DimensionsFloat, RoundStrategy, RoundingEven, RoundingMode,
+      getRounding, setRounding, DEFAULT_ROUNDING_STRATEGY,
+    } from 'fdl';
+
+    // Check the default strategy
+    const def = getRounding();
+    console.log(def.even, def.mode);  // "even", "up"
+
+    // Set a global rounding strategy
+    setRounding(new RoundStrategy(RoundingEven.WHOLE, RoundingMode.ROUND));
+
+    // Reset to default
+    setRounding(DEFAULT_ROUNDING_STRATEGY);
+
+    // Per-dimension rounding
+    const dims = new DimensionsFloat(19.456, 79.456);
+
+    // Round to nearest even number, rounding up
+    const roundedEvenUp = dims.round(RoundingEven.EVEN, RoundingMode.UP);
+    // roundedEvenUp.width === 20, roundedEvenUp.height === 80
+
+    // Round to nearest whole number, rounding down
+    const roundedWholeDown = dims.round(RoundingEven.WHOLE, RoundingMode.DOWN);
+    // roundedWholeDown.width === 19, roundedWholeDown.height === 79
+
+    // Scale then round
+    const dims2 = new DimensionsFloat(1920.0, 1080.0);
+    const scaled = dims2.scale(0.5, 1.0);
+    const rounded = scaled.round(RoundingEven.EVEN, RoundingMode.UP);
+    // rounded.width === 960, rounded.height === 540
+    ```
+
 === "C++"
 
     ```cpp
@@ -443,6 +622,41 @@ composite types (PointFloat, DimensionsFloat, DimensionsInt).
     assert my_fdl.get_custom_attr("is_final") is None
     ```
 
+=== "TypeScript"
+
+    ```typescript
+    import { FDL, DimensionsInt, DimensionsFloat, PointFloat } from 'fdl';
+
+    const myFdl = new FDL({});
+
+    // Set scalar attributes
+    myFdl.setCustomAttr('project_name', 'My Film');
+    myFdl.setCustomAttr('shot_count', 42);
+    myFdl.setCustomAttr('aspect_ratio_value', 1.78);
+    myFdl.setCustomAttr('is_final', true);
+
+    // Set composite attributes
+    myFdl.setCustomAttr('offset', new PointFloat(128.0, 256.0));
+    myFdl.setCustomAttr('target_res', new DimensionsFloat(3840.0, 2160.0));
+    myFdl.setCustomAttr('sensor_size', new DimensionsInt(5184, 4320));
+
+    // Get attributes by name
+    console.log(myFdl.getCustomAttr('project_name'));  // "My Film"
+    console.log(myFdl.getCustomAttr('shot_count'));     // 42
+    console.log(myFdl.getCustomAttr('is_final'));       // true
+
+    const offset = myFdl.getCustomAttr('offset');       // PointFloat
+    const target = myFdl.getCustomAttr('target_res');   // DimensionsFloat
+
+    // List all custom attributes
+    const allAttrs = myFdl.customAttrs;
+    console.log(Object.keys(allAttrs));
+
+    // Remove an attribute
+    myFdl.removeCustomAttr('is_final');
+    console.log(myFdl.getCustomAttr('is_final'));  // null
+    ```
+
 === "C++"
 
     ```cpp
@@ -491,6 +705,22 @@ custom attributes on the output canvas. Use the named constants to access them:
     print(ATTR_SCALE_FACTOR)          # "scale_factor"
     print(ATTR_CONTENT_TRANSLATION)   # "content_translation"
     print(ATTR_SCALED_BOUNDING_BOX)   # "scaled_bounding_box"
+    ```
+
+=== "TypeScript"
+
+    ```typescript
+    import {
+      ATTR_SCALE_FACTOR, ATTR_CONTENT_TRANSLATION, ATTR_SCALED_BOUNDING_BOX,
+    } from 'fdl';
+
+    console.log(ATTR_SCALE_FACTOR);         // "scale_factor"
+    console.log(ATTR_CONTENT_TRANSLATION);  // "content_translation"
+    console.log(ATTR_SCALED_BOUNDING_BOX);  // "scaled_bounding_box"
+
+    const sf = outputCanvas.getCustomAttr(ATTR_SCALE_FACTOR);
+    const ct = outputCanvas.getCustomAttr(ATTR_CONTENT_TRANSLATION);
+    const bb = outputCanvas.getCustomAttr(ATTR_SCALED_BOUNDING_BOX);
     ```
 
 === "C++"
