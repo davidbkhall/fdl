@@ -1274,7 +1274,7 @@
 <h2 id="loading-saving-an-fdl">Loading &amp; Saving an FDL</h2>
 <p>The <code>read_from_file()</code> and <code>write_to_file()</code> functions validate by default, so
 the simplest workflow is:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Python</label><label for="__tabbed_1_2">C++</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Python</label><label for="__tabbed_1_2">TypeScript</label><label for="__tabbed_1_3">C++</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">fdl</span>
@@ -1292,6 +1292,16 @@ the simplest workflow is:</p>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">readFromFile</span><span class="p">,</span><span class="w"> </span><span class="nx">writeToFile</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;fdl&#39;</span><span class="p">;</span>
+
+<span class="c1">// Load from a file (validates automatically)</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">myFdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">readFromFile</span><span class="p">(</span><span class="s1">&#39;my_document.fdl&#39;</span><span class="p">);</span>
+
+<span class="c1">// Save to a file (validates automatically)</span>
+<span class="nx">writeToFile</span><span class="p">(</span><span class="nx">myFdl</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;output.fdl&#39;</span><span class="p">);</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;fdl/fdl.hpp&quot;</span>
 
 <span class="c1">// Load from a file (validates automatically)</span>
@@ -1306,7 +1316,7 @@ the simplest workflow is:</p>
 <p>For string-based workflows (e.g., network transfer), use <code>read_from_string()</code> and
 <code>write_to_string()</code>. Pass <code>validate=false</code> (<code>False</code> in Python) if you want to skip
 validation, or call <code>validate()</code> manually:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Python</label><label for="__tabbed_2_2">C++</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:3"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Python</label><label for="__tabbed_2_2">TypeScript</label><label for="__tabbed_2_3">C++</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">fdl</span>
@@ -1327,6 +1337,19 @@ validation, or call <code>validate()</code> manually:</p>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">readFromFile</span><span class="p">,</span><span class="w"> </span><span class="nx">readFromString</span><span class="p">,</span><span class="w"> </span><span class="nx">writeToString</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;fdl&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">myFdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">readFromFile</span><span class="p">(</span><span class="s1">&#39;my_document.fdl&#39;</span><span class="p">);</span>
+
+<span class="c1">// Serialize to a JSON string (skip validation since we just loaded a valid file)</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">jsonStr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">writeToString</span><span class="p">(</span><span class="nx">myFdl</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span>
+
+<span class="c1">// Parse from a JSON string and validate manually</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">myFdl2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">readFromString</span><span class="p">(</span><span class="nx">jsonStr</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span>
+<span class="nx">myFdl2</span><span class="p">.</span><span class="nx">validate</span><span class="p">();</span><span class="w">  </span><span class="c1">// throws FDLValidationError on failure</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;fdl/fdl.hpp&quot;</span>
 
 <span class="c1">// Parse from a JSON string (validates automatically)</span>
@@ -1344,7 +1367,7 @@ validation, or call <code>validate()</code> manually:</p>
 </div>
 <hr />
 <h2 id="creating-an-fdl-from-scratch">Creating an FDL from Scratch</h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Python</label><label for="__tabbed_3_2">C++</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:3"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><input id="__tabbed_3_3" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Python</label><label for="__tabbed_3_2">TypeScript</label><label for="__tabbed_3_3">C++</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fdl</span><span class="w"> </span><span class="kn">import</span> <span class="n">FDL</span><span class="p">,</span> <span class="n">DimensionsInt</span><span class="p">,</span> <span class="n">DimensionsFloat</span><span class="p">,</span> <span class="n">PointFloat</span><span class="p">,</span> <span class="n">write_to_string</span>
@@ -1395,6 +1418,46 @@ validation, or call <code>validate()</code> manually:</p>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">FDL</span><span class="p">,</span><span class="w"> </span><span class="nx">DimensionsInt</span><span class="p">,</span><span class="w"> </span><span class="nx">DimensionsFloat</span><span class="p">,</span><span class="w"> </span><span class="nx">PointFloat</span><span class="p">,</span><span class="w"> </span><span class="nx">writeToFile</span><span class="p">,</span>
+<span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;fdl&#39;</span><span class="p">;</span>
+
+<span class="c1">// Create a new FDL document</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">myFdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">FDL</span><span class="p">({});</span>
+
+<span class="c1">// Add a framing intent</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">fi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">myFdl</span><span class="p">.</span><span class="nx">addFramingIntent</span><span class="p">(</span>
+<span class="w">  </span><span class="s1">&#39;FI178&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;1.78-1 Framing&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="ow">new</span><span class="w"> </span><span class="nx">DimensionsInt</span><span class="p">(</span><span class="mf">16</span><span class="p">,</span><span class="w"> </span><span class="mf">9</span><span class="p">),</span><span class="w"> </span><span class="mf">0.088</span><span class="p">,</span>
+<span class="p">);</span>
+
+<span class="c1">// Add a context with a canvas</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">myFdl</span><span class="p">.</span><span class="nx">addContext</span><span class="p">(</span><span class="s1">&#39;PanavisionDXL2&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">null</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">canvas</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">addCanvas</span><span class="p">(</span>
+<span class="w">  </span><span class="s1">&#39;CVS001&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Open Gate RAW&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;CVS001&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="ow">new</span><span class="w"> </span><span class="nx">DimensionsInt</span><span class="p">(</span><span class="mf">5184</span><span class="p">,</span><span class="w"> </span><span class="mf">4320</span><span class="p">),</span><span class="w"> </span><span class="mf">1.30</span><span class="p">,</span>
+<span class="p">);</span>
+
+<span class="c1">// Set optional canvas properties</span>
+<span class="nx">canvas</span><span class="p">.</span><span class="nx">setEffective</span><span class="p">(</span>
+<span class="w">  </span><span class="ow">new</span><span class="w"> </span><span class="nx">DimensionsInt</span><span class="p">(</span><span class="mf">5184</span><span class="p">,</span><span class="w"> </span><span class="mf">4320</span><span class="p">),</span>
+<span class="w">  </span><span class="ow">new</span><span class="w"> </span><span class="nx">PointFloat</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0</span><span class="p">),</span>
+<span class="p">);</span>
+<span class="nx">canvas</span><span class="p">.</span><span class="nx">photositeDimensions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">DimensionsInt</span><span class="p">(</span><span class="mf">5184</span><span class="p">,</span><span class="w"> </span><span class="mf">4320</span><span class="p">);</span>
+<span class="nx">canvas</span><span class="p">.</span><span class="nx">physicalDimensions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">DimensionsFloat</span><span class="p">(</span><span class="mf">25.92</span><span class="p">,</span><span class="w"> </span><span class="mf">21.60</span><span class="p">);</span>
+
+<span class="c1">// Add a framing decision referencing the framing intent</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">canvas</span><span class="p">.</span><span class="nx">addFramingDecision</span><span class="p">(</span>
+<span class="w">  </span><span class="s1">&#39;CVS001-FI178&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;1.78-1 Framing&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">fi</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span>
+<span class="w">  </span><span class="ow">new</span><span class="w"> </span><span class="nx">DimensionsFloat</span><span class="p">(</span><span class="mf">5184.0</span><span class="p">,</span><span class="w"> </span><span class="mf">2916.0</span><span class="p">),</span>
+<span class="w">  </span><span class="ow">new</span><span class="w"> </span><span class="nx">PointFloat</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">702.0</span><span class="p">),</span>
+<span class="p">);</span>
+
+<span class="c1">// Save to file (validates automatically)</span>
+<span class="nx">writeToFile</span><span class="p">(</span><span class="nx">myFdl</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;output.fdl&#39;</span><span class="p">);</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;fdl/fdl.hpp&quot;</span>
 
 <span class="c1">// Create a new FDL document</span>
@@ -1432,7 +1495,7 @@ validation, or call <code>validate()</code> manually:</p>
 </div>
 <hr />
 <h2 id="navigating-the-object-model">Navigating the Object Model</h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Python</label><label for="__tabbed_4_2">C++</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:3"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><input id="__tabbed_4_3" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Python</label><label for="__tabbed_4_2">TypeScript</label><label for="__tabbed_4_3">C++</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">fdl</span>
@@ -1470,6 +1533,41 @@ validation, or call <code>validate()</code> manually:</p>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">readFromFile</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;fdl&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">myFdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">readFromFile</span><span class="p">(</span><span class="s1">&#39;my_document.fdl&#39;</span><span class="p">);</span>
+
+<span class="c1">// Iterate contexts</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">ctx</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">myFdl</span><span class="p">.</span><span class="nx">contexts</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Context: </span><span class="si">${</span><span class="nx">ctx</span><span class="p">.</span><span class="nx">label</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Iterate canvases within a context</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">canvas</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">canvases</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`  Canvas: </span><span class="si">${</span><span class="nx">canvas</span><span class="p">.</span><span class="nx">label</span><span class="si">}</span><span class="sb"> (</span><span class="si">${</span><span class="nx">canvas</span><span class="p">.</span><span class="nx">dimensions</span><span class="p">.</span><span class="nx">width</span><span class="si">}</span><span class="sb">x</span><span class="si">${</span><span class="nx">canvas</span><span class="p">.</span><span class="nx">dimensions</span><span class="p">.</span><span class="nx">height</span><span class="si">}</span><span class="sb">)`</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Iterate framing decisions within a canvas</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">fd</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">canvas</span><span class="p">.</span><span class="nx">framingDecisions</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`    FD: </span><span class="si">${</span><span class="nx">fd</span><span class="p">.</span><span class="nx">label</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="w">      </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`      Dimensions: </span><span class="si">${</span><span class="nx">fd</span><span class="p">.</span><span class="nx">dimensions</span><span class="p">.</span><span class="nx">width</span><span class="si">}</span><span class="sb">x</span><span class="si">${</span><span class="nx">fd</span><span class="p">.</span><span class="nx">dimensions</span><span class="p">.</span><span class="nx">height</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="w">      </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`      Anchor: (</span><span class="si">${</span><span class="nx">fd</span><span class="p">.</span><span class="nx">anchorPoint</span><span class="p">.</span><span class="nx">x</span><span class="si">}</span><span class="sb">, </span><span class="si">${</span><span class="nx">fd</span><span class="p">.</span><span class="nx">anchorPoint</span><span class="p">.</span><span class="nx">y</span><span class="si">}</span><span class="sb">)`</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Iterate framing intents</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">fi</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">myFdl</span><span class="p">.</span><span class="nx">framingIntents</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Framing Intent: </span><span class="si">${</span><span class="nx">fi</span><span class="p">.</span><span class="nx">label</span><span class="si">}</span><span class="sb"> (protection=</span><span class="si">${</span><span class="nx">fi</span><span class="p">.</span><span class="nx">protection</span><span class="si">}</span><span class="sb">)`</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Look up by ID</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">canvas</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">myFdl</span><span class="p">.</span><span class="nx">contexts</span><span class="p">[</span><span class="mf">0</span><span class="p">].</span><span class="nx">canvases</span><span class="p">[</span><span class="mf">0</span><span class="p">];</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">canvas</span><span class="p">.</span><span class="nx">framingDecisions</span><span class="p">.</span><span class="nx">getById</span><span class="p">(</span><span class="s1">&#39;20220310-FDLSMP03&#39;</span><span class="p">);</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">fd</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Found FD: </span><span class="si">${</span><span class="nx">fd</span><span class="p">.</span><span class="nx">label</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;fdl/fdl.hpp&quot;</span>
 
 <span class="k">auto</span><span class="w"> </span><span class="n">doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fdl</span><span class="o">::</span><span class="n">read_from_string</span><span class="p">(</span><span class="n">json_string</span><span class="p">);</span>
@@ -1502,7 +1600,7 @@ validation, or call <code>validate()</code> manually:</p>
 </div>
 <hr />
 <h2 id="applying-a-canvas-template">Applying a Canvas Template</h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">Python</label><label for="__tabbed_5_2">C++</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:3"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><input id="__tabbed_5_3" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">Python</label><label for="__tabbed_5_2">TypeScript</label><label for="__tabbed_5_3">C++</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">fdl</span>
@@ -1552,6 +1650,41 @@ validation, or call <code>validate()</code> manually:</p>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">readFromFile</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">ATTR_SCALE_FACTOR</span><span class="p">,</span><span class="w"> </span><span class="nx">ATTR_CONTENT_TRANSLATION</span><span class="p">,</span><span class="w"> </span><span class="nx">ATTR_SCALED_BOUNDING_BOX</span><span class="p">,</span>
+<span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;fdl&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">myFdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">readFromFile</span><span class="p">(</span><span class="s1">&#39;my_document.fdl&#39;</span><span class="p">);</span>
+
+<span class="c1">// Select the source canvas and framing decision</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">myFdl</span><span class="p">.</span><span class="nx">contexts</span><span class="p">[</span><span class="mf">0</span><span class="p">];</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">sourceCanvas</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">context</span><span class="p">.</span><span class="nx">canvases</span><span class="p">[</span><span class="mf">0</span><span class="p">];</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">sourceFraming</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">sourceCanvas</span><span class="p">.</span><span class="nx">framingDecisions</span><span class="p">[</span><span class="mf">0</span><span class="p">];</span>
+
+<span class="c1">// Select a canvas template</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">template</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">myFdl</span><span class="p">.</span><span class="nx">canvasTemplates</span><span class="p">[</span><span class="mf">0</span><span class="p">];</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Applying template: </span><span class="si">${</span><span class="nx">template</span><span class="p">.</span><span class="nx">label</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+
+<span class="c1">// Apply the template</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">template</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">sourceCanvas</span><span class="p">,</span><span class="w"> </span><span class="nx">sourceFraming</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;new_canvas&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+
+<span class="c1">// Access the output via convenience properties</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">outputFdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">result</span><span class="p">.</span><span class="nx">fdl</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">outputCanvas</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">result</span><span class="p">.</span><span class="nx">canvas</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">outputFraming</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">result</span><span class="p">.</span><span class="nx">framingDecision</span><span class="p">;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Output canvas: </span><span class="si">${</span><span class="nx">outputCanvas</span><span class="o">!</span><span class="p">.</span><span class="nx">label</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`  Dimensions: </span><span class="si">${</span><span class="nx">outputCanvas</span><span class="o">!</span><span class="p">.</span><span class="nx">dimensions</span><span class="p">.</span><span class="nx">width</span><span class="si">}</span><span class="sb">x</span><span class="si">${</span><span class="nx">outputCanvas</span><span class="o">!</span><span class="p">.</span><span class="nx">dimensions</span><span class="p">.</span><span class="nx">height</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+
+<span class="c1">// Read computed values from canvas custom attributes</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">scaleFactor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">outputCanvas</span><span class="o">!</span><span class="p">.</span><span class="nx">getCustomAttr</span><span class="p">(</span><span class="nx">ATTR_SCALE_FACTOR</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">contentTranslation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">outputCanvas</span><span class="o">!</span><span class="p">.</span><span class="nx">getCustomAttr</span><span class="p">(</span><span class="nx">ATTR_CONTENT_TRANSLATION</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">scaledBbox</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">outputCanvas</span><span class="o">!</span><span class="p">.</span><span class="nx">getCustomAttr</span><span class="p">(</span><span class="nx">ATTR_SCALED_BOUNDING_BOX</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`  Scale factor: </span><span class="si">${</span><span class="nx">scaleFactor</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;fdl/fdl.hpp&quot;</span>
 
 <span class="k">auto</span><span class="w"> </span><span class="n">doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fdl</span><span class="o">::</span><span class="n">read_from_string</span><span class="p">(</span><span class="n">json_string</span><span class="p">);</span>
@@ -1591,7 +1724,7 @@ The rounding strategy has two components:</p>
 <li><strong>even</strong>: <code>"even"</code> (round to nearest even number) or <code>"whole"</code> (round to nearest whole number)</li>
 <li><strong>mode</strong>: <code>"up"</code>, <code>"down"</code>, or <code>"round"</code> (standard rounding)</li>
 </ul>
-<div class="tabbed-set tabbed-alternate" data-tabs="6:2"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><input id="__tabbed_6_2" name="__tabbed_6" type="radio" /><div class="tabbed-labels"><label for="__tabbed_6_1">Python</label><label for="__tabbed_6_2">C++</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="6:3"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><input id="__tabbed_6_2" name="__tabbed_6" type="radio" /><input id="__tabbed_6_3" name="__tabbed_6" type="radio" /><div class="tabbed-labels"><label for="__tabbed_6_1">Python</label><label for="__tabbed_6_2">TypeScript</label><label for="__tabbed_6_3">C++</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fdl</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -1636,6 +1769,40 @@ The rounding strategy has two components:</p>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">DimensionsFloat</span><span class="p">,</span><span class="w"> </span><span class="nx">RoundStrategy</span><span class="p">,</span><span class="w"> </span><span class="nx">RoundingEven</span><span class="p">,</span><span class="w"> </span><span class="nx">RoundingMode</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">getRounding</span><span class="p">,</span><span class="w"> </span><span class="nx">setRounding</span><span class="p">,</span><span class="w"> </span><span class="nx">DEFAULT_ROUNDING_STRATEGY</span><span class="p">,</span>
+<span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;fdl&#39;</span><span class="p">;</span>
+
+<span class="c1">// Check the default strategy</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">def</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">getRounding</span><span class="p">();</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">def</span><span class="p">.</span><span class="nx">even</span><span class="p">,</span><span class="w"> </span><span class="nx">def</span><span class="p">.</span><span class="nx">mode</span><span class="p">);</span><span class="w">  </span><span class="c1">// &quot;even&quot;, &quot;up&quot;</span>
+
+<span class="c1">// Set a global rounding strategy</span>
+<span class="nx">setRounding</span><span class="p">(</span><span class="ow">new</span><span class="w"> </span><span class="nx">RoundStrategy</span><span class="p">(</span><span class="nx">RoundingEven</span><span class="p">.</span><span class="nx">WHOLE</span><span class="p">,</span><span class="w"> </span><span class="nx">RoundingMode</span><span class="p">.</span><span class="nx">ROUND</span><span class="p">));</span>
+
+<span class="c1">// Reset to default</span>
+<span class="nx">setRounding</span><span class="p">(</span><span class="nx">DEFAULT_ROUNDING_STRATEGY</span><span class="p">);</span>
+
+<span class="c1">// Per-dimension rounding</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">dims</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">DimensionsFloat</span><span class="p">(</span><span class="mf">19.456</span><span class="p">,</span><span class="w"> </span><span class="mf">79.456</span><span class="p">);</span>
+
+<span class="c1">// Round to nearest even number, rounding up</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">roundedEvenUp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">dims</span><span class="p">.</span><span class="nx">round</span><span class="p">(</span><span class="nx">RoundingEven</span><span class="p">.</span><span class="nx">EVEN</span><span class="p">,</span><span class="w"> </span><span class="nx">RoundingMode</span><span class="p">.</span><span class="nx">UP</span><span class="p">);</span>
+<span class="c1">// roundedEvenUp.width === 20, roundedEvenUp.height === 80</span>
+
+<span class="c1">// Round to nearest whole number, rounding down</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">roundedWholeDown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">dims</span><span class="p">.</span><span class="nx">round</span><span class="p">(</span><span class="nx">RoundingEven</span><span class="p">.</span><span class="nx">WHOLE</span><span class="p">,</span><span class="w"> </span><span class="nx">RoundingMode</span><span class="p">.</span><span class="nx">DOWN</span><span class="p">);</span>
+<span class="c1">// roundedWholeDown.width === 19, roundedWholeDown.height === 79</span>
+
+<span class="c1">// Scale then round</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">dims2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">DimensionsFloat</span><span class="p">(</span><span class="mf">1920.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1080.0</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">scaled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">dims2</span><span class="p">.</span><span class="nx">scale</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">rounded</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">scaled</span><span class="p">.</span><span class="nx">round</span><span class="p">(</span><span class="nx">RoundingEven</span><span class="p">.</span><span class="nx">EVEN</span><span class="p">,</span><span class="w"> </span><span class="nx">RoundingMode</span><span class="p">.</span><span class="nx">UP</span><span class="p">);</span>
+<span class="c1">// rounded.width === 960, rounded.height === 540</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;fdl/fdl.hpp&quot;</span>
 
 <span class="c1">// Per-dimension rounding</span>
@@ -1659,7 +1826,7 @@ The rounding strategy has two components:</p>
 <p>Custom attributes can be set on FDL documents, contexts, canvases, framing decisions,
 and canvas templates. Supported types include scalars (string, int, float, bool) and
 composite types (PointFloat, DimensionsFloat, DimensionsInt).</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="7:2"><input checked="checked" id="__tabbed_7_1" name="__tabbed_7" type="radio" /><input id="__tabbed_7_2" name="__tabbed_7" type="radio" /><div class="tabbed-labels"><label for="__tabbed_7_1">Python</label><label for="__tabbed_7_2">C++</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="7:3"><input checked="checked" id="__tabbed_7_1" name="__tabbed_7" type="radio" /><input id="__tabbed_7_2" name="__tabbed_7" type="radio" /><input id="__tabbed_7_3" name="__tabbed_7" type="radio" /><div class="tabbed-labels"><label for="__tabbed_7_1">Python</label><label for="__tabbed_7_2">TypeScript</label><label for="__tabbed_7_3">C++</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fdl</span><span class="w"> </span><span class="kn">import</span> <span class="n">FDL</span><span class="p">,</span> <span class="n">DimensionsInt</span><span class="p">,</span> <span class="n">DimensionsFloat</span><span class="p">,</span> <span class="n">PointFloat</span>
@@ -1698,6 +1865,39 @@ composite types (PointFloat, DimensionsFloat, DimensionsInt).</p>
 <span class="c1"># Remove an attribute</span>
 <span class="n">my_fdl</span><span class="o">.</span><span class="n">remove_custom_attr</span><span class="p">(</span><span class="s2">&quot;is_final&quot;</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">my_fdl</span><span class="o">.</span><span class="n">get_custom_attr</span><span class="p">(</span><span class="s2">&quot;is_final&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">FDL</span><span class="p">,</span><span class="w"> </span><span class="nx">DimensionsInt</span><span class="p">,</span><span class="w"> </span><span class="nx">DimensionsFloat</span><span class="p">,</span><span class="w"> </span><span class="nx">PointFloat</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;fdl&#39;</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">myFdl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">FDL</span><span class="p">({});</span>
+
+<span class="c1">// Set scalar attributes</span>
+<span class="nx">myFdl</span><span class="p">.</span><span class="nx">setCustomAttr</span><span class="p">(</span><span class="s1">&#39;project_name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;My Film&#39;</span><span class="p">);</span>
+<span class="nx">myFdl</span><span class="p">.</span><span class="nx">setCustomAttr</span><span class="p">(</span><span class="s1">&#39;shot_count&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">42</span><span class="p">);</span>
+<span class="nx">myFdl</span><span class="p">.</span><span class="nx">setCustomAttr</span><span class="p">(</span><span class="s1">&#39;aspect_ratio_value&#39;</span><span class="p">,</span><span class="w"> </span><span class="mf">1.78</span><span class="p">);</span>
+<span class="nx">myFdl</span><span class="p">.</span><span class="nx">setCustomAttr</span><span class="p">(</span><span class="s1">&#39;is_final&#39;</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">);</span>
+
+<span class="c1">// Set composite attributes</span>
+<span class="nx">myFdl</span><span class="p">.</span><span class="nx">setCustomAttr</span><span class="p">(</span><span class="s1">&#39;offset&#39;</span><span class="p">,</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">PointFloat</span><span class="p">(</span><span class="mf">128.0</span><span class="p">,</span><span class="w"> </span><span class="mf">256.0</span><span class="p">));</span>
+<span class="nx">myFdl</span><span class="p">.</span><span class="nx">setCustomAttr</span><span class="p">(</span><span class="s1">&#39;target_res&#39;</span><span class="p">,</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">DimensionsFloat</span><span class="p">(</span><span class="mf">3840.0</span><span class="p">,</span><span class="w"> </span><span class="mf">2160.0</span><span class="p">));</span>
+<span class="nx">myFdl</span><span class="p">.</span><span class="nx">setCustomAttr</span><span class="p">(</span><span class="s1">&#39;sensor_size&#39;</span><span class="p">,</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">DimensionsInt</span><span class="p">(</span><span class="mf">5184</span><span class="p">,</span><span class="w"> </span><span class="mf">4320</span><span class="p">));</span>
+
+<span class="c1">// Get attributes by name</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">myFdl</span><span class="p">.</span><span class="nx">getCustomAttr</span><span class="p">(</span><span class="s1">&#39;project_name&#39;</span><span class="p">));</span><span class="w">  </span><span class="c1">// &quot;My Film&quot;</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">myFdl</span><span class="p">.</span><span class="nx">getCustomAttr</span><span class="p">(</span><span class="s1">&#39;shot_count&#39;</span><span class="p">));</span><span class="w">     </span><span class="c1">// 42</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">myFdl</span><span class="p">.</span><span class="nx">getCustomAttr</span><span class="p">(</span><span class="s1">&#39;is_final&#39;</span><span class="p">));</span><span class="w">       </span><span class="c1">// true</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">myFdl</span><span class="p">.</span><span class="nx">getCustomAttr</span><span class="p">(</span><span class="s1">&#39;offset&#39;</span><span class="p">);</span><span class="w">       </span><span class="c1">// PointFloat</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">myFdl</span><span class="p">.</span><span class="nx">getCustomAttr</span><span class="p">(</span><span class="s1">&#39;target_res&#39;</span><span class="p">);</span><span class="w">   </span><span class="c1">// DimensionsFloat</span>
+
+<span class="c1">// List all custom attributes</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">allAttrs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">myFdl</span><span class="p">.</span><span class="nx">customAttrs</span><span class="p">;</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">allAttrs</span><span class="p">));</span>
+
+<span class="c1">// Remove an attribute</span>
+<span class="nx">myFdl</span><span class="p">.</span><span class="nx">removeCustomAttr</span><span class="p">(</span><span class="s1">&#39;is_final&#39;</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">myFdl</span><span class="p">.</span><span class="nx">getCustomAttr</span><span class="p">(</span><span class="s1">&#39;is_final&#39;</span><span class="p">));</span><span class="w">  </span><span class="c1">// null</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
@@ -1758,13 +1958,27 @@ custom attributes on the output canvas. Use the named constants to access them:<
 </tr>
 </tbody>
 </table>
-<div class="tabbed-set tabbed-alternate" data-tabs="8:2"><input checked="checked" id="__tabbed_8_1" name="__tabbed_8" type="radio" /><input id="__tabbed_8_2" name="__tabbed_8" type="radio" /><div class="tabbed-labels"><label for="__tabbed_8_1">Python</label><label for="__tabbed_8_2">C++</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:3"><input checked="checked" id="__tabbed_8_1" name="__tabbed_8" type="radio" /><input id="__tabbed_8_2" name="__tabbed_8" type="radio" /><input id="__tabbed_8_3" name="__tabbed_8" type="radio" /><div class="tabbed-labels"><label for="__tabbed_8_1">Python</label><label for="__tabbed_8_2">TypeScript</label><label for="__tabbed_8_3">C++</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fdl</span><span class="w"> </span><span class="kn">import</span> <span class="n">ATTR_SCALE_FACTOR</span><span class="p">,</span> <span class="n">ATTR_CONTENT_TRANSLATION</span><span class="p">,</span> <span class="n">ATTR_SCALED_BOUNDING_BOX</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">ATTR_SCALE_FACTOR</span><span class="p">)</span>          <span class="c1"># &quot;scale_factor&quot;</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">ATTR_CONTENT_TRANSLATION</span><span class="p">)</span>   <span class="c1"># &quot;content_translation&quot;</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">ATTR_SCALED_BOUNDING_BOX</span><span class="p">)</span>   <span class="c1"># &quot;scaled_bounding_box&quot;</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">ATTR_SCALE_FACTOR</span><span class="p">,</span><span class="w"> </span><span class="nx">ATTR_CONTENT_TRANSLATION</span><span class="p">,</span><span class="w"> </span><span class="nx">ATTR_SCALED_BOUNDING_BOX</span><span class="p">,</span>
+<span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;fdl&#39;</span><span class="p">;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">ATTR_SCALE_FACTOR</span><span class="p">);</span><span class="w">         </span><span class="c1">// &quot;scale_factor&quot;</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">ATTR_CONTENT_TRANSLATION</span><span class="p">);</span><span class="w">  </span><span class="c1">// &quot;content_translation&quot;</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">ATTR_SCALED_BOUNDING_BOX</span><span class="p">);</span><span class="w">  </span><span class="c1">// &quot;scaled_bounding_box&quot;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">sf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">outputCanvas</span><span class="p">.</span><span class="nx">getCustomAttr</span><span class="p">(</span><span class="nx">ATTR_SCALE_FACTOR</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">ct</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">outputCanvas</span><span class="p">.</span><span class="nx">getCustomAttr</span><span class="p">(</span><span class="nx">ATTR_CONTENT_TRANSLATION</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">bb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">outputCanvas</span><span class="p">.</span><span class="nx">getCustomAttr</span><span class="p">(</span><span class="nx">ATTR_SCALED_BOUNDING_BOX</span><span class="p">);</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">

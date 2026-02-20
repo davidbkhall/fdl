@@ -298,6 +298,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#typescript-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TypeScript / Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#c" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -329,6 +340,17 @@
     <span class="md-ellipsis">
       
         Documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
       
     </span>
   </a>
@@ -1215,6 +1237,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#typescript-nodejs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TypeScript / Node.js
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#c" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1253,6 +1286,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#api-reference" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1284,17 +1328,20 @@
 <p>ASC FDL is a toolkit for parsing, validating, creating, and transforming
 <a href="https://theasc.com/society/ascmitc/asc-framing-decision-list">Framing Decision List (FDL)</a> files.
 It is built around a shared C core library (<code>libfdl_core</code>) with idiomatic bindings for
-<strong>Python</strong> and <strong>C++</strong>, and conforms to the official FDL
+<strong>Python</strong>, <strong>TypeScript/Node.js</strong>, and <strong>C++</strong>, and conforms to the official FDL
 <a href="https://github.com/ascmitc/fdl/tree/main/Specification">specification</a>.</p>
 <h2 id="how-it-works">How It Works</h2>
 <p>The C++ core compiles to a shared library exporting a stable C ABI. Language
 bindings are <strong>auto-generated</strong> from a single IDL file (<code>fdl_api.yaml</code>) via a
-Jinja2-based code generation pipeline. This ensures Python and C++ stay in sync
+Jinja2-based code generation pipeline. This ensures Python, TypeScript, and C++ stay in sync
 with the C core and with each other. See <a href="architecture/">Architecture</a> for
 the full picture.</p>
 <h2 id="install">Install</h2>
 <h3 id="python">Python</h3>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>fdl
+</code></pre></div>
+<h3 id="typescript-nodejs">TypeScript / Node.js</h3>
+<div class="highlight"><pre><span></span><code>npm<span class="w"> </span>install<span class="w"> </span>fdl
 </code></pre></div>
 <h3 id="c">C++</h3>
 <p>The C++ bindings are a single header-only file wrapping the C ABI:</p>
@@ -1307,6 +1354,7 @@ the full picture.</p>
 <tr>
 <th style="text-align: left;">Feature</th>
 <th style="text-align: center;">Python</th>
+<th style="text-align: center;">TypeScript</th>
 <th style="text-align: center;">C++</th>
 <th>Notes</th>
 </tr>
@@ -1316,10 +1364,12 @@ the full picture.</p>
 <td style="text-align: left;">Parse &amp; write FDL files</td>
 <td style="text-align: center;">Y</td>
 <td style="text-align: center;">Y</td>
+<td style="text-align: center;">Y</td>
 <td></td>
 </tr>
 <tr>
 <td style="text-align: left;">Validate IDs &amp; relations</td>
+<td style="text-align: center;">Y</td>
 <td style="text-align: center;">Y</td>
 <td style="text-align: center;">Y</td>
 <td>Enforces unique IDs and valid cross-references</td>
@@ -1328,10 +1378,12 @@ the full picture.</p>
 <td style="text-align: left;">JSON Schema validation</td>
 <td style="text-align: center;">Y</td>
 <td style="text-align: center;">Y</td>
+<td style="text-align: center;">Y</td>
 <td></td>
 </tr>
 <tr>
 <td style="text-align: left;">Canvas templates</td>
+<td style="text-align: center;">Y</td>
 <td style="text-align: center;">Y</td>
 <td style="text-align: center;">Y</td>
 <td>Apply templates to produce new canvases</td>
@@ -1340,10 +1392,12 @@ the full picture.</p>
 <td style="text-align: left;">Rounding strategies</td>
 <td style="text-align: center;">Y</td>
 <td style="text-align: center;">Y</td>
+<td style="text-align: center;">Y</td>
 <td>Global and per-dimension rounding control</td>
 </tr>
 <tr>
 <td style="text-align: left;">Custom attributes</td>
+<td style="text-align: center;">Y</td>
 <td style="text-align: center;">Y</td>
 <td style="text-align: center;">Y</td>
 <td>Scalar + composite types (PointFloat, DimensionsFloat, DimensionsInt)</td>
@@ -1351,6 +1405,7 @@ the full picture.</p>
 <tr>
 <td style="text-align: left;">CLI tool</td>
 <td style="text-align: center;">Y</td>
+<td style="text-align: center;"></td>
 <td style="text-align: center;"></td>
 <td><code>fdl-validate</code> for command-line validation</td>
 </tr>
@@ -1367,7 +1422,7 @@ the full picture.</p>
 <tbody>
 <tr>
 <td><a href="getting_started/">Getting Started</a></td>
-<td>Tutorials with Python and C++ examples</td>
+<td>Tutorials with Python, TypeScript, and C++ examples</td>
 </tr>
 <tr>
 <td><a href="architecture/">Architecture</a></td>
@@ -1399,6 +1454,14 @@ the full picture.</p>
 </tr>
 </tbody>
 </table>
+<h2 id="examples">Examples</h2>
+<p>The <code>examples/</code> directory contains demonstration applications:</p>
+<ul>
+<li><strong><code>examples/web_viewer/</code></strong> -- A React + Express web viewer that loads and visualises FDL
+  files using the Node.js bindings. <strong>This is a reference/demo application, not
+  production software.</strong> It is provided to illustrate how to integrate the FDL
+  library into a web stack.</li>
+</ul>
 <h2 id="api-reference">API Reference</h2>
 <ul>
 <li><strong>Python API</strong> -- see the <a href="FDL%20Classes/fdl/">FDL Classes</a> section</li>
