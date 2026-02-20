@@ -38,22 +38,17 @@ the simplest workflow is:
 
     ```cpp
     #include "fdl/fdl.hpp"
-    #include <fstream>
 
-    // Load from a file
-    std::ifstream ifs("my_document.fdl");
-    std::string json((std::istreambuf_iterator<char>(ifs)),
-                      std::istreambuf_iterator<char>());
-    auto doc = fdl::FDL::parse(json);
+    // Load from a file (validates automatically)
+    auto doc = fdl::read_from_file("my_document.fdl");
 
-    // Save to a file
-    std::ofstream ofs("output.fdl");
-    ofs << doc.to_json();
+    // Save to a file (validates automatically)
+    fdl::write_to_file(doc, "output.fdl");
     ```
 
 For string-based workflows (e.g., network transfer), use `read_from_string()` and
-`write_to_string()`. Pass `validate=False` if you want to skip validation, or call
-`validate()` manually:
+`write_to_string()`. Pass `validate=false` (`False` in Python) if you want to skip
+validation, or call `validate()` manually:
 
 === "Python"
 
@@ -95,13 +90,15 @@ For string-based workflows (e.g., network transfer), use `read_from_string()` an
     ```cpp
     #include "fdl/fdl.hpp"
 
-    auto doc = fdl::FDL::parse(json_string);
+    // Parse from a JSON string (validates automatically)
+    auto doc = fdl::read_from_string(json_string);
 
-    // Validate explicitly
-    auto errors = doc.validate();  // returns vector<string>, empty on success
+    // Serialize to string (skip validation since we just loaded a valid doc)
+    std::string json = fdl::write_to_string(doc, /*validate=*/false);
 
-    // Serialize to string
-    std::string json = doc.to_json();
+    // Parse without validation, then validate manually
+    auto doc2 = fdl::read_from_string(json, /*validate=*/false);
+    auto errors = doc2.validate();  // returns vector<string>, empty on success
     ```
 
 ---
@@ -204,7 +201,6 @@ For string-based workflows (e.g., network transfer), use `read_from_string()` an
 
     ```cpp
     #include "fdl/fdl.hpp"
-    #include <fstream>
 
     // Create a new FDL document
     auto doc = fdl::FDL::create("00000000-0000-0000-0000-000000000001");
@@ -234,9 +230,7 @@ For string-based workflows (e.g., network transfer), use `read_from_string()` an
         fdl_point_f64_t{0.0, 702.0});
 
     // Save to file (validates automatically)
-    auto errors = doc.validate();
-    std::ofstream ofs("output.fdl");
-    ofs << doc.to_json();
+    fdl::write_to_file(doc, "output.fdl");
     ```
 
 ---
@@ -322,7 +316,7 @@ For string-based workflows (e.g., network transfer), use `read_from_string()` an
     ```cpp
     #include "fdl/fdl.hpp"
 
-    auto doc = fdl::FDL::parse(json_string);
+    auto doc = fdl::read_from_string(json_string);
 
     // Iterate contexts
     for (uint32_t i = 0; i < doc.contexts_count(); ++i) {
@@ -443,7 +437,7 @@ For string-based workflows (e.g., network transfer), use `read_from_string()` an
     ```cpp
     #include "fdl/fdl.hpp"
 
-    auto doc = fdl::FDL::parse(json_string);
+    auto doc = fdl::read_from_string(json_string);
 
     // Select source canvas and framing
     auto ctx = doc.context_at(0);

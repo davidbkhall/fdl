@@ -1000,6 +1000,9 @@ def generate_raii(idl: IDL, output_dir: Path) -> None:
                 }
             )
 
+    # IO convenience functions (read/write from file/string)
+    has_io_utils = any(u.kind == "io" for u in idl.utilities)
+
     # Auxiliary structs (ClipID, FileSequence, Version)
     aux = _build_auxiliary_structs(idl)
 
@@ -1079,6 +1082,7 @@ def generate_raii(idl: IDL, output_dir: Path) -> None:
         value_types=value_types,
         free_functions=free_functions,
         c_abi_utils=c_abi_utils,
+        has_io_utils=has_io_utils,
         aux_json_wrappers=aux["json_wrappers"],
         aux_version=aux["version"],
     )
@@ -1091,6 +1095,6 @@ def generate_raii(idl: IDL, output_dir: Path) -> None:
         f"Generated C++ RAII header with {1 + len(ref_classes)} classes, "
         f"{len(value_types)} value types ({', '.join(vt_names)}), "
         f"{len(free_functions)} free functions ({', '.join(ff_names)}), "
-        f"{len(c_abi_utils)} utility functions ({', '.join(util_names)})"
+        f"{len(c_abi_utils)} utility functions ({', '.join(util_names)})" + (", 4 I/O functions" if has_io_utils else "")
     )
     print(f"Output: {output_dir / 'fdl.hpp'}")
