@@ -1,6 +1,7 @@
 /fdl/
 .idea
 **/__pycache__/
+*.node
 **/tests/outputs/
 site/**
 
@@ -21,3 +22,12 @@ packages/fdl_viewer/.build_venv/**
 packages/fdl_viewer/build/**
 packages/fdl_viewer/dist/**
 /build/*
+
+# Node.js / TypeScript build artifacts
+**/node_modules/
+native/bindings/node/build/
+native/bindings/node/dist/
+
+# Example app build artifacts
+examples/**/dist/
+examples/**/.vite/

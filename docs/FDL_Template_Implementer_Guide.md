@@ -916,3 +916,14 @@ auto result = tmpl.apply(source_canvas, source_framing,
                          "context_label", "creator");
 // result.fdl(), result.canvas(), result.framing_decision()
 ```
+
+**TypeScript** (`CanvasTemplate`):
+
+```typescript
+const result = template.apply(
+  sourceCanvas, sourceFraming,
+  'canvas_id', 'fd_name',
+  'context_label', 'creator',
+);
+// result.fdl, result.context, result.canvas, result.framingDecision
+```

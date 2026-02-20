@@ -22,7 +22,11 @@ from .fdl_idl import parse_idl
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate bindings from fdl_api.yaml")
     parser.add_argument("--idl", type=Path, help="Path to fdl_api.yaml")
-    parser.add_argument("--target", choices=["python", "python-ffi", "python-facade", "cpp-raii"], default="python-ffi")
+    parser.add_argument(
+        "--target",
+        choices=["python", "python-ffi", "python-facade", "cpp-raii", "node-addon", "node-facade"],
+        default="python-ffi",
+    )
     parser.add_argument("--output", type=Path, help="Output directory")
     args = parser.parse_args()
 
@@ -51,6 +55,16 @@ def main() -> None:
 
         output_dir = args.output or (repo_root / "bindings" / "cpp" / "fdl")
         cpp_gen.generate_raii(idl, output_dir)
+    elif args.target == "node-addon":
+        from . import node_gen
+
+        output_dir = args.output or (repo_root / "bindings" / "node" / "src" / "addon")
+        node_gen.generate_addon(idl, output_dir)
+    elif args.target == "node-facade":
+        from . import node_gen
+
+        output_dir = args.output or (repo_root / "bindings" / "node" / "src")
+        node_gen.generate_facade(idl, output_dir)
 
 
 if __name__ == "__main__":

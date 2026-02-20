@@ -55,8 +55,8 @@ jobs:
       - name: Run clang-format check
         run: |
           find native/core/src native/core/include native/core/tests \
-            native/bindings/cpp/ \
-            -type f \( -name '*.cpp' -o -name '*.h' -o -name '*.hpp' \) \
+            native/bindings/cpp/ native/bindings/node/src/addon/ \
+            -type f \( -name '*.cpp' -o -name '*.cc' -o -name '*.h' -o -name '*.hpp' \) \
             -print0 | xargs -0 -P"$(nproc)" -n 5 clang-format --dry-run --Werror
 
       - name: Install CMake
@@ -76,6 +76,24 @@ jobs:
 
       - name: Run clang-tidy
         run: run-clang-tidy -p native/core/build -j"$(nproc)" native/core/src/
+
+      # --- TypeScript linting ---
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Node.js dependencies
+        run: npm install --ignore-scripts
+        working-directory: native/bindings/node
+
+      - name: Run prettier check
+        run: npx prettier --check 'src/**/*.ts'
+        working-directory: native/bindings/node
+
+      - name: Run tsc type check
+        run: npx tsc --noEmit
+        working-directory: native/bindings/node
 
   # ---------------------------------------------------------------------------
   # Tests — gate for all downstream jobs
@@ -175,6 +193,16 @@ jobs:
       - name: Check ABI symbol parity
         if: runner.os != 'Windows'
         run: python scripts/check_abi_symbols.py
+
+      # --- Node.js addon build + tests ---
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build Node.js addon and run tests
+        if: runner.os != 'Windows'
+        run: python scripts/build_node.py --run-tests
 
       # --- Python environment ---
       - name: Install Python packages
@@ -316,6 +344,17 @@ jobs:
       - name: Build native library
         run: python scripts/build_native.py --no-tests
 
+      # --- Build Node.js addon (non-Windows) ---
+      - name: Set up Node.js
+        if: runner.os != 'Windows'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build Node.js addon
+        if: runner.os != 'Windows'
+        run: python scripts/build_node.py --addon-only
+
       # --- Copy native lib into fdl_ffi for wheel bundling ---
       - name: Bundle native library (Linux)
         if: runner.os == 'Linux'
@@ -445,6 +484,17 @@ jobs:
             dist/*.dmg
             dist/*.zip
             dist/*.tar.gz
+          if-no-files-found: warn
+          retention-days: 2
+
+      - name: Upload Node.js addon
+        if: runner.os != 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-addon-${{ runner.os }}-${{ runner.arch }}
+          path: |
+            native/bindings/node/build/fdl_addon.node
+            native/bindings/node/build/libfdl_core.*
           if-no-files-found: warn
           retention-days: 2
 
