@@ -234,6 +234,7 @@ class ObjectClass:
     factory: str | None = None
     destructor: str | None = None
     custom_attrs: bool = False
+    pydantic_model: str | None = None
     properties: list[PropertyMapping] = field(default_factory=list)
     collections: list[CollectionPattern] = field(default_factory=list)
     methods: list[MethodMapping] = field(default_factory=list)
@@ -590,6 +591,7 @@ def _parse_object_class(name: str, raw: dict) -> ObjectClass:
         c_handle=raw["c_handle"],
         owns_handle=raw.get("owns_handle", False),
         parent=raw.get("parent"),
+        pydantic_model=raw.get("pydantic_model"),
         factory=raw.get("factory"),
         destructor=raw.get("destructor"),
         custom_attrs=raw.get("custom_attrs", False),
@@ -1009,6 +1011,7 @@ def build_ir(idl: IDL) -> IR:
             destructor=cls.destructor,
             identity_attr=_IDENTITY_ATTRS.get(cls.name),
             custom_attrs=cls.custom_attrs,
+            pydantic_model=cls.pydantic_model,
         )
 
         for prop in cls.properties:

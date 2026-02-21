@@ -64,7 +64,7 @@ from .constants import (
 {% endfor %}
 )
 {% endif %}
-{% if imports.type_check_enums or imports.type_check_classes %}
+{% if imports.type_check_enums or imports.type_check_classes or cls.pydantic_model %}
 
 from typing import TYPE_CHECKING
 
@@ -79,6 +79,9 @@ if TYPE_CHECKING:
 {% for tc in imports.type_check_classes %}
     from .{{ tc.module }} import {{ tc.cls }}
 {% endfor %}
+{% if cls.pydantic_model %}
+    from .models import {{ cls.pydantic_model }}
+{% endif %}
 {% endif %}
 
 
@@ -323,6 +326,45 @@ class {{ cls.name }}({{ "OwnedHandle" if cls.owns_handle else "HandleWrapper" }}
         return d
 {% endif %}
 
+{% if cls.pydantic_model %}
+    def to_model(self) -> {{ cls.pydantic_model }}:
+        """Convert to a Pydantic ``{{ cls.pydantic_model }}`` instance.
+
+        Returns a pure-data Pydantic model suitable for serialization,
+        API responses, and interoperability with web frameworks.
+        """
+        from .models import {{ cls.pydantic_model }}
+
+        return {{ cls.pydantic_model }}.model_validate(self.as_dict())
+
+{% if cls.owns_handle %}
+    @classmethod
+    def from_model(cls, model: {{ cls.pydantic_model }}) -> {{ cls.name }}:
+        """Create an ``{{ cls.name }}`` facade from a Pydantic model.
+
+        Parses the model's JSON representation through the C core,
+        producing a fully validated, handle-backed facade object.
+        """
+        json_bytes = model.model_dump_json(by_alias=True).encode("utf-8")
+        return cls.parse(json_bytes)
+
+{% else %}
+    @classmethod
+    def from_model(cls, model: {{ cls.pydantic_model }}) -> {{ cls.name }}:
+        """Create a standalone ``{{ cls.name }}`` facade from a Pydantic model.
+
+        Note: Creates a temporary backing document. The returned object
+        is self-contained but not attached to any parent FDL document.
+        """
+        d = model.model_dump(exclude_none=True)
+{% for conv in cls.from_model_conversions %}
+        if "{{ conv.name }}" in d:
+            d["{{ conv.name }}"] = {{ conv.value_type }}(**d["{{ conv.name }}"])
+{% endfor %}
+        return cls(**d)
+
+{% endif %}
+{% endif %}
 {% for builder in cls.builders %}
     def {{ builder.name }}(
         self,

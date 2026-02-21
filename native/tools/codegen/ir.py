@@ -195,6 +195,7 @@ class IRClass:
     destructor: str | None = None
     identity_attr: str | None = None  # "id" for Canvas/FD/FI/CT, "label" for Context, None for FDL
     custom_attrs: bool = False  # True if this class supports custom attributes
+    pydantic_model: str | None = None  # Pydantic model class name for to_model/from_model bridge
     properties: list[IRProperty] = field(default_factory=list)
     collections: list[IRCollection] = field(default_factory=list)
     methods: list[IRMethod] = field(default_factory=list)

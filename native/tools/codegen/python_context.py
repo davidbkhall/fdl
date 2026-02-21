@@ -740,6 +740,20 @@ def build_facade_class_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_c
     custom_attrs = ir_cls.custom_attrs
     ca_prefix = ir_cls.handle_type.removesuffix("t") if custom_attrs else None
 
+    # Build from_model dict→value-type conversions for sub-object classes
+    _VALUE_TYPE_MAP = {
+        "fdl_dimensions_i64_t": "DimensionsInt",
+        "fdl_dimensions_f64_t": "DimensionsFloat",
+        "fdl_point_f64_t": "PointFloat",
+        "fdl_round_strategy_t": "RoundStrategy",
+    }
+    from_model_conversions = []
+    if ir_cls.pydantic_model and not ir_cls.owns_handle and ir_cls.init:
+        for p in ir_cls.init.params:
+            vt = _VALUE_TYPE_MAP.get(p.type_key)
+            if vt:
+                from_model_conversions.append({"name": p.name, "value_type": vt, "nullable": p.nullable})
+
     return {
         "name": ir_cls.name,
         "handle_type": ir_cls.handle_type,
@@ -747,6 +761,8 @@ def build_facade_class_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_c
         "identity_attr": ir_cls.identity_attr,
         "custom_attrs": custom_attrs,
         "ca_prefix": ca_prefix,
+        "pydantic_model": ir_cls.pydantic_model,
+        "from_model_conversions": from_model_conversions,
         "properties": properties,
         "collections": collections,
         "to_json_fn": to_json_fn,

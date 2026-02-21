@@ -53,6 +53,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .canvas import Canvas
     from .framing_decision import FramingDecision
+    from .models import CanvasTemplateModel
 
 
 @dataclass
@@ -252,6 +253,32 @@ class CanvasTemplate(HandleWrapper):
         result = json.loads(ctypes.string_at(json_ptr))
         self._lib.fdl_free(json_ptr)
         return result
+
+    def to_model(self) -> CanvasTemplateModel:
+        """Convert to a Pydantic ``CanvasTemplateModel`` instance.
+
+        Returns a pure-data Pydantic model suitable for serialization,
+        API responses, and interoperability with web frameworks.
+        """
+        from .models import CanvasTemplateModel
+
+        return CanvasTemplateModel.model_validate(self.as_dict())
+
+    @classmethod
+    def from_model(cls, model: CanvasTemplateModel) -> CanvasTemplate:
+        """Create a standalone ``CanvasTemplate`` facade from a Pydantic model.
+
+        Note: Creates a temporary backing document. The returned object
+        is self-contained but not attached to any parent FDL document.
+        """
+        d = model.model_dump(exclude_none=True)
+        if "target_dimensions" in d:
+            d["target_dimensions"] = DimensionsInt(**d["target_dimensions"])
+        if "round" in d:
+            d["round"] = RoundStrategy(**d["round"])
+        if "maximum_dimensions" in d:
+            d["maximum_dimensions"] = DimensionsInt(**d["maximum_dimensions"])
+        return cls(**d)
 
     def apply(
         self,

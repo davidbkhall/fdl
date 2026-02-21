@@ -26,7 +26,7 @@ def _project_python() -> str:
     return sys.executable
 
 
-TARGETS = ["python-ffi", "python-facade", "cpp-raii", "node-addon", "node-facade"]
+TARGETS = ["python-ffi", "python-facade", "python-models", "cpp-raii", "node-addon", "node-facade"]
 
 GENERATED_PATHS = [
     "native/bindings/python/fdl_ffi/",

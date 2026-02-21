@@ -38,6 +38,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .framing_decision import FramingDecision
+    from .models import CanvasModel
 
 
 class Canvas(HandleWrapper):
@@ -217,6 +218,36 @@ class Canvas(HandleWrapper):
         result = json.loads(ctypes.string_at(json_ptr))
         self._lib.fdl_free(json_ptr)
         return result
+
+    def to_model(self) -> CanvasModel:
+        """Convert to a Pydantic ``CanvasModel`` instance.
+
+        Returns a pure-data Pydantic model suitable for serialization,
+        API responses, and interoperability with web frameworks.
+        """
+        from .models import CanvasModel
+
+        return CanvasModel.model_validate(self.as_dict())
+
+    @classmethod
+    def from_model(cls, model: CanvasModel) -> Canvas:
+        """Create a standalone ``Canvas`` facade from a Pydantic model.
+
+        Note: Creates a temporary backing document. The returned object
+        is self-contained but not attached to any parent FDL document.
+        """
+        d = model.model_dump(exclude_none=True)
+        if "dimensions" in d:
+            d["dimensions"] = DimensionsInt(**d["dimensions"])
+        if "effective_dimensions" in d:
+            d["effective_dimensions"] = DimensionsInt(**d["effective_dimensions"])
+        if "effective_anchor_point" in d:
+            d["effective_anchor_point"] = PointFloat(**d["effective_anchor_point"])
+        if "photosite_dimensions" in d:
+            d["photosite_dimensions"] = DimensionsInt(**d["photosite_dimensions"])
+        if "physical_dimensions" in d:
+            d["physical_dimensions"] = DimensionsFloat(**d["physical_dimensions"])
+        return cls(**d)
 
     def add_framing_decision(
         self,

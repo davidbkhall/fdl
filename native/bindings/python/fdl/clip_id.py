@@ -28,6 +28,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .file_sequence import FileSequence
+    from .models import ClipIDModel
 
 
 class ClipID(HandleWrapper):
@@ -67,6 +68,26 @@ class ClipID(HandleWrapper):
         result = json.loads(ctypes.string_at(json_ptr))
         self._lib.fdl_free(json_ptr)
         return result
+
+    def to_model(self) -> ClipIDModel:
+        """Convert to a Pydantic ``ClipIDModel`` instance.
+
+        Returns a pure-data Pydantic model suitable for serialization,
+        API responses, and interoperability with web frameworks.
+        """
+        from .models import ClipIDModel
+
+        return ClipIDModel.model_validate(self.as_dict())
+
+    @classmethod
+    def from_model(cls, model: ClipIDModel) -> ClipID:
+        """Create a standalone ``ClipID`` facade from a Pydantic model.
+
+        Note: Creates a temporary backing document. The returned object
+        is self-contained but not attached to any parent FDL document.
+        """
+        d = model.model_dump(exclude_none=True)
+        return cls(**d)
 
     def validate(self) -> None:
         """Validate this clip_id for mutual exclusion rules."""

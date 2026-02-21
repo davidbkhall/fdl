@@ -312,6 +312,7 @@ object_model:
       c_handle: fdl_doc_t
       owns_handle: true
       custom_attrs: true
+      pydantic_model: FramingDecisionList
       factory: fdl_doc_create
       destructor: fdl_doc_free
       properties:
@@ -461,6 +462,7 @@ object_model:
       c_handle: fdl_context_t
       owns_handle: false
       custom_attrs: true
+      pydantic_model: ContextModel
       parent: FDL
       properties:
         label:
@@ -532,6 +534,7 @@ object_model:
       c_handle: fdl_canvas_t
       owns_handle: false
       custom_attrs: true
+      pydantic_model: CanvasModel
       parent: Context
       properties:
         id:
@@ -646,6 +649,7 @@ object_model:
       c_handle: fdl_framing_decision_t
       owns_handle: false
       custom_attrs: true
+      pydantic_model: FramingDecisionModel
       parent: Canvas
       properties:
         id:
@@ -757,6 +761,7 @@ object_model:
       c_handle: fdl_framing_intent_t
       owns_handle: false
       custom_attrs: true
+      pydantic_model: FramingIntentModel
       parent: FDL
       properties:
         id:
@@ -790,6 +795,7 @@ object_model:
       c_handle: fdl_canvas_template_t
       owns_handle: false
       custom_attrs: true
+      pydantic_model: CanvasTemplateModel
       parent: FDL
       properties:
         id:
@@ -889,6 +895,7 @@ object_model:
     ClipID:
       c_handle: fdl_clip_id_t
       owns_handle: false
+      pydantic_model: ClipIDModel
       parent: Context
       custom_attrs: true
       properties:
@@ -918,6 +925,7 @@ object_model:
     FileSequence:
       c_handle: fdl_file_sequence_t
       owns_handle: false
+      pydantic_model: FileSequenceModel
       parent: ClipID
       custom_attrs: true
       properties:

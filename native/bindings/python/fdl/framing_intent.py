@@ -28,6 +28,11 @@ from ._custom_attrs import (
     _set as _ca_set,
 )
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .models import FramingIntentModel
+
 
 class FramingIntent(HandleWrapper):
     """FramingIntent facade wrapping a C fdl_framing_intent_t handle."""
@@ -117,6 +122,28 @@ class FramingIntent(HandleWrapper):
         result = json.loads(ctypes.string_at(json_ptr))
         self._lib.fdl_free(json_ptr)
         return result
+
+    def to_model(self) -> FramingIntentModel:
+        """Convert to a Pydantic ``FramingIntentModel`` instance.
+
+        Returns a pure-data Pydantic model suitable for serialization,
+        API responses, and interoperability with web frameworks.
+        """
+        from .models import FramingIntentModel
+
+        return FramingIntentModel.model_validate(self.as_dict())
+
+    @classmethod
+    def from_model(cls, model: FramingIntentModel) -> FramingIntent:
+        """Create a standalone ``FramingIntent`` facade from a Pydantic model.
+
+        Note: Creates a temporary backing document. The returned object
+        is self-contained but not attached to any parent FDL document.
+        """
+        d = model.model_dump(exclude_none=True)
+        if "aspect_ratio" in d:
+            d["aspect_ratio"] = DimensionsInt(**d["aspect_ratio"])
+        return cls(**d)
 
     _CA_PREFIX = "fdl_framing_intent_"
 

@@ -35,6 +35,7 @@ if TYPE_CHECKING:
     from .canvas import Canvas
     from .clip_id import ClipID
     from .framing_decision import FramingDecision
+    from .models import ContextModel
 
 
 @dataclass
@@ -152,6 +153,26 @@ class Context(HandleWrapper):
         result = json.loads(ctypes.string_at(json_ptr))
         self._lib.fdl_free(json_ptr)
         return result
+
+    def to_model(self) -> ContextModel:
+        """Convert to a Pydantic ``ContextModel`` instance.
+
+        Returns a pure-data Pydantic model suitable for serialization,
+        API responses, and interoperability with web frameworks.
+        """
+        from .models import ContextModel
+
+        return ContextModel.model_validate(self.as_dict())
+
+    @classmethod
+    def from_model(cls, model: ContextModel) -> Context:
+        """Create a standalone ``Context`` facade from a Pydantic model.
+
+        Note: Creates a temporary backing document. The returned object
+        is self-contained but not attached to any parent FDL document.
+        """
+        d = model.model_dump(exclude_none=True)
+        return cls(**d)
 
     def add_canvas(
         self,

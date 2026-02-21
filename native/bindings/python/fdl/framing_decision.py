@@ -42,6 +42,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .canvas import Canvas
     from .framing_intent import FramingIntent
+    from .models import FramingDecisionModel
 
 
 class FramingDecision(HandleWrapper):
@@ -179,6 +180,34 @@ class FramingDecision(HandleWrapper):
         result = json.loads(ctypes.string_at(json_ptr))
         self._lib.fdl_free(json_ptr)
         return result
+
+    def to_model(self) -> FramingDecisionModel:
+        """Convert to a Pydantic ``FramingDecisionModel`` instance.
+
+        Returns a pure-data Pydantic model suitable for serialization,
+        API responses, and interoperability with web frameworks.
+        """
+        from .models import FramingDecisionModel
+
+        return FramingDecisionModel.model_validate(self.as_dict())
+
+    @classmethod
+    def from_model(cls, model: FramingDecisionModel) -> FramingDecision:
+        """Create a standalone ``FramingDecision`` facade from a Pydantic model.
+
+        Note: Creates a temporary backing document. The returned object
+        is self-contained but not attached to any parent FDL document.
+        """
+        d = model.model_dump(exclude_none=True)
+        if "dimensions" in d:
+            d["dimensions"] = DimensionsFloat(**d["dimensions"])
+        if "anchor_point" in d:
+            d["anchor_point"] = PointFloat(**d["anchor_point"])
+        if "protection_dimensions" in d:
+            d["protection_dimensions"] = DimensionsFloat(**d["protection_dimensions"])
+        if "protection_anchor_point" in d:
+            d["protection_anchor_point"] = PointFloat(**d["protection_anchor_point"])
+        return cls(**d)
 
     def get_rect(self) -> Rect:
         """Get framing rect as (anchor_x, anchor_y, width, height)."""

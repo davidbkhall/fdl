@@ -24,9 +24,10 @@ def main() -> None:
     parser.add_argument("--idl", type=Path, help="Path to fdl_api.yaml")
     parser.add_argument(
         "--target",
-        choices=["python", "python-ffi", "python-facade", "cpp-raii", "node-addon", "node-facade"],
+        choices=["python", "python-ffi", "python-facade", "python-models", "cpp-raii", "node-addon", "node-facade"],
         default="python-ffi",
     )
+    parser.add_argument("--schema", type=Path, help="Path to JSON Schema (for python-models)")
     parser.add_argument("--output", type=Path, help="Output directory")
     args = parser.parse_args()
 
@@ -60,6 +61,12 @@ def main() -> None:
 
         output_dir = args.output or (repo_root / "bindings" / "node" / "src" / "addon")
         node_gen.generate_addon(idl, output_dir)
+    elif args.target == "python-models":
+        from . import python_gen
+
+        schema_path = args.schema or (repo_root.parent / "schema" / "v2.0.1" / "ascfdl.schema.json")
+        output_dir = args.output or (repo_root / "bindings" / "python" / "fdl" / "models")
+        python_gen.generate_models(schema_path, output_dir)
     elif args.target == "node-facade":
         from . import node_gen
 

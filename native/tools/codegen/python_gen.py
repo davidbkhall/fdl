@@ -9,6 +9,8 @@ Python-specific ones live in python_context.py.
 from __future__ import annotations
 
 import re
+import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -839,4 +841,175 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
         f"Generated {len(class_contexts)} facade classes, {len(enum_contexts)} enum maps, "
         f"{len(constants_contexts)} constants, {len(types_vt_contexts) + len(rounding_vt_contexts)} value types"
     )
+    print(f"Output: {output_dir}")
+
+
+# -----------------------------------------------------------------------
+# Pydantic model generation
+# -----------------------------------------------------------------------
+
+# Rename map: datamodel-code-generator auto-derived name → our convention.
+_MODEL_RENAMES: dict[str, str] = {
+    "AscFramingDecisionList": "FramingDecisionList",
+    "Version": "VersionModel",
+    "Sequence": "FileSequenceModel",
+    "ClipId": "ClipIDModel",
+    "Round": "RoundModel",
+    "DimensionsInt": "DimensionsIntModel",
+    "DimensionsFloat": "DimensionsFloatModel",
+    "PointFloat": "PointFloatModel",
+    "FramingIntent": "FramingIntentModel",
+    "FramingDecision": "FramingDecisionModel",
+    "Canvas": "CanvasModel",
+    "Context": "ContextModel",
+    "CanvasTemplate": "CanvasTemplateModel",
+    # RootModel types — keep as-is
+    "FdlId": "FdlId",
+    "FdlIdFramingDecision": "FdlIdFramingDecision",
+}
+
+# Exported model classes (BaseModel subclasses only, not Enums or RootModels).
+_MODEL_EXPORTS: list[str] = [
+    "CanvasModel",
+    "CanvasTemplateModel",
+    "ClipIDModel",
+    "ContextModel",
+    "DimensionsFloatModel",
+    "DimensionsIntModel",
+    "FileSequenceModel",
+    "FramingDecisionList",
+    "FramingDecisionModel",
+    "FramingIntentModel",
+    "PointFloatModel",
+    "RoundModel",
+    "VersionModel",
+]
+
+
+def _postprocess_models(filepath: Path) -> None:
+    """Post-process the datamodel-code-generator output.
+
+    1. Rename classes to our conventions.
+    2. Change extra='forbid' → extra='allow' (for patternProperties custom attrs).
+    3. Inject C-core semantic validator on the root model.
+    """
+    text = filepath.read_text(encoding="utf-8")
+
+    # --- Rename classes ---
+    for old_name, new_name in _MODEL_RENAMES.items():
+        if old_name == new_name:
+            continue
+        # Class definition: "class OldName(" → "class NewName("
+        text = re.sub(rf"\bclass {old_name}\b", f"class {new_name}", text)
+        # Type annotations, field types, list items: OldName
+        text = re.sub(rf"\b{old_name}\b", new_name, text)
+
+    # --- Allow extra fields for custom attributes ---
+    text = text.replace("extra='forbid'", "extra='allow'")
+
+    # --- Inject semantic validator on root model ---
+    # Find the FramingDecisionList class and append the validator before the next class or EOF
+    validator_code = '''
+    @model_validator(mode="after")
+    def _validate_fdl_semantics(self) -> FramingDecisionList:
+        """Run C-core schema + semantic validation on top of Pydantic validation."""
+        from fdl import FDL
+
+        json_bytes = self.model_dump_json(by_alias=True, exclude_none=True).encode("utf-8")
+        doc = FDL.parse(json_bytes)
+        doc.validate()
+        return self
+'''
+    # Insert validator at the end of the FramingDecisionList class body.
+    # The class is last in the file, so append before the trailing newline.
+    if "class FramingDecisionList" in text:
+        # Add model_validator import
+        text = text.replace(
+            "from pydantic import BaseModel, ConfigDict, Field, RootModel",
+            "from pydantic import BaseModel, ConfigDict, Field, RootModel, model_validator",
+        )
+        # Append validator to end of file (FramingDecisionList is the last class)
+        text = text.rstrip("\n") + "\n" + validator_code + "\n"
+
+    filepath.write_text(text, encoding="utf-8")
+
+
+def _write_models_init(output_dir: Path) -> None:
+    """Write fdl/models/__init__.py with re-exports and documentation."""
+    lines = [
+        "# AUTO-GENERATED — DO NOT EDIT",
+        '"""Pydantic v2 data models for the ASC Framing Decision List.',
+        "",
+        "These models provide a pure-data DTO (Data Transfer Object) layer for",
+        "interoperability with web services and frameworks like FastAPI, Django REST",
+        "Framework, and other Pydantic-native tools.",
+        "",
+        "**Data vs Logic**: The Pydantic models in this subpackage are data-only classes",
+        "for serialization, validation, and transport. Business logic (compute framing,",
+        "resolve canvas, round dimensions, etc.) lives on the bound facade classes in the",
+        "parent ``fdl`` package (``FDL``, ``Canvas``, ``Context``, etc.).",
+        "",
+        "**Validation**: These models provide full semantic validation. Pydantic validates",
+        "types and JSON Schema constraints first, then the C core validates semantic rules",
+        "(ID reference integrity, dependent required fields, version constraints, etc.).",
+        "",
+        "**Converting between models and facades**::",
+        "",
+        "    from fdl import FDL",
+        "    from fdl.models import FramingDecisionList",
+        "",
+        "    # Facade -> Model (for API responses, serialization)",
+        "    doc = FDL.parse(json_bytes)",
+        "    model = doc.to_model()",
+        "",
+        "    # Model -> Facade (for computation after receiving API input)",
+        "    doc = FDL.from_model(model)",
+        '"""',
+        "",
+        "from ._generated import (  # noqa: F401",
+    ]
+    for name in _MODEL_EXPORTS:
+        lines.append(f"    {name},")
+    lines.append(")")
+    lines.append("")
+
+    (output_dir / "__init__.py").write_text(encoding="utf-8", data="\n".join(lines))
+
+
+def generate_models(schema_path: Path, output_dir: Path) -> None:
+    """Generate Pydantic v2 models from the FDL JSON Schema.
+
+    Runs datamodel-code-generator, then post-processes the output
+    for class naming, custom attribute support, and semantic validation.
+    """
+    output_dir.mkdir(parents=True, exist_ok=True)
+    generated_file = output_dir / "_generated.py"
+
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "datamodel_code_generator",
+            "--input",
+            str(schema_path),
+            "--input-file-type",
+            "jsonschema",
+            "--output",
+            str(generated_file),
+            "--output-model-type",
+            "pydantic_v2.BaseModel",
+            "--target-python-version",
+            "3.10",
+            "--use-standard-collections",
+            "--use-union-operator",
+            "--field-constraints",
+            "--use-annotated",
+        ],
+        check=True,
+    )
+
+    _postprocess_models(generated_file)
+    _write_models_init(output_dir)
+
+    print(f"Generated Pydantic models from {schema_path}")
     print(f"Output: {output_dir}")

@@ -49,6 +49,7 @@ if TYPE_CHECKING:
     from .canvas_template import CanvasTemplate
     from .context import Context
     from .framing_intent import FramingIntent
+    from .models import FramingDecisionList
 
 
 class FDL(OwnedHandle):
@@ -182,6 +183,26 @@ class FDL(OwnedHandle):
         result = json.loads(ctypes.string_at(json_ptr))
         self._lib.fdl_free(json_ptr)
         return result
+
+    def to_model(self) -> FramingDecisionList:
+        """Convert to a Pydantic ``FramingDecisionList`` instance.
+
+        Returns a pure-data Pydantic model suitable for serialization,
+        API responses, and interoperability with web frameworks.
+        """
+        from .models import FramingDecisionList
+
+        return FramingDecisionList.model_validate(self.as_dict())
+
+    @classmethod
+    def from_model(cls, model: FramingDecisionList) -> FDL:
+        """Create an ``FDL`` facade from a Pydantic model.
+
+        Parses the model's JSON representation through the C core,
+        producing a fully validated, handle-backed facade object.
+        """
+        json_bytes = model.model_dump_json(by_alias=True).encode("utf-8")
+        return cls.parse(json_bytes)
 
     def add_framing_intent(
         self,
