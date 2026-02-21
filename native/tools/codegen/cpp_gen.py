@@ -12,10 +12,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader
-
 from .adapters import CppAdapter
 from .fdl_idl import IDL, ValueType, VTMethod, VTOperator, build_ir
+from .shared_context import is_lifecycle_method, make_jinja_env
 
 _cpp = CppAdapter()
 
@@ -721,152 +720,174 @@ def _build_error_ctx(eh) -> dict:
     }
 
 
-def _build_lifecycle(method, handle_field: str) -> dict | None:
-    """Build C++ lifecycle method context from an IRMethod. Returns None to skip."""
-    kind = method.kind
+def _lifecycle_composite_property(method, handle_field: str) -> dict:
+    """Build context for a composite property (e.g. effective_dimensions)."""
+    return {
+        "kind": "composite_property",
+        "name": method.name,
+        "returns": method.returns,
+        "doc": method.doc,
+        "compose_from": method.compose_from or {},
+    }
 
-    if kind == "composite_property":
-        return {
-            "kind": "composite_property",
-            "name": method.name,
-            "returns": method.returns,
-            "doc": method.doc,
-            "compose_from": method.compose_from or {},
-        }
-    if kind == "alias":
+
+def _lifecycle_class_factory(method, handle_field: str) -> dict:
+    """Build context for a class factory (e.g. populate_from_intent)."""
+    params = []
+    c_args = [handle_field]
+    for p in method.params:
+        params.append(_cpp_param(p.name, p.type_key, p.default, nullable=p.nullable, source_class=p.source_class))
+        c_args.extend(_cpp_call_arg(p.name, p.type_key, expand_vt=False, nullable=p.nullable, source_class=p.source_class))
+    return {
+        "kind": "populate",
+        "name": method.name,
+        "c_function": method.function,
+        "doc": method.doc,
+        "params": params,
+        "c_args": c_args,
+    }
+
+
+def _lifecycle_static_factory(method, handle_field: str) -> dict | None:
+    """Build context for a static factory (parse or create)."""
+    eh = method.error_handling
+    if not eh:
         return None
-    if kind == "class_factory":
-        # populate_from_intent — convert to C++ instance method
+    if eh.pattern == "result_struct":
+        return {
+            "kind": "parse",
+            "name": method.name,
+            "c_function": method.function,
+            "doc": method.doc,
+            "error": _build_error_ctx(eh),
+        }
+    if eh.pattern == "null_check":
+        params = []
+        c_args = []
+        for p in method.params:
+            params.append(_cpp_param(p.name, p.type_key, p.default, nullable=p.nullable, source_class=p.source_class))
+            c_args.extend(_cpp_call_arg(p.name, p.type_key, expand_vt=False, nullable=p.nullable, source_class=p.source_class))
+        return {
+            "kind": "create",
+            "name": method.name,
+            "c_function": method.function,
+            "doc": method.doc,
+            "params": params,
+            "c_args": c_args,
+        }
+    return None
+
+
+def _lifecycle_instance(method, handle_field: str) -> dict | None:
+    """Build context for an instance method (validate, as_json, or apply)."""
+    eh = method.error_handling
+    if eh and eh.pattern == "validation":
+        return {
+            "kind": "validate",
+            "name": method.name,
+            "c_function": method.function,
+            "doc": method.doc,
+            "error": _build_error_ctx(eh),
+            "handle_field": handle_field,
+        }
+    if method.returns == "string_free":
+        return {
+            "kind": "as_json",
+            "name": method.name,
+            "c_function": method.function,
+            "doc": method.doc,
+            "handle_field": handle_field,
+        }
+    if eh and eh.pattern == "result_struct_multi":
         params = []
         c_args = [handle_field]
         for p in method.params:
             params.append(_cpp_param(p.name, p.type_key, p.default, nullable=p.nullable, source_class=p.source_class))
             c_args.extend(_cpp_call_arg(p.name, p.type_key, expand_vt=False, nullable=p.nullable, source_class=p.source_class))
         return {
-            "kind": "populate",
+            "kind": "apply",
             "name": method.name,
             "c_function": method.function,
+            "returns": method.returns,
             "doc": method.doc,
             "params": params,
             "c_args": c_args,
+            "error": _build_error_ctx(eh),
+            "handle_field": handle_field,
         }
-
-    if kind == "static_factory":
-        eh = method.error_handling
-        if not eh:
-            return None
-
-        if eh.pattern == "result_struct":
-            # parse() — takes bytes/string
-            return {
-                "kind": "parse",
-                "name": method.name,
-                "c_function": method.function,
-                "doc": method.doc,
-                "error": _build_error_ctx(eh),
-            }
-        elif eh.pattern == "null_check":
-            # create() — takes multiple params
-            params = []
-            c_args = []
-            for p in method.params:
-                params.append(_cpp_param(p.name, p.type_key, p.default, nullable=p.nullable, source_class=p.source_class))
-                c_args.extend(_cpp_call_arg(p.name, p.type_key, expand_vt=False, nullable=p.nullable, source_class=p.source_class))
-            return {
-                "kind": "create",
-                "name": method.name,
-                "c_function": method.function,
-                "doc": method.doc,
-                "params": params,
-                "c_args": c_args,
-            }
-        return None
-
-    if kind == "instance":
-        eh = method.error_handling
-        if eh and eh.pattern == "validation":
-            return {
-                "kind": "validate",
-                "name": method.name,
-                "c_function": method.function,
-                "doc": method.doc,
-                "error": _build_error_ctx(eh),
-                "handle_field": handle_field,
-            }
-        if method.returns == "string_free":
-            return {
-                "kind": "as_json",
-                "name": method.name,
-                "c_function": method.function,
-                "doc": method.doc,
-                "handle_field": handle_field,
-            }
-        if eh and eh.pattern == "result_struct_multi":
-            # apply() on CanvasTemplate
-            params = []
-            c_args = [handle_field]
-            for p in method.params:
-                params.append(_cpp_param(p.name, p.type_key, p.default, nullable=p.nullable, source_class=p.source_class))
-                c_args.extend(_cpp_call_arg(p.name, p.type_key, expand_vt=False, nullable=p.nullable, source_class=p.source_class))
-            return {
-                "kind": "apply",
-                "name": method.name,
-                "c_function": method.function,
-                "returns": method.returns,
-                "doc": method.doc,
-                "params": params,
-                "c_args": c_args,
-                "error": _build_error_ctx(eh),
-                "handle_field": handle_field,
-            }
-        return None
-
-    if kind == "compound_setter":
-        params = []
-        c_args = [handle_field]
-        for p in method.params:
-            params.append(_cpp_param(p.name, p.type_key, nullable=p.nullable, source_class=p.source_class))
-            # Compound setters pass value types directly (not expanded)
-            c_args.extend(_cpp_call_arg(p.name, p.type_key, expand_vt=False, nullable=p.nullable, source_class=p.source_class))
-        return {
-            "kind": "compound_setter",
-            "name": method.name,
-            "c_function": method.function,
-            "doc": method.doc,
-            "params": params,
-            "c_args": c_args,
-        }
-
-    if kind == "instance_getter":
-        cpp_returns = _VT_CLASS_MAP.get(method.returns or "", method.returns)
-        return {
-            "kind": "instance_getter",
-            "name": method.name,
-            "c_function": method.function,
-            "returns": cpp_returns,
-            "doc": method.doc,
-        }
-
-    if kind == "instance_getter_optional":
-        cpp_returns = _VT_CLASS_MAP.get(method.returns or "", method.returns)
-        return {
-            "kind": "instance_getter_optional",
-            "name": method.name,
-            "c_function": method.function,
-            "returns": cpp_returns,
-            "c_struct": method.returns or "",
-            "doc": method.doc,
-        }
-
-    if kind == "validate_json":
-        return {
-            "kind": "validate_json",
-            "name": method.name,
-            "c_function": method.function,
-            "doc": method.doc or "Validate this object.",
-        }
-
     return None
+
+
+def _lifecycle_compound_setter(method, handle_field: str) -> dict:
+    """Build context for a compound setter (e.g. set_dimensions)."""
+    params = []
+    c_args = [handle_field]
+    for p in method.params:
+        params.append(_cpp_param(p.name, p.type_key, nullable=p.nullable, source_class=p.source_class))
+        c_args.extend(_cpp_call_arg(p.name, p.type_key, expand_vt=False, nullable=p.nullable, source_class=p.source_class))
+    return {
+        "kind": "compound_setter",
+        "name": method.name,
+        "c_function": method.function,
+        "doc": method.doc,
+        "params": params,
+        "c_args": c_args,
+    }
+
+
+def _lifecycle_instance_getter(method, handle_field: str) -> dict:
+    """Build context for an instance getter returning a value type."""
+    cpp_returns = _VT_CLASS_MAP.get(method.returns or "", method.returns)
+    return {
+        "kind": "instance_getter",
+        "name": method.name,
+        "c_function": method.function,
+        "returns": cpp_returns,
+        "doc": method.doc,
+    }
+
+
+def _lifecycle_instance_getter_optional(method, handle_field: str) -> dict:
+    """Build context for an optional instance getter."""
+    cpp_returns = _VT_CLASS_MAP.get(method.returns or "", method.returns)
+    return {
+        "kind": "instance_getter_optional",
+        "name": method.name,
+        "c_function": method.function,
+        "returns": cpp_returns,
+        "c_struct": method.returns or "",
+        "doc": method.doc,
+    }
+
+
+def _lifecycle_validate_json(method, handle_field: str) -> dict:
+    """Build context for a JSON validation method."""
+    return {
+        "kind": "validate_json",
+        "name": method.name,
+        "c_function": method.function,
+        "doc": method.doc or "Validate this object.",
+    }
+
+
+_LIFECYCLE_HANDLERS = {
+    "composite_property": _lifecycle_composite_property,
+    "class_factory": _lifecycle_class_factory,
+    "static_factory": _lifecycle_static_factory,
+    "instance": _lifecycle_instance,
+    "compound_setter": _lifecycle_compound_setter,
+    "instance_getter": _lifecycle_instance_getter,
+    "instance_getter_optional": _lifecycle_instance_getter_optional,
+    "validate_json": _lifecycle_validate_json,
+}
+
+
+def _build_lifecycle(method, handle_field: str) -> dict | None:
+    """Build C++ lifecycle method context from an IRMethod. Returns None to skip."""
+    handler = _LIFECYCLE_HANDLERS.get(method.kind)
+    if handler is None:
+        return None
+    return handler(method, handle_field)
 
 
 # -----------------------------------------------------------------------
@@ -907,19 +928,10 @@ def _build_class(ir_cls, idl: IDL) -> dict:
             to_json_fn = method.function
             break
 
-    # Build lifecycle method contexts (same filter as Python facade)
+    # Build lifecycle method contexts
     lifecycle = []
     for method in ir_cls.methods:
-        if method.kind in (
-            "static_factory",
-            "class_factory",
-            "alias",
-            "compound_setter",
-            "composite_property",
-            "instance_getter",
-            "instance_getter_optional",
-            "validate_json",
-        ) or (method.kind == "instance" and method.name != "to_json" and (method.params or method.error_handling)):
+        if is_lifecycle_method(method):
             ctx = _build_lifecycle(method, hf)
             if ctx:
                 lifecycle.append(ctx)
@@ -947,16 +959,7 @@ def _build_class(ir_cls, idl: IDL) -> dict:
 # Generation
 # -----------------------------------------------------------------------
 
-_TEMPLATES_DIR = Path(__file__).parent / "templates"
-
-
-def _make_env() -> Environment:
-    return Environment(
-        loader=FileSystemLoader(str(_TEMPLATES_DIR)),
-        keep_trailing_newline=True,
-        trim_blocks=True,
-        lstrip_blocks=True,
-    )
+_make_env = make_jinja_env
 
 
 def generate_raii(idl: IDL, output_dir: Path) -> None:

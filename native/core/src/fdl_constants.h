@@ -104,6 +104,18 @@ constexpr uint32_t kCustomAttrTypeDimsI64 = 7;  /**< Dimensions (width, height) 
 constexpr uint32_t kCustomAttrTypeOther = 8;    /**< Unsupported JSON type. */
 /** @} */
 
+/** @name Floating-point comparison tolerances
+ *  Match Python math.isclose() defaults used for FDL value comparisons.
+ *  @{ */
+constexpr double kRelTol = 1e-9; /**< Relative tolerance for fp comparison. */
+constexpr double kAbsTol = 1e-6; /**< Absolute tolerance for fp comparison. */
+/** @} */
+
+/** @name Thread-local cache limits
+ *  @{ */
+constexpr size_t kTlCacheMaxEntries = 256; /**< Max entries before a thread-local string cache auto-clears. */
+/** @} */
+
 /** Custom attribute key prefix character. */
 constexpr char kCustomAttrPrefix = '_';
 

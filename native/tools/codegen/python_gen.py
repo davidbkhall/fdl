@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from types import SimpleNamespace
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -205,144 +206,131 @@ def _add_lazy_imports(cls_ctx: dict, all_class_names: set[str]) -> None:
         method["lazy_imports"] = lazy
 
 
-def _compute_per_class_imports(
-    cls_ctx: dict,
-    enum_contexts: list[dict],
-    generated_converter_names: set[str],
-    all_class_names: set[str],
-    dataclass_name_set: set[str],
-) -> dict:
-    """Compute the import requirements for a single facade class file."""
-    all_enum_classes = {ec["facade_class"] for ec in enum_contexts}
+# -----------------------------------------------------------------------
+# Import computation helpers
+# -----------------------------------------------------------------------
 
-    # Sets for tracking
-    types_set = {"DimensionsInt", "DimensionsFloat", "PointFloat", "Rect"}
-    rounding_set = {"RoundStrategy"}
+_PY_TYPES_SET = frozenset({"DimensionsInt", "DimensionsFloat", "PointFloat", "Rect"})
+_PY_ROUNDING_SET = frozenset({"RoundStrategy"})
 
-    current_class = cls_ctx["name"]
 
-    base_imports: set[str] = set()
-    base_imports.add("OwnedHandle" if cls_ctx["owns_handle"] else "HandleWrapper")
-    base_imports.add("_decode_str")
-    if cls_ctx["collections"]:
-        base_imports.add("CollectionWrapper")
+def _py_scan_type(py_type_str, acc, all_enum_classes, all_class_names, current_class):
+    """Classify a Python type annotation string for import tracking."""
+    clean = py_type_str.replace(" | None", "")
+    if clean in _PY_TYPES_SET:
+        acc.type_names.add(clean)
+    elif clean in _PY_ROUNDING_SET:
+        acc.rounding_names.add(clean)
+    elif clean in all_enum_classes:
+        acc.type_check_enum_classes.add(clean)
+    elif clean in all_class_names and clean != current_class:
+        acc.type_check_class_names.add(clean)
 
-    getter_converters: set[str] = set()
-    setter_converters: set[str] = set()
-    used_enum_from_c: set[str] = set()
-    used_enum_to_c: set[str] = set()
-    type_check_enum_classes: set[str] = set()
-    runtime_enum_classes: set[str] = set()
-    type_check_class_names: set[str] = set()
-    type_names: set[str] = set()
-    rounding_names: set[str] = set()
 
-    def _scan_type(py_type_str: str) -> None:
-        """Classify a Python type annotation string for import tracking."""
-        clean = py_type_str.replace(" | None", "")
-        if clean in types_set:
-            type_names.add(clean)
-        elif clean in rounding_set:
-            rounding_names.add(clean)
-        elif clean in all_enum_classes:
-            type_check_enum_classes.add(clean)
-        elif clean in all_class_names and clean != current_class:
-            type_check_class_names.add(clean)
+def _py_scan_c_args(c_args, acc, enum_contexts, generated_converter_names):
+    """Scan C args for enum TO_C map usage and reverse converter usage."""
+    for c_arg in c_args:
+        for ec in enum_contexts:
+            to_c_name = f"{ec['map_name']}_TO_C"
+            if to_c_name in c_arg:
+                acc.used_enum_to_c.add(ec["map_name"])
+        for conv_name in generated_converter_names:
+            if f"_to_c_{conv_name}(" in c_arg:
+                acc.setter_converters.add(conv_name)
 
-    def _scan_c_args(c_args: list[str]) -> None:
-        """Scan C args for enum TO_C map usage and reverse converter usage."""
-        for c_arg in c_args:
-            for ec in enum_contexts:
-                to_c_name = f"{ec['map_name']}_TO_C"
-                if to_c_name in c_arg:
-                    used_enum_to_c.add(ec["map_name"])
-            for conv_name in generated_converter_names:
-                if f"_to_c_{conv_name}(" in c_arg:
-                    setter_converters.add(conv_name)
 
-    def _scan_params(params: list[dict]) -> None:
-        """Scan method params for type imports and enum defaults."""
-        for p in params:
-            _scan_type(p["python_type"])
-            default = p.get("default")
-            if default:
-                for enum_cls in all_enum_classes:
-                    if enum_cls in str(default):
-                        runtime_enum_classes.add(enum_cls)
+def _py_scan_params(params, acc, all_enum_classes, all_class_names, current_class):
+    """Scan method params for type imports and enum defaults."""
+    for p in params:
+        _py_scan_type(p["python_type"], acc, all_enum_classes, all_class_names, current_class)
+        default = p.get("default")
+        if default:
+            for enum_cls in all_enum_classes:
+                if enum_cls in str(default):
+                    acc.runtime_enum_classes.add(enum_cls)
 
-    # Scan collection item classes and builder returns for TYPE_CHECKING
+
+def _scan_py_collections(cls_ctx, acc, all_class_names, current_class):
+    """Scan collection item classes and builder return types for TYPE_CHECKING imports."""
     for coll in cls_ctx["collections"]:
         item_class = coll["item_class"]
         if item_class in all_class_names and item_class != current_class:
-            type_check_class_names.add(item_class)
+            acc.type_check_class_names.add(item_class)
     for builder in cls_ctx["builders"]:
         returns = builder["returns"]
         if returns in all_class_names and returns != current_class:
-            type_check_class_names.add(returns)
+            acc.type_check_class_names.add(returns)
 
-    # Scan properties
+
+def _scan_py_properties(cls_ctx, acc, all_enum_classes, all_class_names, current_class):
+    """Scan properties for converter, enum, and type imports."""
     for prop in cls_ctx["properties"]:
-        getter_converters.add(prop["converter"])
+        acc.getter_converters.add(prop["converter"])
         if prop["enum_from_c"]:
-            used_enum_from_c.add(prop["enum_from_c"].removesuffix("_FROM_C"))
+            acc.used_enum_from_c.add(prop["enum_from_c"].removesuffix("_FROM_C"))
         if prop["setter_fn"]:
-            setter_converters.add(prop["converter"])
+            acc.setter_converters.add(prop["converter"])
             if prop["enum_to_c"]:
-                used_enum_to_c.add(prop["enum_to_c"].removesuffix("_TO_C"))
-        _scan_type(prop["python_type"])
+                acc.used_enum_to_c.add(prop["enum_to_c"].removesuffix("_TO_C"))
+        _py_scan_type(prop["python_type"], acc, all_enum_classes, all_class_names, current_class)
 
-    # Scan builders and lifecycle
+
+def _scan_py_methods(cls_ctx, acc, all_enum_classes, all_class_names, current_class, enum_contexts, generated_converter_names):
+    """Scan builders and lifecycle methods for imports."""
     for method_list_key in ("builders", "lifecycle"):
         for method_ctx in cls_ctx.get(method_list_key, []):
-            _scan_c_args(method_ctx.get("c_args", []))
-            _scan_params(method_ctx.get("params", []))
-            # Scan result_fields for converters
+            _py_scan_c_args(method_ctx.get("c_args", []), acc, enum_contexts, generated_converter_names)
+            _py_scan_params(method_ctx.get("params", []), acc, all_enum_classes, all_class_names, current_class)
             error = method_ctx.get("error")
             if error and error.get("result_fields"):
                 for rf in error["result_fields"]:
                     if rf.get("converter"):
-                        getter_converters.add(rf["converter"])
-            # Scan instance_getter return type converters
+                        acc.getter_converters.add(rf["converter"])
             if method_ctx.get("converter_fn"):
                 conv_name = method_ctx["converter_fn"].lstrip("_")
-                getter_converters.add(conv_name)
+                acc.getter_converters.add(conv_name)
             if method_ctx.get("returns"):
-                _scan_type(method_ctx["returns"])
+                _py_scan_type(method_ctx["returns"], acc, all_enum_classes, all_class_names, current_class)
 
-    # Scan init
+
+def _scan_py_init(cls_ctx, acc, all_enum_classes, all_class_names, current_class, enum_contexts, generated_converter_names):
+    """Scan init context for imports."""
     init_ctx = cls_ctx.get("init")
     if init_ctx:
-        _scan_c_args(init_ctx.get("builder_c_args", []))
-        _scan_params(init_ctx.get("params", []))
+        _py_scan_c_args(init_ctx.get("builder_c_args", []), acc, enum_contexts, generated_converter_names)
+        _py_scan_params(init_ctx.get("params", []), acc, all_enum_classes, all_class_names, current_class)
 
+
+def _assemble_py_import_result(acc, cls_ctx, enum_contexts, generated_converter_names, dataclass_name_set):
+    """Assemble the final import dict from accumulated state."""
     # Determine base helpers needed
-    if "string" in setter_converters:
-        base_imports.add("_encode_str")
-    if "json_value" in getter_converters:
-        base_imports.add("_decode_str_free")
+    if "string" in acc.setter_converters:
+        acc.base_imports.add("_encode_str")
+    if "json_value" in acc.getter_converters:
+        acc.base_imports.add("_decode_str_free")
 
     # Build converter imports
-    forward = sorted(getter_converters & generated_converter_names)
-    reverse = sorted(setter_converters & generated_converter_names)
+    forward = sorted(acc.getter_converters & generated_converter_names)
+    reverse = sorted(acc.setter_converters & generated_converter_names)
     converter_imports = [f"_{n}" for n in forward] + [f"_to_c_{n}" for n in reverse]
 
     # Build enum map imports
     enum_map_imports: list[str] = []
     for ec in enum_contexts:
-        if ec["map_name"] in used_enum_from_c:
+        if ec["map_name"] in acc.used_enum_from_c:
             enum_map_imports.append(f"{ec['map_name']}_FROM_C")
     for ec in enum_contexts:
-        if ec["map_name"] in used_enum_to_c:
+        if ec["map_name"] in acc.used_enum_to_c:
             enum_map_imports.append(f"{ec['map_name']}_TO_C")
 
     # Version / JSON checks
     needs_version = any(lc.get("kind") == "composite_property" and lc.get("returns") == "Version" for lc in cls_ctx.get("lifecycle", []))
     has_handle_ref_setter = any(p["converter"] == "handle_ref" and p.get("setter_fn") for p in cls_ctx["properties"])
-    needs_json = bool(cls_ctx.get("to_json_fn")) or "json_value" in getter_converters or has_handle_ref_setter
+    needs_json = bool(cls_ctx.get("to_json_fn")) or "json_value" in acc.getter_converters or has_handle_ref_setter
 
     # ctypes is used by: to_json (string_at), lifecycle errors (string_at),
     # composite_property (string_at), struct-returning getters (byref)
-    has_struct_getters = "struct" in getter_converters
+    has_struct_getters = "struct" in acc.getter_converters
     has_lifecycle_errors = any(lc.get("error") for lc in cls_ctx.get("lifecycle", []))
     has_composite = any(lc.get("kind") == "composite_property" for lc in cls_ctx.get("lifecycle", []))
     needs_ctypes = bool(cls_ctx.get("to_json_fn")) or has_struct_getters or has_lifecycle_errors or has_composite
@@ -350,15 +338,15 @@ def _compute_per_class_imports(
     # Dataclass imports
     dataclass_imports = sorted({lc["returns"] for lc in cls_ctx.get("lifecycle", []) if lc.get("returns") in dataclass_name_set})
 
-    type_check_enums = sorted(type_check_enum_classes - runtime_enum_classes)
-    runtime_enums = sorted(runtime_enum_classes)
+    type_check_enums = sorted(acc.type_check_enum_classes - acc.runtime_enum_classes)
+    runtime_enums = sorted(acc.runtime_enum_classes)
 
-    type_check_classes = [{"module": _class_to_module(name), "cls": name} for name in sorted(type_check_class_names)]
+    type_check_classes = [{"module": _class_to_module(name), "cls": name} for name in sorted(acc.type_check_class_names)]
 
     return {
-        "base_imports": sorted(base_imports),
-        "type_imports": sorted(type_names),
-        "rounding_imports": sorted(rounding_names),
+        "base_imports": sorted(acc.base_imports),
+        "type_imports": sorted(acc.type_names),
+        "rounding_imports": sorted(acc.rounding_names),
         "converter_imports": sorted(converter_imports),
         "enum_map_imports": sorted(enum_map_imports),
         "needs_json": needs_json,
@@ -369,6 +357,40 @@ def _compute_per_class_imports(
         "type_check_enums": type_check_enums,
         "type_check_classes": type_check_classes,
     }
+
+
+def _compute_per_class_imports(
+    cls_ctx: dict,
+    enum_contexts: list[dict],
+    generated_converter_names: set[str],
+    all_class_names: set[str],
+    dataclass_name_set: set[str],
+) -> dict:
+    """Compute the import requirements for a single facade class file."""
+    all_enum_classes = {ec["facade_class"] for ec in enum_contexts}
+    current_class = cls_ctx["name"]
+
+    acc = SimpleNamespace(
+        base_imports={"OwnedHandle" if cls_ctx["owns_handle"] else "HandleWrapper", "_decode_str"},
+        getter_converters=set(),
+        setter_converters=set(),
+        used_enum_from_c=set(),
+        used_enum_to_c=set(),
+        type_check_enum_classes=set(),
+        runtime_enum_classes=set(),
+        type_check_class_names=set(),
+        type_names=set(),
+        rounding_names=set(),
+    )
+    if cls_ctx["collections"]:
+        acc.base_imports.add("CollectionWrapper")
+
+    _scan_py_collections(cls_ctx, acc, all_class_names, current_class)
+    _scan_py_properties(cls_ctx, acc, all_enum_classes, all_class_names, current_class)
+    _scan_py_methods(cls_ctx, acc, all_enum_classes, all_class_names, current_class, enum_contexts, generated_converter_names)
+    _scan_py_init(cls_ctx, acc, all_enum_classes, all_class_names, current_class, enum_contexts, generated_converter_names)
+
+    return _assemble_py_import_result(acc, cls_ctx, enum_contexts, generated_converter_names, dataclass_name_set)
 
 
 # -----------------------------------------------------------------------

@@ -12,10 +12,10 @@ type keys to TypeScript types for the facade layer (Phase 2-4).
 from __future__ import annotations
 
 from pathlib import Path
-
-from jinja2 import Environment, FileSystemLoader
+from types import SimpleNamespace
 
 from .fdl_idl import IDL, Function, FunctionParam, ValueType, build_ir
+from .shared_context import make_jinja_env
 
 # -----------------------------------------------------------------------
 # Struct types requiring Object<->struct conversion helpers
@@ -48,6 +48,18 @@ _NAPI_NUMBER_GETTER: dict[str, str] = {
 _NEEDS_EXTRACT_CAST: dict[str, str] = {
     "int64_t": "int64_t",
     "size_t": "size_t",
+}
+
+# Value type converter names used in property scanning
+_NODE_VT_CONVERTERS = frozenset({"dimsI64", "dimsF64", "pointF64", "rect", "roundStrategy"})
+
+# IDL type_key → facade type for import resolution
+_NODE_VT_TYPE_MAP: dict[str, str] = {
+    "fdl_dimensions_i64_t": "DimensionsInt",
+    "fdl_dimensions_f64_t": "DimensionsFloat",
+    "fdl_point_f64_t": "PointFloat",
+    "fdl_rect_t": "Rect",
+    "fdl_round_strategy_t": "RoundStrategy",
 }
 
 
@@ -436,16 +448,7 @@ def _generate_custom_attr_functions(idl: IDL) -> list[Function]:
 # Generation entry points
 # -----------------------------------------------------------------------
 
-_TEMPLATES_DIR = Path(__file__).parent / "templates"
-
-
-def _make_env() -> Environment:
-    return Environment(
-        loader=FileSystemLoader(str(_TEMPLATES_DIR)),
-        keep_trailing_newline=True,
-        trim_blocks=True,
-        lstrip_blocks=True,
-    )
+_make_env = make_jinja_env
 
 
 def generate_addon(idl: IDL, output_dir: Path) -> None:
@@ -522,42 +525,31 @@ def generate_addon(idl: IDL, output_dir: Path) -> None:
     print(f"Output: {output_dir}")
 
 
-def generate_facade(idl: IDL, output_dir: Path) -> None:
-    """Generate idiomatic TypeScript facade files from the IDL.
+def _gen_node_constants(env, idl, output_dir: Path) -> list[dict]:
+    """Generate constants.ts and return constants_contexts."""
+    from .node_context import build_node_constants_enum_context
 
-    Phases 2-3: constants, enums, value types, converters, errors, version,
-    rounding, utility modules, facade classes, custom-attrs, and index.
-    """
-    from .node_context import (
-        build_node_constants_enum_context,
-        build_node_converter_context,
-        build_node_facade_class_context,
-        build_node_free_function_context,
-        build_node_value_type_context,
-        class_to_module,
-    )
-    from .shared_context import build_enum_context
-
-    output_dir.mkdir(parents=True, exist_ok=True)
-    env = _make_env()
-
-    # --- Enum contexts (for enum-maps.ts) ---
-    enum_contexts = [build_enum_context(e) for e in idl.enums if e.facade_class]
-
-    # --- constants.ts ---
     constants_contexts = [build_node_constants_enum_context(e) for e in idl.enums if e.facade_class]
     tmpl = env.get_template("node/constants.ts.j2")
     (output_dir / "constants.ts").write_text(
         encoding="utf-8",
         data=tmpl.render(enums=constants_contexts),
     )
+    return constants_contexts
 
-    # --- enum-maps.ts ---
+
+def _gen_node_enum_maps(env, idl, enum_contexts: list[dict], output_dir: Path) -> None:
+    """Generate enum-maps.ts."""
     tmpl = env.get_template("node/enum-maps.ts.j2")
     (output_dir / "enum-maps.ts").write_text(
         encoding="utf-8",
         data=tmpl.render(enums=enum_contexts),
     )
+
+
+def _gen_node_types(env, idl, output_dir: Path) -> tuple[list[dict], list[dict]]:
+    """Generate types.ts and return (types_vt_contexts, rounding_vt_contexts)."""
+    from .node_context import build_node_value_type_context
 
     # --- Value type contexts (split types vs rounding) ---
     all_vt_contexts = [build_node_value_type_context(vt, idl) for vt in idl.value_types if vt.facade_class]
@@ -586,8 +578,13 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
             has_float_compare=any(ctx["float_compare"] for ctx in types_vt_contexts),
         ),
     )
+    return types_vt_contexts, rounding_vt_contexts
 
-    # --- converters.ts ---
+
+def _gen_node_converters(env, idl, output_dir: Path) -> None:
+    """Generate converters.ts."""
+    from .node_context import build_node_converter_context
+
     converter_contexts = [build_node_converter_context(vt, idl) for vt in idl.value_types if vt.facade_converter]
     all_type_imports: set[str] = set()
     all_enum_map_imports: set[str] = set()
@@ -614,7 +611,9 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
         ),
     )
 
-    # --- errors.ts ---
+
+def _gen_node_errors(env, idl, output_dir: Path) -> None:
+    """Generate errors.ts."""
     aux = idl.auxiliary_types
     if aux.errors:
         parent_map = {"Exception": "Error"}
@@ -625,7 +624,10 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
             data=tmpl.render(errors=error_contexts),
         )
 
-    # --- version.ts ---
+
+def _gen_node_version(env, idl, output_dir: Path) -> None:
+    """Generate version.ts."""
+    aux = idl.auxiliary_types
     if aux.version:
         v = aux.version
         eq_parts = [f"this.{s.name} === other.{s.name}" for s in v.slots]
@@ -644,6 +646,14 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
             ),
         )
 
+
+def _gen_node_free_functions(idl) -> tuple[list[dict], list[dict], list, list[dict]]:
+    """Split free functions into rounding vs utils groups.
+
+    Returns (rounding_ff_contexts, utils_ff_contexts, eligible_ffs, ff_contexts).
+    """
+    from .node_context import build_node_free_function_context
+
     # --- Free functions (split: rounding vs utils) ---
     # Skip functions whose return types have no TS facade mapping (hand-coded in templates)
     _NODE_SKIP_FF = {"abi_version", "compute_framing_from_intent"}
@@ -656,7 +666,11 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
 
     rounding_ff_contexts = ff_by_module.get("rounding", [])
     utils_ff_contexts = ff_by_module.get("utils", [])
+    return rounding_ff_contexts, utils_ff_contexts, eligible_ffs, ff_contexts
 
+
+def _gen_node_rounding(env, rounding_vt_contexts: list[dict], rounding_ff_contexts: list[dict], output_dir: Path) -> None:
+    """Generate rounding.ts."""
     # Collect rounding imports
     rs_enum_imports: set[str] = set()
     rs_enum_map_imports: set[str] = set()
@@ -683,6 +697,11 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
         ),
     )
 
+
+def _gen_node_utils(env, idl, utils_ff_contexts: list[dict], output_dir: Path) -> None:
+    """Generate utils.ts."""
+    aux = idl.auxiliary_types
+
     # Collect utils imports
     utils_type_imports: set[str] = set()
     utils_enum_imports: set[str] = set()
@@ -705,6 +724,11 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
         ),
     )
 
+
+def _gen_node_classes(env, idl, enum_contexts: list[dict], output_dir: Path) -> list[dict]:
+    """Generate per-class .ts files and custom-attrs.ts. Return class_contexts."""
+    from .node_context import build_node_facade_class_context, class_to_module
+
     # ===================================================================
     # Phase 3: Facade classes, custom-attrs, index
     # ===================================================================
@@ -719,7 +743,7 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
 
     node_adapter = NodeAdapter()
 
-    # Converter function lookup (property converter key → from/to function)
+    # Converter function lookup (property converter key -> from/to function)
     converter_fn_map = {
         "dimsI64": "fromDimsI64",
         "dimsF64": "fromDimsF64",
@@ -759,6 +783,22 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
             data=class_tmpl.render(cls=cls_ctx, imports=imports),
         )
 
+    return class_contexts
+
+
+def _gen_node_index(
+    env,
+    class_contexts: list[dict],
+    constants_contexts: list[dict],
+    utils_ff_contexts: list[dict],
+    idl,
+    output_dir: Path,
+) -> None:
+    """Generate index.ts."""
+    from .node_context import class_to_module
+
+    aux = idl.auxiliary_types
+
     # --- index.ts ---
     class_entries = []
     for cls_ctx in class_contexts:
@@ -797,6 +837,34 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
         ),
     )
 
+
+def generate_facade(idl: IDL, output_dir: Path) -> None:
+    """Generate idiomatic TypeScript facade files from the IDL.
+
+    Phases 2-3: constants, enums, value types, converters, errors, version,
+    rounding, utility modules, facade classes, custom-attrs, and index.
+    """
+    from .node_context import class_to_module
+    from .shared_context import build_enum_context
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    env = _make_env()
+
+    # --- Enum contexts (for enum-maps.ts) ---
+    enum_contexts = [build_enum_context(e) for e in idl.enums if e.facade_class]
+
+    constants_contexts = _gen_node_constants(env, idl, output_dir)
+    _gen_node_enum_maps(env, idl, enum_contexts, output_dir)
+    types_vt_contexts, rounding_vt_contexts = _gen_node_types(env, idl, output_dir)
+    _gen_node_converters(env, idl, output_dir)
+    _gen_node_errors(env, idl, output_dir)
+    _gen_node_version(env, idl, output_dir)
+    rounding_ff_contexts, utils_ff_contexts, eligible_ffs, ff_contexts = _gen_node_free_functions(idl)
+    _gen_node_rounding(env, rounding_vt_contexts, rounding_ff_contexts, output_dir)
+    _gen_node_utils(env, idl, utils_ff_contexts, output_dir)
+    class_contexts = _gen_node_classes(env, idl, enum_contexts, output_dir)
+    _gen_node_index(env, class_contexts, constants_contexts, utils_ff_contexts, idl, output_dir)
+
     generated_files = [
         "constants.ts",
         "enum-maps.ts",
@@ -817,6 +885,217 @@ def generate_facade(idl: IDL, output_dir: Path) -> None:
 
 
 # -----------------------------------------------------------------------
+# Import computation helpers
+# -----------------------------------------------------------------------
+
+
+def _node_add_vt_type_import(type_imports_map, ts_type):
+    """Add a value type import to the correct module."""
+    if ts_type == "RoundStrategy":
+        type_imports_map.setdefault("./rounding.js", set()).add(ts_type)
+    else:
+        type_imports_map.setdefault("./types.js", set()).add(ts_type)
+
+
+def _node_import_param_type(tk, acc, enum_tk_to_facade, enum_tk_to_map):
+    """Add imports for a parameter type_key used in builders/lifecycle."""
+    if tk in _NODE_VT_TYPE_MAP:
+        _node_add_vt_type_import(acc.type_imports_map, _NODE_VT_TYPE_MAP[tk])
+    if tk in enum_tk_to_facade:
+        acc.type_imports_map.setdefault("./constants.js", set()).add(enum_tk_to_facade[tk])
+        acc.enum_map_imports.add(enum_tk_to_map[tk])
+
+
+def _scan_node_properties(cls_ctx, acc, enum_contexts, all_class_names, node_adapter, converter_fn_map, converter_to_fn_map):
+    """Scan properties for import requirements."""
+    from .node_context import class_to_module
+
+    for prop in cls_ctx["properties"]:
+        conv = prop["converter"]
+        if conv in _NODE_VT_CONVERTERS:
+            acc.converter_imports.add(converter_fn_map[conv])
+            if prop.get("setter_fn"):
+                acc.converter_imports.add(converter_to_fn_map[conv])
+            ts_type = node_adapter.TYPES.get(prop["type_key"], "")
+            if ts_type and ts_type != "object":
+                _node_add_vt_type_import(acc.type_imports_map, ts_type)
+        if conv.startswith("enum"):
+            if prop.get("enum_from_c"):
+                acc.enum_map_imports.add(prop["enum_from_c"])
+            if prop.get("enum_to_c") and prop.get("setter_fn"):
+                acc.enum_map_imports.add(prop["enum_to_c"])
+            ts_type = node_adapter.TYPES.get(prop["type_key"], "")
+            if ts_type:
+                acc.type_imports_map.setdefault("./constants.js", set()).add(ts_type)
+        if conv == "handleRef" and prop.get("handle_class"):
+            hc = prop["handle_class"]
+            if hc in all_class_names and hc != cls_ctx["name"]:
+                acc.lazy_class_imports.append({"cls": hc, "module": class_to_module(hc)})
+
+
+def _scan_node_collections(cls_ctx, acc, all_class_names):
+    """Scan collections for lazy class imports."""
+    for coll in cls_ctx["collections"]:
+        ic = coll["item_class"]
+        if ic in all_class_names and ic != cls_ctx["name"]:
+            acc.lazy_class_imports.append({"cls": ic, "module": coll["item_module"]})
+
+
+def _scan_node_builders(cls_ctx, acc, all_class_names, enum_tk_to_facade, enum_tk_to_map, converter_to_fn_map):
+    """Scan builders for import requirements."""
+    from .node_context import class_to_module
+
+    for builder in cls_ctx["builders"]:
+        ret = builder["returns"]
+        if ret in all_class_names and ret != cls_ctx["name"]:
+            acc.lazy_class_imports.append({"cls": ret, "module": class_to_module(ret)})
+        for p in builder.get("params", []):
+            tk = p.get("type_key", "")
+            _node_import_param_type(tk, acc, enum_tk_to_facade, enum_tk_to_map)
+        for arg in builder.get("addon_args", []):
+            for to_fn in converter_to_fn_map.values():
+                if to_fn in arg:
+                    acc.converter_imports.add(to_fn)
+
+
+def _scan_node_lifecycle(cls_ctx, acc, all_class_names, enum_tk_to_facade, enum_tk_to_map, converter_to_fn_map):
+    """Scan lifecycle methods for import requirements."""
+    from .node_context import class_to_module
+
+    for method in cls_ctx["lifecycle"]:
+        kind = method["kind"]
+        error = method.get("error")
+        if error and error.get("error_class"):
+            acc.error_imports.add(error["error_class"])
+        if kind == "instance" and error and error.get("pattern") == "validation":
+            acc.error_imports.add("FDLValidationError")
+        if kind == "validate_json":
+            acc.error_imports.add("FDLValidationError")
+        if kind == "composite_property" and method.get("returns") == "Version":
+            acc.needs_version = True
+            acc.value_imports_map.setdefault("./version.js", set()).add("Version")
+        if kind in ("instance_getter", "instance_getter_optional"):
+            conv_fn = method.get("converter_fn")
+            if conv_fn:
+                acc.converter_imports.add(conv_fn)
+            ret = method.get("returns")
+            if ret and ret not in ("string", "number", "boolean"):
+                _node_add_vt_type_import(acc.type_imports_map, ret)
+        if error and error.get("result_fields"):
+            for rf in error["result_fields"]:
+                if rf.get("wrap_class") and rf["wrap_class"] in all_class_names:
+                    wc = rf["wrap_class"]
+                    if wc != cls_ctx["name"]:
+                        acc.lazy_class_imports.append({"cls": wc, "module": class_to_module(wc)})
+                if rf.get("converter"):
+                    acc.converter_imports.add(rf["converter"])
+        for p in method.get("params", []):
+            tk = p.get("type_key", "")
+            if tk == "handle":
+                ts_type = p.get("ts_type", "")
+                if ts_type in all_class_names and ts_type != cls_ctx["name"]:
+                    acc.lazy_class_imports.append({"cls": ts_type, "module": class_to_module(ts_type)})
+            else:
+                _node_import_param_type(tk, acc, enum_tk_to_facade, enum_tk_to_map)
+        for arg in method.get("addon_args", []):
+            for to_fn in converter_to_fn_map.values():
+                if to_fn in arg:
+                    acc.converter_imports.add(to_fn)
+        for p in method.get("params", []):
+            if p.get("global_fallback"):
+                acc.rounding_imports.add(p["global_fallback"])
+
+
+def _scan_node_init(cls_ctx, acc, all_class_names, enum_tk_to_facade, enum_tk_to_map, converter_to_fn_map):
+    """Scan init context for import requirements."""
+
+    init_ctx = cls_ctx.get("init")
+    if not init_ctx:
+        return
+
+    for p in init_ctx.get("params", []):
+        if not p.get("ignore"):
+            tk = p.get("type_key", "")
+            if tk:
+                _node_import_param_type(tk, acc, enum_tk_to_facade, enum_tk_to_map)
+            default = p.get("default", "")
+            if default and isinstance(default, str) and "." in default:
+                enum_cls = default.split(".")[0]
+                if enum_cls and enum_cls in enum_tk_to_facade.values():
+                    acc.value_imports_map.setdefault("./constants.js", set()).add(enum_cls)
+            if default and isinstance(default, str) and "new " in default:
+                for vt_cls in ("PointFloat", "DimensionsFloat", "DimensionsInt"):
+                    if vt_cls in default:
+                        acc.value_imports_map.setdefault("./types.js", set()).add(vt_cls)
+                if "RoundStrategy" in default:
+                    acc.value_imports_map.setdefault("./rounding.js", set()).add("RoundStrategy")
+
+    for arg in init_ctx.get("addon_args", []):
+        for to_fn in converter_to_fn_map.values():
+            if to_fn in arg:
+                acc.converter_imports.add(to_fn)
+        for map_name in enum_tk_to_map.values():
+            if map_name in arg:
+                acc.enum_map_imports.add(map_name)
+
+    for ps in init_ctx.get("post_setters", []):
+        for arg in ps.get("args", []):
+            default = arg.get("default", "")
+            if default and isinstance(default, str):
+                for vt_cls in ("PointFloat", "DimensionsFloat", "DimensionsInt"):
+                    if vt_cls in default:
+                        acc.value_imports_map.setdefault("./types.js", set()).add(vt_cls)
+
+    if init_ctx["depth"] >= 1:
+        acc.lazy_class_imports.append({"cls": "FDL", "module": "fdl"})
+
+
+def _scan_node_interfaces(cls_ctx, acc, all_class_names):
+    """Scan inline interface accessors for lazy class imports."""
+    from .node_context import class_to_module
+
+    for iface in cls_ctx.get("inline_interfaces", []):
+        for accessor in iface.get("accessors") or []:
+            ret = accessor.get("returns", "")
+            if ret and ret in all_class_names and ret != cls_ctx["name"]:
+                acc.lazy_class_imports.append({"cls": ret, "module": class_to_module(ret)})
+
+
+def _finalize_node_imports(acc, converter_fn_map, converter_to_fn_map):
+    """Deduplicate and assemble the final import dict."""
+    # Deduplicate lazy class imports
+    seen_lazy: set[str] = set()
+    unique_lazy: list[dict] = []
+    for lc in acc.lazy_class_imports:
+        if lc["cls"] not in seen_lazy:
+            seen_lazy.add(lc["cls"])
+            unique_lazy.append(lc)
+
+    # Deduplicate: remove type imports that are also value imports
+    for mod, val_names in acc.value_imports_map.items():
+        if mod in acc.type_imports_map:
+            acc.type_imports_map[mod] -= val_names
+
+    # Build structured type_imports and value_imports lists
+    type_imports = [{"module": mod, "names": sorted(names)} for mod, names in sorted(acc.type_imports_map.items()) if names]
+    value_imports = [{"module": mod, "names": sorted(names)} for mod, names in sorted(acc.value_imports_map.items()) if names]
+
+    return {
+        "type_imports": type_imports,
+        "value_imports": value_imports,
+        "converter_imports": sorted(acc.converter_imports),
+        "enum_map_imports": sorted(acc.enum_map_imports),
+        "runtime_enum_imports": sorted(acc.runtime_enum_imports),
+        "error_imports": sorted(acc.error_imports),
+        "rounding_imports": sorted(acc.rounding_imports),
+        "needs_version": acc.needs_version,
+        "lazy_class_imports": unique_lazy,
+        "converter_fn_map": converter_fn_map,
+        "converter_to_fn_map": converter_to_fn_map,
+    }
+
+
+# -----------------------------------------------------------------------
 # Per-class import computation
 # -----------------------------------------------------------------------
 
@@ -830,249 +1109,30 @@ def _compute_node_class_imports(
     converter_to_fn_map: dict[str, str],
 ) -> dict:
     """Compute import sets for one facade class .ts file."""
-    from .node_context import class_to_module
+    acc = SimpleNamespace(
+        type_imports_map={},
+        value_imports_map={},
+        converter_imports=set(),
+        enum_map_imports=set(),
+        runtime_enum_imports=set(),
+        error_imports=set(),
+        rounding_imports=set(),
+        lazy_class_imports=[],
+        needs_version=False,
+    )
 
-    type_imports_map: dict[str, set[str]] = {}  # module → set of type names
-    value_imports_map: dict[str, set[str]] = {}  # module → set of value names
-    converter_imports: set[str] = set()
-    enum_map_imports: set[str] = set()
-    runtime_enum_imports: set[str] = set()
-    error_imports: set[str] = set()
-    rounding_imports: set[str] = set()
-    lazy_class_imports: list[dict] = []
-    needs_version = False
-
-    # Track which converter functions are needed
-    _VT_CONVERTERS = {"dimsI64", "dimsF64", "pointF64", "rect", "roundStrategy"}
-
-    # Helper to add type import
-    def _add_type_import(module: str, name: str) -> None:
-        type_imports_map.setdefault(module, set()).add(name)
-
-    def _add_value_import(module: str, name: str) -> None:
-        value_imports_map.setdefault(module, set()).add(name)
-
-    # --- Properties ---
-    for prop in cls_ctx["properties"]:
-        conv = prop["converter"]
-        # Converter function imports
-        if conv in _VT_CONVERTERS:
-            converter_imports.add(converter_fn_map[conv])
-            if prop.get("setter_fn"):
-                converter_imports.add(converter_to_fn_map[conv])
-            # Also import the value type class
-            ts_type = node_adapter.TYPES.get(prop["type_key"], "")
-            if ts_type and ts_type != "object":
-                if ts_type == "RoundStrategy":
-                    _add_type_import("./rounding.js", ts_type)
-                else:
-                    _add_type_import("./types.js", ts_type)
-        # Enum map imports
-        if conv.startswith("enum"):
-            if prop.get("enum_from_c"):
-                enum_map_imports.add(prop["enum_from_c"])
-            if prop.get("enum_to_c") and prop.get("setter_fn"):
-                enum_map_imports.add(prop["enum_to_c"])
-            # Enum type import for annotations
-            ts_type = node_adapter.TYPES.get(prop["type_key"], "")
-            if ts_type:
-                _add_type_import("./constants.js", ts_type)
-        # Handle ref — lazy import for cross-class reference
-        if conv == "handleRef" and prop.get("handle_class"):
-            hc = prop["handle_class"]
-            if hc in all_class_names and hc != cls_ctx["name"]:
-                lazy_class_imports.append({"cls": hc, "module": class_to_module(hc)})
-        # json_value doesn't need extra imports
-
-    # --- Collections ---
-    for coll in cls_ctx["collections"]:
-        ic = coll["item_class"]
-        if ic in all_class_names and ic != cls_ctx["name"]:
-            lazy_class_imports.append({"cls": ic, "module": coll["item_module"]})
-
-    # --- Helper: resolve type_key to imports needed ---
-    # Map IDL enum type_key → facade class name
+    # Build enum/VT lookup maps
     enum_tk_to_facade: dict[str, str] = {}
     enum_tk_to_map: dict[str, str] = {}
     for ectx in enum_contexts:
         enum_tk_to_facade[ectx["idl_name"]] = ectx.get("facade_class", "")
         enum_tk_to_map[ectx["idl_name"]] = f"{ectx['map_name']}_TO_C"
 
-    # Map IDL type_key → facade type
-    vt_type_map = {
-        "fdl_dimensions_i64_t": "DimensionsInt",
-        "fdl_dimensions_f64_t": "DimensionsFloat",
-        "fdl_point_f64_t": "PointFloat",
-        "fdl_rect_t": "Rect",
-        "fdl_round_strategy_t": "RoundStrategy",
-    }
+    _scan_node_properties(cls_ctx, acc, enum_contexts, all_class_names, node_adapter, converter_fn_map, converter_to_fn_map)
+    _scan_node_collections(cls_ctx, acc, all_class_names)
+    _scan_node_builders(cls_ctx, acc, all_class_names, enum_tk_to_facade, enum_tk_to_map, converter_to_fn_map)
+    _scan_node_lifecycle(cls_ctx, acc, all_class_names, enum_tk_to_facade, enum_tk_to_map, converter_to_fn_map)
+    _scan_node_init(cls_ctx, acc, all_class_names, enum_tk_to_facade, enum_tk_to_map, converter_to_fn_map)
+    _scan_node_interfaces(cls_ctx, acc, all_class_names)
 
-    def _import_param_type(tk: str) -> None:
-        """Add imports for a parameter type_key used in builders/lifecycle."""
-        if tk in vt_type_map:
-            vt_cls = vt_type_map[tk]
-            if vt_cls == "RoundStrategy":
-                _add_type_import("./rounding.js", vt_cls)
-            else:
-                _add_type_import("./types.js", vt_cls)
-        if tk in enum_tk_to_facade:
-            _add_type_import("./constants.js", enum_tk_to_facade[tk])
-            enum_map_imports.add(enum_tk_to_map[tk])
-
-    # --- Builders ---
-    for builder in cls_ctx["builders"]:
-        ret = builder["returns"]
-        if ret in all_class_names and ret != cls_ctx["name"]:
-            lazy_class_imports.append({"cls": ret, "module": class_to_module(ret)})
-        # Track param type_keys for imports (value types + enums)
-        for p in builder.get("params", []):
-            tk = p.get("type_key", "")
-            _import_param_type(tk)
-        # Track converter usage in addon_args
-        for arg in builder.get("addon_args", []):
-            for to_fn in converter_to_fn_map.values():
-                if to_fn in arg:
-                    converter_imports.add(to_fn)
-
-    # --- Lifecycle methods ---
-    for method in cls_ctx["lifecycle"]:
-        kind = method["kind"]
-        # Error imports
-        error = method.get("error")
-        if error and error.get("error_class"):
-            error_imports.add(error["error_class"])
-        # Validation error
-        if kind == "instance" and error and error.get("pattern") == "validation":
-            error_imports.add("FDLValidationError")
-        if kind == "validate_json":
-            error_imports.add("FDLValidationError")
-        # Composite property — needs version type
-        if kind == "composite_property" and method.get("returns") == "Version":
-            needs_version = True
-            _add_value_import("./version.js", "Version")
-        # Instance getter — needs converter import
-        if kind in ("instance_getter", "instance_getter_optional"):
-            conv_fn = method.get("converter_fn")
-            if conv_fn:
-                converter_imports.add(conv_fn)
-            ret = method.get("returns")
-            if ret and ret not in ("string", "number", "boolean"):
-                if ret == "RoundStrategy":
-                    _add_type_import("./rounding.js", ret)
-                else:
-                    _add_type_import("./types.js", ret)
-        # Result struct multi — lazy imports for wrap classes and converters
-        if error and error.get("result_fields"):
-            for rf in error["result_fields"]:
-                if rf.get("wrap_class") and rf["wrap_class"] in all_class_names:
-                    wc = rf["wrap_class"]
-                    if wc != cls_ctx["name"]:
-                        lazy_class_imports.append({"cls": wc, "module": class_to_module(wc)})
-                if rf.get("converter"):
-                    converter_imports.add(rf["converter"])
-        # Track param type_keys for imports (enums, value types, handle refs)
-        for p in method.get("params", []):
-            tk = p.get("type_key", "")
-            if tk == "handle":
-                # Cross-class handle param — need type import for annotation
-                # (will be deduplicated against lazy_class_imports below)
-                ts_type = p.get("ts_type", "")
-                if ts_type in all_class_names and ts_type != cls_ctx["name"]:
-                    lazy_class_imports.append({"cls": ts_type, "module": class_to_module(ts_type)})
-            else:
-                _import_param_type(tk)
-        # Track converter usage in addon_args
-        for arg in method.get("addon_args", []):
-            for to_fn in converter_to_fn_map.values():
-                if to_fn in arg:
-                    converter_imports.add(to_fn)
-        # Global fallback imports
-        for p in method.get("params", []):
-            if p.get("global_fallback"):
-                rounding_imports.add(p["global_fallback"])
-
-    # --- Init (constructor) ---
-    init_ctx = cls_ctx.get("init")
-    if init_ctx:
-        # Track param types and runtime enum defaults
-        for p in init_ctx.get("params", []):
-            if not p.get("ignore"):
-                tk = p.get("type_key", "")
-                if tk:
-                    _import_param_type(tk)
-                # If param has a default that references an enum value (e.g. GeometryPath.X),
-                # we need a runtime import of that enum (not just type import)
-                default = p.get("default", "")
-                if default and isinstance(default, str) and "." in default:
-                    enum_cls = default.split(".")[0]
-                    if enum_cls and enum_cls in enum_tk_to_facade.values():
-                        _add_value_import("./constants.js", enum_cls)
-                # Value type constructor defaults (new DimensionsFloat(...), new PointFloat(...))
-                if default and isinstance(default, str) and "new " in default:
-                    for vt_cls in ("PointFloat", "DimensionsFloat", "DimensionsInt"):
-                        if vt_cls in default:
-                            _add_value_import("./types.js", vt_cls)
-                    if "RoundStrategy" in default:
-                        _add_value_import("./rounding.js", "RoundStrategy")
-        # Track converter usage in addon_args
-        for arg in init_ctx.get("addon_args", []):
-            for to_fn in converter_to_fn_map.values():
-                if to_fn in arg:
-                    converter_imports.add(to_fn)
-            # Track enum map usage in addon_args
-            for map_name in enum_tk_to_map.values():
-                if map_name in arg:
-                    enum_map_imports.add(map_name)
-        # Post-setter defaults may reference value type constructors
-        for ps in init_ctx.get("post_setters", []):
-            for arg in ps.get("args", []):
-                default = arg.get("default", "")
-                if default and isinstance(default, str):
-                    for vt_cls in ("PointFloat", "DimensionsFloat", "DimensionsInt"):
-                        if vt_cls in default:
-                            _add_value_import("./types.js", vt_cls)
-        # Depth >= 1 needs FDL import for scaffolding
-        if init_ctx["depth"] >= 1:
-            lazy_class_imports.append({"cls": "FDL", "module": "fdl"})
-
-    # --- Custom attrs ---
-    # (handled by template directly — no extra imports needed here)
-
-    # --- Inline interface accessor return types ---
-    for iface in cls_ctx.get("inline_interfaces", []):
-        for acc in iface.get("accessors") or []:
-            ret = acc.get("returns", "")
-            if ret and ret in all_class_names and ret != cls_ctx["name"]:
-                lazy_class_imports.append({"cls": ret, "module": class_to_module(ret)})
-
-    # Deduplicate lazy class imports
-    seen_lazy: set[str] = set()
-    unique_lazy: list[dict] = []
-    for lc in lazy_class_imports:
-        if lc["cls"] not in seen_lazy:
-            seen_lazy.add(lc["cls"])
-            unique_lazy.append(lc)
-
-    # Deduplicate: remove type imports that are also value imports
-    # (value imports take precedence since they're needed at runtime)
-    for mod, val_names in value_imports_map.items():
-        if mod in type_imports_map:
-            type_imports_map[mod] -= val_names
-
-    # Build structured type_imports and value_imports lists
-    type_imports = [{"module": mod, "names": sorted(names)} for mod, names in sorted(type_imports_map.items()) if names]
-    value_imports = [{"module": mod, "names": sorted(names)} for mod, names in sorted(value_imports_map.items()) if names]
-
-    return {
-        "type_imports": type_imports,
-        "value_imports": value_imports,
-        "converter_imports": sorted(converter_imports),
-        "enum_map_imports": sorted(enum_map_imports),
-        "runtime_enum_imports": sorted(runtime_enum_imports),
-        "error_imports": sorted(error_imports),
-        "rounding_imports": sorted(rounding_imports),
-        "needs_version": needs_version,
-        "lazy_class_imports": unique_lazy,
-        "converter_fn_map": converter_fn_map,
-        "converter_to_fn_map": converter_to_fn_map,
-    }
+    return _finalize_node_imports(acc, converter_fn_map, converter_to_fn_map)

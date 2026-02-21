@@ -12,10 +12,33 @@
 
 #include <cmath>
 #include <cstdint>
+#include <limits>
 
 #include "fdl_constants.h"
 
 namespace fdl::detail {
+
+/**
+ * @brief Safely cast a double to int64_t, clamping to [INT64_MIN, INT64_MAX].
+ *
+ * Prevents undefined behavior from casting doubles that exceed the
+ * representable range of int64_t.
+ *
+ * @param value  The floating-point value to convert.
+ * @return The integer value, clamped to int64_t bounds.
+ */
+inline int64_t safe_to_int64(double value) {
+    // Doubles beyond int64_t range would cause UB in static_cast.
+    constexpr auto kMax = static_cast<double>(std::numeric_limits<int64_t>::max());
+    constexpr auto kMin = static_cast<double>(std::numeric_limits<int64_t>::min());
+    if (value >= kMax) {
+        return std::numeric_limits<int64_t>::max();
+    }
+    if (value <= kMin) {
+        return std::numeric_limits<int64_t>::min();
+    }
+    return static_cast<int64_t>(value);
+}
 
 /**
  * Banker's rounding (half-to-even), matching Python's built-in round().
@@ -32,16 +55,16 @@ inline int64_t bankers_round(double value) {
     double const remainder = value - std::floor(value);
     if (std::abs(remainder - constants::kHalfway) < constants::kFpHalfwayTolerance) {
         // Halfway case: round to even
-        auto r = static_cast<int64_t>(rounded);
+        auto r = safe_to_int64(rounded);
         if (r % constants::kEvenDivisor != 0) {
             // rounded is odd, go the other way
             rounded = std::floor(value + constants::kHalfway);
-            if (static_cast<int64_t>(rounded) % constants::kEvenDivisor != 0) {
+            if (safe_to_int64(rounded) % constants::kEvenDivisor != 0) {
                 rounded = std::ceil(value - constants::kHalfway);
             }
         }
     }
-    return static_cast<int64_t>(rounded);
+    return safe_to_int64(rounded);
 }
 
 } // namespace fdl::detail

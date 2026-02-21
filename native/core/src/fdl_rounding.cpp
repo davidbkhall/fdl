@@ -24,9 +24,9 @@ int64_t fdl_round(double value, fdl_rounding_even_t even, fdl_rounding_mode_t mo
 
     int64_t v;
     if (mode == FDL_ROUNDING_MODE_UP) {
-        v = static_cast<int64_t>(std::ceil(value));
+        v = fdl::detail::safe_to_int64(std::ceil(value));
     } else if (mode == FDL_ROUNDING_MODE_DOWN) {
-        v = static_cast<int64_t>(std::floor(value));
+        v = fdl::detail::safe_to_int64(std::floor(value));
     } else {
         // ROUND — banker's rounding to match Python
         v = fdl::detail::bankers_round(value);

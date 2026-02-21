@@ -13,7 +13,19 @@ import re
 
 from .adapters import PythonAdapter
 from .fdl_idl import IDL, EnumType, FreeFunctionDef, ValueType, VTMethod, VTOperator
-from .shared_context import camel_to_upper_snake
+from .shared_context import (
+    ENUM_SHORT_NAMES as _ENUM_SHORT_NAMES,
+    build_converter_lookup,
+    build_enum_context_lookups,
+    build_enum_facade_map,
+    build_enum_info,
+    build_enum_to_c_maps,
+    build_expand_map,
+    find_builder_method,
+    is_lifecycle_method,
+    resolve_cross_eq_class,
+    vt_field_names_for_type as _vt_field_names_for_type,
+)
 
 
 def _class_to_module(class_name: str) -> str:
@@ -59,9 +71,6 @@ _C_FIELD_TYPES: dict[str, tuple[str, str, str]] = {
     "uint32_t": ("int", "0", "int"),
 }
 
-# Enum IDL short names — all enums are passed as str in Python VT methods
-_ENUM_SHORT_NAMES = {"rounding_even", "rounding_mode", "fit_method", "geometry_path", "halign", "valign"}
-
 
 def _resolve_vt_python_type(idl_type: str, idl: IDL, *, for_self_class: str = "") -> str:
     """Resolve an IDL type used in value type methods to a Python type string."""
@@ -82,14 +91,6 @@ def _resolve_vt_python_type(idl_type: str, idl: IDL, *, for_self_class: str = ""
     if idl_type in _ENUM_SHORT_NAMES:
         return "str"
     return idl_type
-
-
-def _vt_field_names_for_type(idl_type: str, idl: IDL) -> list[str]:
-    """Get field names for a value type by IDL type name."""
-    for vt in idl.value_types:
-        if vt.name == idl_type:
-            return [f.name for f in vt.fields]
-    return []
 
 
 # -----------------------------------------------------------------------
@@ -126,14 +127,7 @@ def build_vt_method_context(method: VTMethod, vt: ValueType, idl: IDL) -> dict:
 
     c_struct = vt.name
 
-    # Build enum TO_C map names
-    enum_to_c_maps: dict[str, str] = {}
-    for e in idl.enums:
-        if e.facade_class:
-            map_name = camel_to_upper_snake(e.facade_class)
-            enum_to_c_maps[e.name] = f"{map_name}_TO_C"
-    enum_to_c_maps["rounding_even"] = "ROUNDING_EVEN_TO_C"
-    enum_to_c_maps["rounding_mode"] = "ROUNDING_MODE_TO_C"
+    enum_to_c_maps = build_enum_to_c_maps(idl)
 
     # Compute imports and pre-build C call args
     needed_c_structs: set[str] = {c_struct}
@@ -254,8 +248,7 @@ def build_value_type_context(vt: ValueType, idl: IDL) -> dict:
     python_class = vt.facade_class
     defaults_override = vt.facade_defaults or {}
 
-    # Build lookup for enum facade classes from IDL
-    enum_facade_map = {e.name: e.facade_class for e in idl.enums if e.facade_class}
+    enum_facade_map = build_enum_facade_map(idl)
 
     fields = []
     enum_imports: set[str] = set()
@@ -313,13 +306,7 @@ def build_value_type_context(vt: ValueType, idl: IDL) -> dict:
     method_contexts = [build_vt_method_context(m, vt, idl) for m in vt.methods]
     operator_contexts = [build_vt_operator_context(o, vt, idl) for o in vt.operators]
 
-    # Resolve cross-type equality sibling (e.g. DimensionsInt ↔ DimensionsFloat)
-    cross_eq_class = None
-    if vt.cross_eq:
-        for other_vt in idl.value_types:
-            if other_vt.name == vt.cross_eq:
-                cross_eq_class = other_vt.facade_class
-                break
+    cross_eq_class = resolve_cross_eq_class(vt, idl)
 
     return {
         "python_class": python_class,
@@ -347,14 +334,7 @@ def build_value_type_context(vt: ValueType, idl: IDL) -> dict:
 
 def build_converter_context(vt: ValueType, idl: IDL) -> dict:
     """Build template context for one value type's converter functions."""
-    # Build enum metadata lookup
-    enum_info: dict[str, dict] = {}
-    for e in idl.enums:
-        if e.facade_class:
-            enum_info[e.name] = {
-                "facade_class": e.facade_class,
-                "map_name": camel_to_upper_snake(e.facade_class),
-            }
+    enum_info = build_enum_info(idl)
 
     defaults_override = vt.facade_defaults or {}
     fields = []
@@ -411,26 +391,9 @@ def build_converter_context(vt: ValueType, idl: IDL) -> dict:
 
 def build_builder_method_context(method, idl: IDL, enum_contexts: list[dict]) -> dict:
     """Build template context for a builder method."""
-    # Enum TO_C map lookup
-    type_key_to_to_c: dict[str, str] = {}
-    for ectx in enum_contexts:
-        type_key_to_to_c[ectx["idl_name"]] = f"{ectx['map_name']}_TO_C"
-
-    # Build expand map from IDL value types (field names and coercion)
-    expand_map: dict[str, list[dict]] = {}
-    for vt in idl.value_types:
-        if vt.facade_class:
-            fields = []
-            for f in vt.fields:
-                coerce = "int" if f.c_type in ("int64_t", "int", "uint32_t") else "float" if f.c_type == "double" else None
-                fields.append({"name": f.name, "coerce": coerce})
-            expand_map[vt.name] = fields
-
-    # Converter name lookup for non-expanded value types
-    converter_lookup: dict[str, str] = {}
-    for vt in idl.value_types:
-        if vt.facade_converter:
-            converter_lookup[vt.name] = vt.facade_converter
+    _, type_key_to_to_c = build_enum_context_lookups(enum_contexts)
+    expand_map = build_expand_map(idl)
+    converter_lookup = build_converter_lookup(idl)
 
     params = []
     c_args: list[str] = []
@@ -521,16 +484,8 @@ def build_lifecycle_method_context(method, idl: IDL, enum_contexts: list[dict]) 
             "compose_from": method.compose_from or {},
         }
 
-    # Build converter lookup for value types
-    converter_lookup: dict[str, str] = {}
-    for vt in idl.value_types:
-        if vt.facade_converter:
-            converter_lookup[vt.name] = vt.facade_converter
-
-    # Build enum TO_C map lookup
-    enum_to_c_maps: dict[str, str] = {}
-    for ec in enum_contexts:
-        enum_to_c_maps[ec["idl_name"]] = f"{ec['map_name']}_TO_C"
+    converter_lookup = build_converter_lookup(idl)
+    _, enum_to_c_maps = build_enum_context_lookups(enum_contexts)
 
     # Build params and c_args using same logic as builders
     params = []
@@ -627,23 +582,7 @@ def build_init_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_class_by_
     if not init:
         return None
 
-    # For depth 0 (root/OwnedHandle), the builder method is on the class itself
-    if init.depth == 0:
-        builder_ir_method = None
-        for m in ir_cls.methods:
-            if m.name == init.builder_method:
-                builder_ir_method = m
-                break
-    else:
-        # Find the builder method in the parent IR class
-        parent_ir = ir_class_by_name.get(ir_cls.parent)
-        if not parent_ir:
-            return None
-        builder_ir_method = None
-        for m in parent_ir.methods:
-            if m.name == init.builder_method:
-                builder_ir_method = m
-                break
+    builder_ir_method = find_builder_method(ir_cls, init, ir_class_by_name)
     if not builder_ir_method:
         return None
 
@@ -723,12 +662,7 @@ def build_init_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_class_by_
 
 def build_facade_class_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_class_by_name: dict | None = None) -> dict:
     """Build template context for one facade class."""
-    # Map IDL enum type_key → FROM_C / TO_C lookup table names
-    type_key_to_from_c: dict[str, str] = {}
-    type_key_to_to_c: dict[str, str] = {}
-    for ectx in enum_contexts:
-        type_key_to_from_c[ectx["idl_name"]] = f"{ectx['map_name']}_FROM_C"
-        type_key_to_to_c[ectx["idl_name"]] = f"{ectx['map_name']}_TO_C"
+    type_key_to_from_c, type_key_to_to_c = build_enum_context_lookups(enum_contexts)
 
     properties = []
     for prop in ir_cls.properties:
@@ -793,16 +727,7 @@ def build_facade_class_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_c
     # Build lifecycle method contexts
     lifecycle = []
     for method in ir_cls.methods:
-        if method.kind in (
-            "static_factory",
-            "class_factory",
-            "alias",
-            "compound_setter",
-            "composite_property",
-            "instance_getter",
-            "instance_getter_optional",
-            "validate_json",
-        ) or (method.kind == "instance" and method.name != "to_json" and (method.params or method.error_handling)):
+        if is_lifecycle_method(method):
             ctx = build_lifecycle_method_context(method, idl, enum_contexts)
             lifecycle.append(ctx)
 
@@ -838,15 +763,7 @@ def build_facade_class_context(ir_cls, idl: IDL, enum_contexts: list[dict], ir_c
 
 def build_free_function_context(ff: FreeFunctionDef, idl: IDL) -> dict:
     """Build template context for a free function exported from fdl_core."""
-    # Build enum TO_C map names
-    enum_to_c_maps: dict[str, str] = {}
-    for e in idl.enums:
-        if e.facade_class:
-            map_name = camel_to_upper_snake(e.facade_class)
-            enum_to_c_maps[e.name] = f"{map_name}_TO_C"
-    enum_to_c_maps["rounding_even"] = "ROUNDING_EVEN_TO_C"
-    enum_to_c_maps["rounding_mode"] = "ROUNDING_MODE_TO_C"
-    enum_to_c_maps["fit_method"] = "FIT_METHOD_TO_C"
+    enum_to_c_maps = build_enum_to_c_maps(idl)
 
     params = []
     c_call_args: list[str] = []

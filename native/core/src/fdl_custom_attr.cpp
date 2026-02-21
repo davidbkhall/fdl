@@ -14,6 +14,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "fdl_tl_cache.h"
+
 namespace fdl::detail::custom_attr {
 
 // -----------------------------------------------------------------------
@@ -39,8 +41,8 @@ struct AttrBufKeyHash {
     }
 };
 
-/** @brief Thread-local string buffer map for custom attribute string returns. */
-thread_local std::unordered_map<AttrBufKey, std::string, AttrBufKeyHash> tl_bufs; // NOLINT
+/** @brief Thread-local bounded string cache for custom attribute string returns. */
+thread_local fdl::detail::TlStringCache<AttrBufKey, AttrBufKeyHash> tl_cache; // NOLINT
 
 } // namespace
 
@@ -107,64 +109,87 @@ fdl_custom_attr_type_t get_type(const ojson* node, const char* name) {
 // Setters (type-safe: fail on type mismatch)
 // -----------------------------------------------------------------------
 
-int set_string(ojson* node, const char* name, const char* value) {
-    if (node == nullptr || name == nullptr || value == nullptr) {
+namespace {
+
+/**
+ * @brief Generic scalar setter with type-checking on existing values.
+ *
+ * Validates that any existing value matches the expected type, then inserts
+ * the new value. Eliminates duplication across the four scalar setters.
+ *
+ * @tparam TypeCheckFn Callable: (const ojson&) -> bool. Returns true if the existing value is acceptable.
+ * @tparam MakeValueFn Callable: () -> ojson. Constructs the value to insert.
+ * @param node        JSON node to modify.
+ * @param name        Attribute name (without prefix).
+ * @param type_check  Predicate for validating existing value type.
+ * @param make_value  Factory for constructing the new ojson value.
+ * @return kCustomAttrSuccess on success, kCustomAttrError on failure.
+ */
+template<typename TypeCheckFn, typename MakeValueFn>
+int set_scalar(ojson* node, const char* name, TypeCheckFn type_check, MakeValueFn make_value) {
+    if (node == nullptr || name == nullptr) {
         return fdl::constants::kCustomAttrError;
     }
     auto key = make_key(name);
     if (node->contains(key)) {
         const auto& existing = (*node)[key];
-        if (!existing.is_string()) {
+        if (!type_check(existing)) {
             return fdl::constants::kCustomAttrError;
         }
     }
-    node->insert_or_assign(key, ojson(value));
+    node->insert_or_assign(key, make_value());
     return fdl::constants::kCustomAttrSuccess;
+}
+
+/**
+ * @brief Generic composite setter with type-checking via get_type().
+ *
+ * Validates that any existing value matches the expected composite type,
+ * then inserts the new object. Eliminates duplication across the three
+ * composite setters (point_f64, dims_f64, dims_i64).
+ *
+ * @tparam BuildObjFn Callable: () -> ojson. Constructs the composite object.
+ * @param node           JSON node to modify.
+ * @param name           Attribute name (without prefix).
+ * @param expected_type  Expected composite type for existing value validation.
+ * @param build_obj      Factory for constructing the new ojson object.
+ * @return kCustomAttrSuccess on success, kCustomAttrError on failure.
+ */
+template<typename BuildObjFn>
+int set_composite(ojson* node, const char* name, fdl_custom_attr_type_t expected_type, BuildObjFn build_obj) {
+    if (node == nullptr || name == nullptr) {
+        return fdl::constants::kCustomAttrError;
+    }
+    auto key = make_key(name);
+    if (node->contains(key)) {
+        if (get_type(node, name) != expected_type) {
+            return fdl::constants::kCustomAttrError;
+        }
+    }
+    node->insert_or_assign(key, build_obj());
+    return fdl::constants::kCustomAttrSuccess;
+}
+
+} // namespace
+
+int set_string(ojson* node, const char* name, const char* value) {
+    if (value == nullptr) {
+        return fdl::constants::kCustomAttrError;
+    }
+    return set_scalar(node, name, [](const ojson& v) { return v.is_string(); }, [value]() { return ojson(value); });
 }
 
 int set_int(ojson* node, const char* name, int64_t value) {
-    if (node == nullptr || name == nullptr) {
-        return fdl::constants::kCustomAttrError;
-    }
-    auto key = make_key(name);
-    if (node->contains(key)) {
-        const auto& existing = (*node)[key];
-        if (!existing.is_int64() && !existing.is_uint64()) {
-            return fdl::constants::kCustomAttrError;
-        }
-    }
-    node->insert_or_assign(key, ojson(value));
-    return fdl::constants::kCustomAttrSuccess;
+    return set_scalar(
+        node, name, [](const ojson& v) { return v.is_int64() || v.is_uint64(); }, [value]() { return ojson(value); });
 }
 
 int set_float(ojson* node, const char* name, double value) {
-    if (node == nullptr || name == nullptr) {
-        return fdl::constants::kCustomAttrError;
-    }
-    auto key = make_key(name);
-    if (node->contains(key)) {
-        const auto& existing = (*node)[key];
-        if (!existing.is_double()) {
-            return fdl::constants::kCustomAttrError;
-        }
-    }
-    node->insert_or_assign(key, ojson(value));
-    return fdl::constants::kCustomAttrSuccess;
+    return set_scalar(node, name, [](const ojson& v) { return v.is_double(); }, [value]() { return ojson(value); });
 }
 
 int set_bool(ojson* node, const char* name, int value) {
-    if (node == nullptr || name == nullptr) {
-        return fdl::constants::kCustomAttrError;
-    }
-    auto key = make_key(name);
-    if (node->contains(key)) {
-        const auto& existing = (*node)[key];
-        if (!existing.is_bool()) {
-            return fdl::constants::kCustomAttrError;
-        }
-    }
-    node->insert_or_assign(key, ojson(value != 0));
-    return fdl::constants::kCustomAttrSuccess;
+    return set_scalar(node, name, [](const ojson& v) { return v.is_bool(); }, [value]() { return ojson(value != 0); });
 }
 
 // -----------------------------------------------------------------------
@@ -172,57 +197,30 @@ int set_bool(ojson* node, const char* name, int value) {
 // -----------------------------------------------------------------------
 
 int set_point_f64(ojson* node, const char* name, double x, double y) {
-    if (node == nullptr || name == nullptr) {
-        return fdl::constants::kCustomAttrError;
-    }
-    auto key = make_key(name);
-    if (node->contains(key)) {
-        auto existing_type = get_type(node, name);
-        if (existing_type != FDL_CUSTOM_ATTR_TYPE_POINT_F64) {
-            return fdl::constants::kCustomAttrError;
-        }
-    }
-    ojson obj(jsoncons::json_object_arg);
-    obj.insert_or_assign("x", ojson(x));
-    obj.insert_or_assign("y", ojson(y));
-    node->insert_or_assign(key, std::move(obj));
-    return fdl::constants::kCustomAttrSuccess;
+    return set_composite(node, name, FDL_CUSTOM_ATTR_TYPE_POINT_F64, [x, y]() {
+        ojson obj(jsoncons::json_object_arg);
+        obj.insert_or_assign("x", ojson(x));
+        obj.insert_or_assign("y", ojson(y));
+        return obj;
+    });
 }
 
 int set_dims_f64(ojson* node, const char* name, double width, double height) {
-    if (node == nullptr || name == nullptr) {
-        return fdl::constants::kCustomAttrError;
-    }
-    auto key = make_key(name);
-    if (node->contains(key)) {
-        auto existing_type = get_type(node, name);
-        if (existing_type != FDL_CUSTOM_ATTR_TYPE_DIMS_F64) {
-            return fdl::constants::kCustomAttrError;
-        }
-    }
-    ojson obj(jsoncons::json_object_arg);
-    obj.insert_or_assign("width", ojson(width));
-    obj.insert_or_assign("height", ojson(height));
-    node->insert_or_assign(key, std::move(obj));
-    return fdl::constants::kCustomAttrSuccess;
+    return set_composite(node, name, FDL_CUSTOM_ATTR_TYPE_DIMS_F64, [width, height]() {
+        ojson obj(jsoncons::json_object_arg);
+        obj.insert_or_assign("width", ojson(width));
+        obj.insert_or_assign("height", ojson(height));
+        return obj;
+    });
 }
 
 int set_dims_i64(ojson* node, const char* name, int64_t width, int64_t height) {
-    if (node == nullptr || name == nullptr) {
-        return fdl::constants::kCustomAttrError;
-    }
-    auto key = make_key(name);
-    if (node->contains(key)) {
-        auto existing_type = get_type(node, name);
-        if (existing_type != FDL_CUSTOM_ATTR_TYPE_DIMS_I64) {
-            return fdl::constants::kCustomAttrError;
-        }
-    }
-    ojson obj(jsoncons::json_object_arg);
-    obj.insert_or_assign("width", ojson(width));
-    obj.insert_or_assign("height", ojson(height));
-    node->insert_or_assign(key, std::move(obj));
-    return fdl::constants::kCustomAttrSuccess;
+    return set_composite(node, name, FDL_CUSTOM_ATTR_TYPE_DIMS_I64, [width, height]() {
+        ojson obj(jsoncons::json_object_arg);
+        obj.insert_or_assign("width", ojson(width));
+        obj.insert_or_assign("height", ojson(height));
+        return obj;
+    });
 }
 
 // -----------------------------------------------------------------------
@@ -238,7 +236,7 @@ const char* get_string(const ojson* node, const char* name) {
         return nullptr;
     }
     const AttrBufKey bk{reinterpret_cast<uintptr_t>(node), key};
-    auto& buf = tl_bufs[bk];
+    auto& buf = tl_cache.get(bk);
     buf = (*node)[key].as<std::string>();
     return buf.c_str();
 }
@@ -400,7 +398,7 @@ const char* name_at(const ojson* node, uint32_t index) {
             if (cur == index) {
                 // Return the name without the '_' prefix
                 const AttrBufKey bk{reinterpret_cast<uintptr_t>(node), m.key()};
-                auto& buf = tl_bufs[bk];
+                auto& buf = tl_cache.get(bk);
                 // NOLINTNEXTLINE(readability-magic-numbers,cppcoreguidelines-avoid-magic-numbers)
                 buf = m.key().substr(1);
                 return buf.c_str();

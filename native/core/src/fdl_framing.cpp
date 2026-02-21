@@ -28,6 +28,11 @@ fdl_from_intent_result_t compute_framing_from_intent(
     fdl_from_intent_result_t result = {};
     result.has_protection = FDL_FALSE;
 
+    // Guard against division by zero in aspect ratio or working dimensions.
+    if (aspect_ratio.height == 0 || working_dims.height == 0.0) {
+        return result;
+    }
+
     // Compare aspect ratios
     double const intent_aspect = static_cast<double>(aspect_ratio.width) / static_cast<double>(aspect_ratio.height);
     double const canvas_aspect = working_dims.width / working_dims.height;
