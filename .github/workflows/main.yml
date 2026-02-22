@@ -63,7 +63,7 @@ jobs:
         run: sudo apt-get install -y cmake
 
       - name: Install codegen dependencies
-        run: uv pip install pyyaml jinja2 ruff --system
+        run: uv pip install pyyaml jinja2 ruff "datamodel-code-generator[http]>=0.25" --system
 
       - name: Run codegen (with drift check)
         run: python scripts/run_codegen.py --check
@@ -181,7 +181,7 @@ jobs:
 
       # --- Codegen ---
       - name: Install codegen dependencies
-        run: uv pip install pyyaml jinja2 --system
+        run: uv pip install pyyaml jinja2 "datamodel-code-generator[http]>=0.25" --system
 
       - name: Run codegen
         run: python scripts/run_codegen.py
@@ -335,7 +335,7 @@ jobs:
 
       # --- Codegen ---
       - name: Install codegen dependencies
-        run: uv pip install pyyaml jinja2 --system
+        run: uv pip install pyyaml jinja2 "datamodel-code-generator[http]>=0.25" --system
 
       - name: Run codegen
         run: python scripts/run_codegen.py
@@ -455,7 +455,7 @@ jobs:
             quay.io/pypa/manylinux_2_28_x86_64 bash -c '
               cd /workspace
               export PATH=/opt/python/cp312-cp312/bin:$PATH
-              pip install cmake pyyaml jinja2 build setuptools wheel auditwheel
+              pip install cmake pyyaml jinja2 "datamodel-code-generator[http]>=0.25" build setuptools wheel auditwheel
               python scripts/run_codegen.py
               rm -rf native/core/build
               python scripts/build_native.py --no-tests
@@ -547,7 +547,7 @@ jobs:
         run: brew install cmake || true
 
       - name: Install codegen dependencies
-        run: uv pip install pyyaml jinja2 --system
+        run: uv pip install pyyaml jinja2 "datamodel-code-generator[http]>=0.25" --system
 
       - name: Run codegen
         run: python scripts/run_codegen.py
