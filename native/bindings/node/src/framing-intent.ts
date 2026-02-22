@@ -164,4 +164,8 @@ export class FramingIntent extends HandleWrapper {
     this._checkHandle();
     return caGetAll(this._addon, this._handle, FramingIntent._CA_PREFIX);
   }
+  /** Convert to a data model interface for serialization / interop. */
+  toModel(): import("./models/index.js").FramingIntentModel {
+    return this.asDict() as import("./models/index.js").FramingIntentModel;
+  }
 }

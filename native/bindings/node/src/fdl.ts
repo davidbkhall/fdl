@@ -339,4 +339,16 @@ export class FDL extends OwnedHandle {
     this._checkHandle();
     return caGetAll(this._addon, this._handle, FDL._CA_PREFIX);
   }
+  /** Convert to a data model interface for serialization / interop. */
+  toModel(): import("./models/index.js").FramingDecisionList {
+    return this.asDict() as import("./models/index.js").FramingDecisionList;
+  }
+
+  /** Create a facade instance from a data model object. */
+  static fromModel(
+    model: import("./models/index.js").FramingDecisionList,
+  ): FDL {
+    const json = JSON.stringify(model);
+    return FDL.parse(Buffer.from(json, "utf-8"));
+  }
 }

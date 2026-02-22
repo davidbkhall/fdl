@@ -1054,6 +1054,7 @@ def build_node_facade_class_context(
         "identity_attr": snake_to_camel(ir_cls.identity_attr) if ir_cls.identity_attr else None,
         "custom_attrs": custom_attrs,
         "ca_prefix": ca_prefix,
+        "pydantic_model": ir_cls.pydantic_model,
         "properties": properties,
         "collections": collections,
         "to_json_fn": to_json_fn,

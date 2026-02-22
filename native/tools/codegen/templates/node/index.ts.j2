@@ -59,3 +59,15 @@ export { TemplateResult } from './canvas-template.js';
 
 // FFI availability check
 export { isAvailable } from './ffi/index.js';
+
+// Data model interfaces (TypeScript types from JSON Schema)
+export type {
+{% for m in model_exports %}
+  {{ m }},
+{% endfor %}
+} from './models/index.js';
+export {
+{% for m in model_enums %}
+  {{ m }} as Model{{ m }},
+{% endfor %}
+} from './models/index.js';

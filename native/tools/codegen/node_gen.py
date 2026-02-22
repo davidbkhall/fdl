@@ -834,6 +834,8 @@ def _gen_node_index(
             enums=enum_names,
             errors=error_names,
             utils=utils_names,
+            model_exports=_TS_MODEL_EXPORTS,
+            model_enums=sorted(_ENUM_NAME_MAP.values()),
         ),
     )
 
@@ -1136,3 +1138,291 @@ def _compute_node_class_imports(
     _scan_node_interfaces(cls_ctx, acc, all_class_names)
 
     return _finalize_node_imports(acc, converter_fn_map, converter_to_fn_map)
+
+
+# -----------------------------------------------------------------------
+# TypeScript data model generation from JSON Schema
+# -----------------------------------------------------------------------
+
+# Rename map: mirrors python_gen._MODEL_RENAMES for TypeScript interface naming.
+_TS_MODEL_RENAMES: dict[str, str] = {
+    "AscFramingDecisionList": "FramingDecisionList",
+    "Version": "VersionModel",
+    "Sequence": "FileSequenceModel",
+    "ClipId": "ClipIDModel",
+    "Round": "RoundModel",
+    "DimensionsInt": "DimensionsIntModel",
+    "DimensionsFloat": "DimensionsFloatModel",
+    "PointFloat": "PointFloatModel",
+    "FramingIntent": "FramingIntentModel",
+    "FramingDecision": "FramingDecisionModel",
+    "Canvas": "CanvasModel",
+    "Context": "ContextModel",
+    "CanvasTemplate": "CanvasTemplateModel",
+}
+
+# Exported model interfaces (excludes string type aliases and enum types).
+_TS_MODEL_EXPORTS: list[str] = [
+    "CanvasModel",
+    "CanvasTemplateModel",
+    "ClipIDModel",
+    "ContextModel",
+    "DimensionsFloatModel",
+    "DimensionsIntModel",
+    "FileSequenceModel",
+    "FramingDecisionList",
+    "FramingDecisionModel",
+    "FramingIntentModel",
+    "PointFloatModel",
+    "RoundModel",
+    "VersionModel",
+]
+
+# Schema path → interface name, mapping inline object schemas to named interfaces.
+_SCHEMA_PATH_NAMES: dict[str, str] = {
+    "#": "FramingDecisionList",
+    "#/properties/version": "VersionModel",
+    "#/properties/framing_intents/items": "FramingIntentModel",
+    "#/properties/contexts/items": "ContextModel",
+    "#/properties/contexts/items/properties/clip_id": "ClipIDModel",
+    "#/properties/contexts/items/properties/clip_id/properties/sequence": "FileSequenceModel",
+    "#/properties/contexts/items/properties/canvases/items": "CanvasModel",
+    "#/properties/contexts/items/properties/canvases/items/properties/framing_decisions/items": "FramingDecisionModel",
+    "#/properties/canvas_templates/items": "CanvasTemplateModel",
+    "#/properties/canvas_templates/items/properties/round": "RoundModel",
+}
+
+# $defs path → interface name
+_DEFS_NAMES: dict[str, str] = {
+    "dimensions_int": "DimensionsIntModel",
+    "dimensions_float": "DimensionsFloatModel",
+    "point_float": "PointFloatModel",
+    "fdl_id": "FdlId",
+    "fdl_id_framing_decision": "FdlIdFramingDecision",
+}
+
+# Enum name normalization: schema property name → PascalCase TypeScript enum name
+_ENUM_NAME_MAP: dict[str, str] = {
+    "fit_source": "FitSource",
+    "fit_method": "FitMethod",
+    "alignment_method_vertical": "AlignmentMethodVertical",
+    "alignment_method_horizontal": "AlignmentMethodHorizontal",
+    "preserve_from_source_canvas": "PreserveFromSourceCanvas",
+    "even": "Even",
+    "mode": "Mode",
+}
+
+
+def _ts_type_for_prop(prop_name: str, prop_schema: dict, required: set[str], defs: dict) -> str:
+    """Resolve the TypeScript type for a single JSON Schema property."""
+    # $ref
+    if "$ref" in prop_schema:
+        ref = prop_schema["$ref"]
+        def_name = ref.split("/")[-1]
+        return _DEFS_NAMES.get(def_name, def_name)
+
+    # Enum inline
+    if "enum" in prop_schema:
+        return _ENUM_NAME_MAP.get(prop_name, prop_name)
+
+    schema_type = prop_schema.get("type", "unknown")
+
+    if schema_type == "string":
+        if "const" in prop_schema:
+            return repr(prop_schema["const"])
+        return "string"
+    if schema_type == "integer":
+        if "const" in prop_schema:
+            return str(prop_schema["const"])
+        return "number"
+    if schema_type == "number":
+        return "number"
+    if schema_type == "boolean":
+        return "boolean"
+    if schema_type == "array":
+        items = prop_schema.get("items", {})
+        item_type = _ts_type_for_prop(prop_name, items, set(), defs)
+        return f"{item_type}[]"
+    if schema_type == "object":
+        # Inline objects are named via _SCHEMA_PATH_NAMES; fallback to Record
+        return "Record<string, unknown>"
+
+    return "unknown"
+
+
+def _generate_ts_models(schema: dict) -> str:
+    """Generate TypeScript interface declarations from the FDL JSON Schema."""
+    lines: list[str] = [
+        "// SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers",
+        "// SPDX-License-Identifier: Apache-2.0",
+        "// AUTO-GENERATED from ascfdl.schema.json — DO NOT EDIT",
+        "",
+    ]
+
+    defs = schema.get("$defs", {})
+
+    # --- String type aliases from $defs ---
+    for def_name, ts_name in _DEFS_NAMES.items():
+        def_schema = defs.get(def_name, {})
+        if def_schema.get("type") == "string":
+            lines.append(f"export type {ts_name} = string;")
+    lines.append("")
+
+    # --- Collect and emit enums ---
+    enums_emitted: set[str] = set()
+
+    def _emit_enum(prop_name: str, values: list[str]) -> None:
+        ts_enum_name = _ENUM_NAME_MAP.get(prop_name)
+        if not ts_enum_name or ts_enum_name in enums_emitted:
+            return
+        enums_emitted.add(ts_enum_name)
+        lines.append(f"export enum {ts_enum_name} {{")
+        for v in values:
+            # Use a safe member name: replace dots with underscores
+            member = v.replace(".", "_")
+            lines.append(f'  {member} = "{v}",')
+        lines.append("}")
+        lines.append("")
+
+    def _collect_enums(obj_schema: dict) -> None:
+        """Recursively find and emit enum definitions."""
+        props = obj_schema.get("properties", {})
+        for pname, pschema in props.items():
+            if "enum" in pschema:
+                _emit_enum(pname, pschema["enum"])
+            if pschema.get("type") == "object":
+                _collect_enums(pschema)
+            if pschema.get("type") == "array" and "items" in pschema:
+                _collect_enums(pschema["items"])
+
+    _collect_enums(schema)
+
+    # --- Emit interfaces from $defs (object types only) ---
+    for def_name, ts_name in _DEFS_NAMES.items():
+        def_schema = defs.get(def_name, {})
+        if def_schema.get("type") == "string":
+            continue  # Already emitted as type alias
+        required = set(def_schema.get("required", []))
+        has_pattern = bool(def_schema.get("patternProperties"))
+        _emit_interface(lines, ts_name, def_schema, required, has_pattern, defs)
+
+    # --- Emit interfaces for inline object schemas ---
+    def _walk_and_emit(obj_schema: dict, path: str) -> None:
+        ts_name = _SCHEMA_PATH_NAMES.get(path)
+        if ts_name:
+            required = set(obj_schema.get("required", []))
+            has_pattern = bool(obj_schema.get("patternProperties"))
+            _emit_interface(lines, ts_name, obj_schema, required, has_pattern, defs, path)
+
+        props = obj_schema.get("properties", {})
+        for pname, pschema in props.items():
+            prop_path = f"{path}/properties/{pname}"
+            if pschema.get("type") == "object" or "properties" in pschema:
+                _walk_and_emit(pschema, prop_path)
+            if pschema.get("type") == "array" and "items" in pschema:
+                items_path = f"{prop_path}/items"
+                items = pschema["items"]
+                if items.get("type") == "object" or "properties" in items:
+                    _walk_and_emit(items, items_path)
+
+    _walk_and_emit(schema, "#")
+
+    return "\n".join(lines) + "\n"
+
+
+def _emit_interface(
+    lines: list[str],
+    ts_name: str,
+    obj_schema: dict,
+    required: set[str],
+    has_pattern: bool,
+    defs: dict,
+    path: str = "",
+) -> None:
+    """Emit a single TypeScript interface declaration."""
+    lines.append(f"export interface {ts_name} {{")
+
+    props = obj_schema.get("properties", {})
+    for pname, pschema in props.items():
+        opt = "" if pname in required else "?"
+
+        # Check if this property points to a named inline object
+        prop_path = f"{path}/properties/{pname}" if path else ""
+        if prop_path in _SCHEMA_PATH_NAMES:
+            ts_type = _SCHEMA_PATH_NAMES[prop_path]
+        elif pschema.get("type") == "array" and "items" in pschema:
+            items_path = f"{prop_path}/items" if prop_path else ""
+            if items_path in _SCHEMA_PATH_NAMES:
+                ts_type = f"{_SCHEMA_PATH_NAMES[items_path]}[]"
+            else:
+                ts_type = _ts_type_for_prop(pname, pschema, required, defs)
+        elif "$ref" in pschema:
+            ts_type = _ts_type_for_prop(pname, pschema, required, defs)
+        elif "enum" in pschema:
+            ts_type = _ts_type_for_prop(pname, pschema, required, defs)
+        else:
+            ts_type = _ts_type_for_prop(pname, pschema, required, defs)
+
+        # Handle version.major/minor as literal types from oneOf
+        if ts_name == "VersionModel" and "oneOf" in obj_schema:
+            for one_of in obj_schema["oneOf"]:
+                one_of_props = one_of.get("properties", {})
+                if pname in one_of_props and "const" in one_of_props[pname]:
+                    ts_type = str(one_of_props[pname]["const"])
+
+        lines.append(f"  {pname}{opt}: {ts_type};")
+
+    # Index signature for patternProperties (custom attrs support)
+    if has_pattern:
+        lines.append("  [k: string]: unknown;")
+
+    lines.append("}")
+    lines.append("")
+
+
+def _write_node_models_index(output_dir: Path) -> None:
+    """Write models/index.ts with re-exports."""
+    lines = [
+        "// AUTO-GENERATED — DO NOT EDIT",
+        "",
+        "export {",
+    ]
+    for name in _TS_MODEL_EXPORTS:
+        lines.append(f"  type {name},")
+    lines.append("} from './_generated.js';")
+    lines.append("")
+    # Also re-export enums (runtime values, not type-only)
+    enum_names = sorted(_ENUM_NAME_MAP.values())
+    lines.append("export {")
+    for name in enum_names:
+        lines.append(f"  {name},")
+    lines.append("} from './_generated.js';")
+    lines.append("")
+    # Re-export type aliases
+    lines.append("export type { FdlId, FdlIdFramingDecision } from './_generated.js';")
+    lines.append("")
+
+    (output_dir / "index.ts").write_text(encoding="utf-8", data="\n".join(lines))
+
+
+def generate_models(schema_path: Path, output_dir: Path) -> None:
+    """Generate TypeScript data model interfaces from the FDL JSON Schema.
+
+    Reads the JSON Schema, produces TypeScript interfaces matching
+    the Python Pydantic model naming conventions, and writes
+    _generated.ts + index.ts to the output directory.
+    """
+    import json
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    ts_source = _generate_ts_models(schema)
+
+    generated_file = output_dir / "_generated.ts"
+    generated_file.write_text(ts_source, encoding="utf-8")
+
+    _write_node_models_index(output_dir)
+
+    print(f"Generated TypeScript model interfaces from {schema_path}")
+    print(f"Output: {output_dir}")
