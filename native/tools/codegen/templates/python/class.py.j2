@@ -8,8 +8,8 @@
 
 from __future__ import annotations
 
-{% if imports.needs_ctypes %}
-import ctypes
+{% if imports.needs_ffi %}
+from fdl_ffi import ffi
 {% endif %}
 {% if imports.needs_json %}
 import json
@@ -154,11 +154,11 @@ class {{ cls.name }}({{ "OwnedHandle" if cls.owns_handle else "HandleWrapper" }}
         from .{{ lazy.module }} import {{ lazy.cls }}
 {% endfor %}
         _doc_h = lib.fdl_doc_create_with_header(
-            b"00000000-0000-0000-0000-000000000000", 2, 0, b"_", None,
+            b"00000000-0000-0000-0000-000000000000", 2, 0, b"_", ffi.NULL,
         )
         _backing = FDL._from_handle(_doc_h, lib)
 {% if cls.init.depth >= 2 %}
-        _ctx_h = lib.fdl_doc_add_context(_doc_h, b"_", None)
+        _ctx_h = lib.fdl_doc_add_context(_doc_h, b"_", ffi.NULL)
 {% endif %}
 {% if cls.init.depth >= 3 %}
         _canvas_h = lib.fdl_context_add_canvas(_ctx_h, b"_", b"_", b"_", 1, 1, 1.0)
@@ -235,7 +235,7 @@ class {{ cls.name }}({{ "OwnedHandle" if cls.owns_handle else "HandleWrapper" }}
             _json = json.dumps(value.as_dict()).encode("utf-8")
         _err = self._lib.{{ prop.setter_fn }}(self._handle, _json, len(_json))
         if _err:
-            _msg = ctypes.string_at(_err).decode("utf-8")
+            _msg = ffi.string(_err).decode("utf-8")
             self._lib.fdl_free(_err)
             raise ValueError(_msg)
 
@@ -302,7 +302,7 @@ class {{ cls.name }}({{ "OwnedHandle" if cls.owns_handle else "HandleWrapper" }}
         json_ptr = self._lib.{{ cls.to_json_fn }}(self._handle, 0)
         if not json_ptr:
             raise RuntimeError("{{ cls.to_json_fn }} returned NULL")
-        result = json.loads(ctypes.string_at(json_ptr))
+        result = json.loads(ffi.string(json_ptr))
         self._lib.fdl_free(json_ptr)
         return result
 {% else %}
@@ -449,7 +449,7 @@ class {{ cls.name }}({{ "OwnedHandle" if cls.owns_handle else "HandleWrapper" }}
 {% endfor %}
         )
         if result.{{ method.error.error_field }}:
-            msg = ctypes.string_at(result.{{ method.error.error_field }}).decode("utf-8")
+            msg = ffi.string(result.{{ method.error.error_field }}).decode("utf-8")
             lib.{{ method.error.free_fn }}(result.{{ method.error.error_field }})
             raise {{ method.error.error_class }}(msg)
         return cls._from_handle(result.{{ method.error.success_field }}, lib)
@@ -506,7 +506,7 @@ class {{ cls.name }}({{ "OwnedHandle" if cls.owns_handle else "HandleWrapper" }}
                 for i in range(count):
                     msg_ptr = self._lib.{{ method.error.at_fn }}(vr, i)
                     if msg_ptr:
-                        errors.append(msg_ptr.decode("utf-8"))
+                        errors.append(ffi.string(msg_ptr).decode("utf-8"))
                 from .errors import FDLValidationError
 
                 raise FDLValidationError("Validation failed!\n" + "\n".join(errors))
@@ -531,7 +531,7 @@ class {{ cls.name }}({{ "OwnedHandle" if cls.owns_handle else "HandleWrapper" }}
         )
         if not json_ptr:
             raise RuntimeError("{{ method.c_function }} returned NULL")
-        result = ctypes.string_at(json_ptr).decode("utf-8")
+        result = ffi.string(json_ptr).decode("utf-8")
         self._lib.fdl_free(json_ptr)
         return result
 
@@ -554,7 +554,7 @@ class {{ cls.name }}({{ "OwnedHandle" if cls.owns_handle else "HandleWrapper" }}
 {% endfor %}
         )
         if result.{{ method.error.error_field }}:
-            msg = ctypes.string_at(result.{{ method.error.error_field }}).decode("utf-8")
+            msg = ffi.string(result.{{ method.error.error_field }}).decode("utf-8")
             self._lib.{{ method.error.free_fn }}(result.{{ method.error.error_field }})
             raise {{ method.error.error_class }}(msg)
 {% for field in method.error.result_fields %}
@@ -567,7 +567,7 @@ class {{ cls.name }}({{ "OwnedHandle" if cls.owns_handle else "HandleWrapper" }}
 {% elif field.extract == "value_type" %}
         _{{ field.name }} = _{{ field.converter }}(result.{{ field.source }})
 {% elif field.extract == "string" %}
-        _{{ field.name }} = ctypes.string_at(result.{{ field.source }}).decode("utf-8")
+        _{{ field.name }} = ffi.string(result.{{ field.source }}).decode("utf-8")
         self._lib.fdl_free(result.{{ field.source }})
 {% endif %}
 {% endfor %}
@@ -588,11 +588,11 @@ class {{ cls.name }}({{ "OwnedHandle" if cls.owns_handle else "HandleWrapper" }}
         json_ptr = self._lib.{{ cls.to_json_fn }}(self._handle, 0)
         if not json_ptr:
             raise RuntimeError("{{ cls.to_json_fn }} returned NULL")
-        _json_bytes = ctypes.string_at(json_ptr)
+        _json_bytes = ffi.string(json_ptr)
         self._lib.fdl_free(json_ptr)
         _err = self._lib.{{ method.c_function }}(_json_bytes, len(_json_bytes))
         if _err:
-            _msg = ctypes.string_at(_err).decode("utf-8")
+            _msg = ffi.string(_err).decode("utf-8")
             self._lib.fdl_free(_err)
             from .errors import FDLValidationError
 
@@ -609,9 +609,8 @@ class {{ cls.name }}({{ "OwnedHandle" if cls.owns_handle else "HandleWrapper" }}
     def {{ method.name }}(self) -> {{ method.returns }} | None:
         """{{ method.doc }}"""
         self._check_handle()
-        from fdl_ffi._structs import {{ method.c_struct }}
-        out = {{ method.c_struct }}()
-        if not self._lib.{{ method.c_function }}(self._handle, ctypes.byref(out)):
+        out = ffi.new("{{ method.c_struct }}*")
+        if not self._lib.{{ method.c_function }}(self._handle, out):
             return None
         return {{ method.converter_fn }}(out)
 

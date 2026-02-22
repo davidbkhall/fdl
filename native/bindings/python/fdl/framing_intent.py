@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-import ctypes
+from fdl_ffi import ffi
 import json
 
 from .fdl_types import DimensionsFloat, DimensionsInt, PointFloat
@@ -55,7 +55,7 @@ class FramingIntent(HandleWrapper):
             2,
             0,
             b"_",
-            None,
+            ffi.NULL,
         )
         _backing = FDL._from_handle(_doc_h, lib)
         handle = lib.fdl_doc_add_framing_intent(
@@ -102,7 +102,7 @@ class FramingIntent(HandleWrapper):
     @protection.setter
     def protection(self, value: float) -> None:
         self._check_handle()
-        self._lib.fdl_framing_intent_set_protection(self._handle, ctypes.c_double(value))
+        self._lib.fdl_framing_intent_set_protection(self._handle, float(value))
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, FramingIntent):
@@ -119,7 +119,7 @@ class FramingIntent(HandleWrapper):
         json_ptr = self._lib.fdl_framing_intent_to_json(self._handle, 0)
         if not json_ptr:
             raise RuntimeError("fdl_framing_intent_to_json returned NULL")
-        result = json.loads(ctypes.string_at(json_ptr))
+        result = json.loads(ffi.string(json_ptr))
         self._lib.fdl_free(json_ptr)
         return result
 

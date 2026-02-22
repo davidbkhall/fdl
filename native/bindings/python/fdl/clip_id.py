@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-import ctypes
+from fdl_ffi import ffi
 import json
 
 from .fdl_types import DimensionsFloat, DimensionsInt, PointFloat
@@ -65,7 +65,7 @@ class ClipID(HandleWrapper):
         json_ptr = self._lib.fdl_clip_id_to_json(self._handle, 0)
         if not json_ptr:
             raise RuntimeError("fdl_clip_id_to_json returned NULL")
-        result = json.loads(ctypes.string_at(json_ptr))
+        result = json.loads(ffi.string(json_ptr))
         self._lib.fdl_free(json_ptr)
         return result
 
@@ -95,11 +95,11 @@ class ClipID(HandleWrapper):
         json_ptr = self._lib.fdl_clip_id_to_json(self._handle, 0)
         if not json_ptr:
             raise RuntimeError("fdl_clip_id_to_json returned NULL")
-        _json_bytes = ctypes.string_at(json_ptr)
+        _json_bytes = ffi.string(json_ptr)
         self._lib.fdl_free(json_ptr)
         _err = self._lib.fdl_clip_id_validate_json(_json_bytes, len(_json_bytes))
         if _err:
-            _msg = ctypes.string_at(_err).decode("utf-8")
+            _msg = ffi.string(_err).decode("utf-8")
             self._lib.fdl_free(_err)
             from .errors import FDLValidationError
 

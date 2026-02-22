@@ -139,8 +139,8 @@ def build_vt_method_context(method: VTMethod, vt: ValueType, idl: IDL) -> dict:
         if p.param_type.startswith("fdl_") and p.param_type in _py.TYPES:
             needed_c_structs.add(p.param_type)
             p_fields = _vt_field_names_for_type(p.param_type, idl)
-            field_assigns = ", ".join(f"{fn}={p.name}.{fn}" for fn in p_fields)
-            setup_lines.append(f"_c_{p.name} = {p.param_type}({field_assigns})")
+            dict_assigns = ", ".join(f'"{fn}": {p.name}.{fn}' for fn in p_fields)
+            setup_lines.append(f'_c_{p.name} = ffi.new("{p.param_type}*", {{{dict_assigns}}})[0]')
             c_call_args.append(f"_c_{p.name}")
         elif p.param_type in enum_to_c_maps:
             map_name = enum_to_c_maps[p.param_type]
@@ -162,8 +162,8 @@ def build_vt_method_context(method: VTMethod, vt: ValueType, idl: IDL) -> dict:
     for op in method.out_params:
         if op.param_type.startswith("fdl_"):
             needed_c_structs.add(op.param_type)
-        setup_lines.append(f"_out_{op.name} = {op.param_type}()")
-        c_call_args.append(f"ctypes.byref(_out_{op.name})")
+        setup_lines.append(f'_out_{op.name} = ffi.new("{op.param_type}*")')
+        c_call_args.append(f"_out_{op.name}")
 
     # Build return expression
     return_expr = ""
@@ -411,7 +411,7 @@ def build_builder_method_context(method, idl: IDL, enum_contexts: list[dict]) ->
 
         if p.type_key == "string":
             if p.nullable:
-                c_args.append(f'{p.name}.encode("utf-8") if {p.name} else None')
+                c_args.append(f'{p.name}.encode("utf-8") if {p.name} else ffi.NULL')
             else:
                 c_args.append(f'{p.name}.encode("utf-8")')
         elif p.type_key == "double":
@@ -516,7 +516,7 @@ def build_lifecycle_method_context(method, idl: IDL, enum_contexts: list[dict]) 
             c_args.append(f"len({p.name})")
         elif p.type_key == "string":
             if p.nullable:
-                c_args.append(f'{p.name}.encode("utf-8") if {p.name} else None')
+                c_args.append(f'{p.name}.encode("utf-8") if {p.name} else ffi.NULL')
             else:
                 c_args.append(f'{p.name}.encode("utf-8")')
         elif p.type_key in ("int", "int64_t", "uint32_t"):
@@ -794,8 +794,8 @@ def build_free_function_context(ff: FreeFunctionDef, idl: IDL) -> dict:
         if p.param_type.startswith("fdl_") and p.param_type in _py.TYPES:
             needed_c_structs.add(p.param_type)
             p_fields = _vt_field_names_for_type(p.param_type, idl)
-            field_assigns = ", ".join(f"{fn}={p.name}.{fn}" for fn in p_fields)
-            setup_lines.append(f"_c_{p.name} = {p.param_type}({field_assigns})")
+            dict_assigns = ", ".join(f'"{fn}": {p.name}.{fn}' for fn in p_fields)
+            setup_lines.append(f'_c_{p.name} = ffi.new("{p.param_type}*", {{{dict_assigns}}})[0]')
             c_call_args.append(f"_c_{p.name}")
         elif p.param_type in enum_to_c_maps:
             map_name = enum_to_c_maps[p.param_type]

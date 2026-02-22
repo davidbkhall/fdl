@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-import ctypes
+from fdl_ffi import ffi
 import json
 
 from .fdl_types import DimensionsFloat, DimensionsInt, PointFloat, Rect
@@ -68,10 +68,10 @@ class Canvas(HandleWrapper):
             2,
             0,
             b"_",
-            None,
+            ffi.NULL,
         )
         _backing = FDL._from_handle(_doc_h, lib)
-        _ctx_h = lib.fdl_doc_add_context(_doc_h, b"_", None)
+        _ctx_h = lib.fdl_doc_add_context(_doc_h, b"_", ffi.NULL)
         handle = lib.fdl_context_add_canvas(
             _ctx_h,
             id.encode("utf-8"),
@@ -132,7 +132,7 @@ class Canvas(HandleWrapper):
     @anamorphic_squeeze.setter
     def anamorphic_squeeze(self, value: float) -> None:
         self._check_handle()
-        self._lib.fdl_canvas_set_anamorphic_squeeze(self._handle, ctypes.c_double(value))
+        self._lib.fdl_canvas_set_anamorphic_squeeze(self._handle, float(value))
 
     @property
     def effective_dimensions(self) -> DimensionsInt | None:
@@ -215,7 +215,7 @@ class Canvas(HandleWrapper):
         json_ptr = self._lib.fdl_canvas_to_json(self._handle, 0)
         if not json_ptr:
             raise RuntimeError("fdl_canvas_to_json returned NULL")
-        result = json.loads(ctypes.string_at(json_ptr))
+        result = json.loads(ffi.string(json_ptr))
         self._lib.fdl_free(json_ptr)
         return result
 
@@ -297,10 +297,8 @@ class Canvas(HandleWrapper):
     def get_effective_rect(self) -> Rect | None:
         """Get effective rect or None if not defined."""
         self._check_handle()
-        from fdl_ffi._structs import fdl_rect_t
-
-        out = fdl_rect_t()
-        if not self._lib.fdl_canvas_get_effective_rect(self._handle, ctypes.byref(out)):
+        out = ffi.new("fdl_rect_t*")
+        if not self._lib.fdl_canvas_get_effective_rect(self._handle, out):
             return None
         return _rect(out)
 

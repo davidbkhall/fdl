@@ -26,17 +26,16 @@ def _project_python() -> str:
     return sys.executable
 
 
-TARGETS = ["python-ffi", "python-facade", "python-models", "cpp-raii", "node-addon", "node-facade"]
+TARGETS = ["python-facade", "python-models", "cpp-raii", "node-addon", "node-facade"]
 
 GENERATED_PATHS = [
-    "native/bindings/python/fdl_ffi/",
     "native/bindings/python/fdl/",
+    "native/bindings/python/fdl_ffi/fdl_core_decl.h",
     "native/bindings/cpp/fdl/",
     "native/bindings/node/src/",
 ]
 
 GENERATED_PYTHON_PATHS = [
-    "native/bindings/python/fdl_ffi/",
     "native/bindings/python/fdl/",
 ]
 
@@ -55,6 +54,14 @@ GENERATED_NODE_ADDON_PATHS = [
 
 def run_codegen() -> int:
     python = _project_python()
+
+    # Generate CFFI declaration header from fdl_core.h (must run before Python targets)
+    print("=== Generating: cffi-decl-header ===")
+    result = subprocess.run([python, "scripts/generate_cffi_decl.py"], cwd=REPO_ROOT)
+    if result.returncode != 0:
+        print("FAILED: cffi decl header generation failed", file=sys.stderr)
+        return result.returncode
+
     for target in TARGETS:
         print(f"=== Generating: {target} ===")
         result = subprocess.run(

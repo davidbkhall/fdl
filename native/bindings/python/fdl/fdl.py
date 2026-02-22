@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-import ctypes
+from fdl_ffi import ffi
 import json
 
 from .fdl_types import DimensionsFloat, DimensionsInt, PointFloat
@@ -76,7 +76,7 @@ class FDL(OwnedHandle):
             int(version_major),
             int(version_minor),
             fdl_creator.encode("utf-8"),
-            default_framing_intent.encode("utf-8") if default_framing_intent else None,
+            default_framing_intent.encode("utf-8") if default_framing_intent else ffi.NULL,
         )
         if not handle:
             raise RuntimeError("fdl_doc_create_with_header returned NULL")
@@ -180,7 +180,7 @@ class FDL(OwnedHandle):
         json_ptr = self._lib.fdl_doc_to_json(self._handle, 0)
         if not json_ptr:
             raise RuntimeError("fdl_doc_to_json returned NULL")
-        result = json.loads(ctypes.string_at(json_ptr))
+        result = json.loads(ffi.string(json_ptr))
         self._lib.fdl_free(json_ptr)
         return result
 
@@ -239,7 +239,7 @@ class FDL(OwnedHandle):
         handle = self._lib.fdl_doc_add_context(
             self._handle,
             label.encode("utf-8"),
-            context_creator.encode("utf-8") if context_creator else None,
+            context_creator.encode("utf-8") if context_creator else ffi.NULL,
         )
         if not handle:
             raise RuntimeError("fdl_doc_add_context returned NULL")
@@ -292,7 +292,7 @@ class FDL(OwnedHandle):
             len(json_bytes),
         )
         if result.error:
-            msg = ctypes.string_at(result.error).decode("utf-8")
+            msg = ffi.string(result.error).decode("utf-8")
             lib.fdl_free(result.error)
             raise ValueError(msg)
         return cls._from_handle(result.doc, lib)
@@ -315,7 +315,7 @@ class FDL(OwnedHandle):
             version_major,
             version_minor,
             fdl_creator.encode("utf-8"),
-            default_framing_intent.encode("utf-8") if default_framing_intent else None,
+            default_framing_intent.encode("utf-8") if default_framing_intent else ffi.NULL,
         )
         if not handle:
             raise RuntimeError("fdl_doc_create_with_header returned NULL")
@@ -332,7 +332,7 @@ class FDL(OwnedHandle):
                 for i in range(count):
                     msg_ptr = self._lib.fdl_validation_result_error_at(vr, i)
                     if msg_ptr:
-                        errors.append(msg_ptr.decode("utf-8"))
+                        errors.append(ffi.string(msg_ptr).decode("utf-8"))
                 from .errors import FDLValidationError
 
                 raise FDLValidationError("Validation failed!\n" + "\n".join(errors))
@@ -352,7 +352,7 @@ class FDL(OwnedHandle):
         )
         if not json_ptr:
             raise RuntimeError("fdl_doc_to_json returned NULL")
-        result = ctypes.string_at(json_ptr).decode("utf-8")
+        result = ffi.string(json_ptr).decode("utf-8")
         self._lib.fdl_free(json_ptr)
         return result
 

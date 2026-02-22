@@ -112,17 +112,12 @@ class {{ vt.python_class }}:
 {% else %}
 
     def {{ m.name }}(self{% for p in m.params %}, {{ p.name }}: {{ p.python_type }}{% if p.nullable %} = None{% endif %}{% endfor %}) -> {{ m.python_return }}:
-{% if m.has_out_params %}
-        import ctypes
-
-{% endif %}
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import {{ m.needed_c_structs | join(", ") }}
+        from fdl_ffi import ffi, get_lib
 {% if m.needed_enum_maps %}
 
         from .enum_maps import {{ m.needed_enum_maps | join(", ") }}
 {% endif %}
-        _c = {{ m.c_struct }}({% for fn in m.field_names %}{{ fn }}=self.{{ fn }}{{ ", " if not loop.last else "" }}{% endfor %})
+        _c = ffi.new("{{ m.c_struct }}*", {{ "{" }}{% for fn in m.field_names %}"{{ fn }}": self.{{ fn }}{{ ", " if not loop.last else "" }}{% endfor %}{{ "}" }})[0]
 {% for line in m.setup_lines %}
         {{ line }}
 {% endfor %}
@@ -162,9 +157,8 @@ class {{ vt.python_class }}:
 {% elif op.param_type == "scalar_or_point" %}
 
     def {{ op.op }}(self, other: PointFloat | float) -> {{ op.python_return }}:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import {{ op.c_struct }}
-        _c = {{ op.c_struct }}({% for fn in op.field_names %}{{ fn }}=self.{{ fn }}{{ ", " if not loop.last else "" }}{% endfor %})
+        from fdl_ffi import ffi, get_lib
+        _c = ffi.new("{{ op.c_struct }}*", {{ "{" }}{% for fn in op.field_names %}"{{ fn }}": self.{{ fn }}{{ ", " if not loop.last else "" }}{% endfor %}{{ "}" }})[0]
         if isinstance(other, int | float):
             _r = get_lib().{{ op.c_function }}(_c, float(other))
         elif isinstance(other, PointFloat):
@@ -175,10 +169,9 @@ class {{ vt.python_class }}:
 {% else %}
 
     def {{ op.op }}(self, other: {{ op.param_python_type }}) -> {{ op.python_return }}:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import {{ op.needed_c_structs | join(", ") }}
-        _c = {{ op.c_struct }}({% for fn in op.field_names %}{{ fn }}=self.{{ fn }}{{ ", " if not loop.last else "" }}{% endfor %})
-        _c_other = {{ op.param_type }}({% for fn in op.field_names %}{{ fn }}=other.{{ fn }}{{ ", " if not loop.last else "" }}{% endfor %})
+        from fdl_ffi import ffi, get_lib
+        _c = ffi.new("{{ op.c_struct }}*", {{ "{" }}{% for fn in op.field_names %}"{{ fn }}": self.{{ fn }}{{ ", " if not loop.last else "" }}{% endfor %}{{ "}" }})[0]
+        _c_other = ffi.new("{{ op.param_type }}*", {{ "{" }}{% for fn in op.field_names %}"{{ fn }}": other.{{ fn }}{{ ", " if not loop.last else "" }}{% endfor %}{{ "}" }})[0]
         _r = get_lib().{{ op.c_function }}(_c, _c_other)
 {% if op.python_return == "DimensionsFloat" %}
         return DimensionsFloat(width=_r.width, height=_r.height)

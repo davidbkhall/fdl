@@ -1,5 +1,5 @@
 """
-Python code generator: produces ctypes FFI bindings and idiomatic facade classes.
+Python code generator: produces idiomatic facade classes and Pydantic models.
 
 This module contains all Python-specific type maps, context builders, and
 rendering logic. Language-neutral context builders live in shared_context.py;
@@ -26,125 +26,7 @@ from .python_context import (
 from .shared_context import (
     build_enum_context,
 )
-from .fdl_idl import IDL, Function, ValueType, build_ir
-
-# -----------------------------------------------------------------------
-# C type → ctypes type mapping
-# -----------------------------------------------------------------------
-
-_C_TO_CTYPES: dict[str, str] = {
-    "void": "None",
-    "int": "ctypes.c_int",
-    "int64_t": "ctypes.c_int64",
-    "uint32_t": "ctypes.c_uint32",
-    "double": "ctypes.c_double",
-    "size_t": "ctypes.c_size_t",
-    "char*": "ctypes.c_char_p",
-    "const char*": "ctypes.c_char_p",
-    "void*": "ctypes.c_void_p",
-}
-
-
-def _resolve_ctypes_type(c_type: str, idl: IDL, *, caller_frees: bool = False) -> str:
-    """Map a C type string to its ctypes equivalent.
-
-    If caller_frees is True and the type is char*, use c_void_p instead of
-    c_char_p so the raw pointer is preserved for freeing with fdl_free().
-    """
-    # For caller-owned strings, we must return c_void_p to keep the pointer
-    if caller_frees and c_type in ("char*", "const char*"):
-        return "ctypes.c_void_p"
-
-    # Direct scalar mapping
-    if c_type in _C_TO_CTYPES:
-        return _C_TO_CTYPES[c_type]
-
-    # Pointer to opaque type → c_void_p
-    stripped = c_type.replace("const ", "").replace("*", "").strip()
-    if stripped in idl.opaque_types:
-        return "ctypes.c_void_p"
-
-    # Pointer to value type → ctypes.POINTER(Struct)
-    for vt in idl.value_types:
-        if stripped == vt.name:
-            if "*" in c_type:
-                return f"ctypes.POINTER({vt.name})"
-            return vt.name
-
-    # Enum types → uint32_t
-    for e in idl.enums:
-        if c_type == e.name:
-            return _C_TO_CTYPES[e.underlying]
-
-    # Fallback
-    return f"ctypes.c_void_p  # UNKNOWN: {c_type}"
-
-
-def _resolve_field_ctypes_type(c_type: str, idl: IDL, *, caller_frees: bool = False) -> str:
-    """Map a C struct field type to its ctypes equivalent for _fields_."""
-    # For caller-owned strings, use c_void_p to preserve the raw pointer for freeing
-    if caller_frees and c_type in ("char*", "const char*"):
-        return "ctypes.c_void_p"
-
-    # Direct scalar mapping
-    if c_type in _C_TO_CTYPES:
-        return _C_TO_CTYPES[c_type]
-
-    # Check if it's a value type (embedded struct)
-    for vt in idl.value_types:
-        if c_type == vt.name:
-            return vt.name
-
-    # Pointer types
-    stripped = c_type.replace("const ", "").replace("*", "").strip()
-    if stripped in idl.opaque_types:
-        return "ctypes.c_void_p"
-
-    for vt in idl.value_types:
-        if stripped == vt.name and "*" in c_type:
-            return f"ctypes.POINTER({vt.name})"
-
-    # Enum types
-    for e in idl.enums:
-        if c_type == e.name:
-            return _C_TO_CTYPES[e.underlying]
-
-    return f"ctypes.c_void_p  # UNKNOWN: {c_type}"
-
-
-# -----------------------------------------------------------------------
-# Template context builders (FFI-specific)
-# -----------------------------------------------------------------------
-
-
-def _build_struct_context(vt: ValueType, idl: IDL) -> dict:
-    fields = []
-    for f in vt.fields:
-        is_caller_frees = f.ownership is not None and "caller_frees" in f.ownership
-        fields.append(
-            {
-                "name": f.name,
-                "ctypes_type": _resolve_field_ctypes_type(f.c_type, idl, caller_frees=is_caller_frees),
-            }
-        )
-    return {"name": vt.name, "fields": fields}
-
-
-def _build_function_context(fn: Function, idl: IDL) -> dict:
-    argtypes = []
-    for p in fn.params:
-        argtypes.append(_resolve_ctypes_type(p.c_type, idl))
-
-    is_caller_frees = fn.ownership is not None and "caller_frees" in fn.ownership
-    restype = _resolve_ctypes_type(fn.returns, idl, caller_frees=is_caller_frees)
-
-    return {
-        "name": fn.name,
-        "doc": fn.doc,
-        "argtypes_str": ", ".join(argtypes),
-        "restype_str": restype,
-    }
-
+from .fdl_idl import IDL, build_ir
 
 # -----------------------------------------------------------------------
 # Per-class facade helpers
@@ -330,12 +212,13 @@ def _assemble_py_import_result(acc, cls_ctx, enum_contexts, generated_converter_
     has_handle_ref_setter = any(p["converter"] == "handle_ref" and p.get("setter_fn") for p in cls_ctx["properties"])
     needs_json = bool(cls_ctx.get("to_json_fn")) or "json_value" in acc.getter_converters or has_handle_ref_setter
 
-    # ctypes is used by: to_json (string_at), lifecycle errors (string_at),
-    # composite_property (string_at), struct-returning getters (byref)
-    has_struct_getters = "struct" in acc.getter_converters
-    has_lifecycle_errors = any(lc.get("error") for lc in cls_ctx.get("lifecycle", []))
-    has_composite = any(lc.get("kind") == "composite_property" for lc in cls_ctx.get("lifecycle", []))
-    needs_ctypes = bool(cls_ctx.get("to_json_fn")) or has_struct_getters or has_lifecycle_errors or has_composite
+    # ffi is needed when the class uses ffi.string (to_json), ffi.NULL (nullable string args),
+    # ffi.new (out-param methods), or ffi.addressof (clip_id)
+    needs_ffi = bool(
+        needs_json
+        or any(any(a for a in lc.get("c_args", []) if "ffi." in str(a)) for lc in cls_ctx.get("lifecycle", []))
+        or any(m.get("c_struct") for m in cls_ctx.get("methods", []))
+    )
 
     # Dataclass imports
     dataclass_imports = sorted({lc["returns"] for lc in cls_ctx.get("lifecycle", []) if lc.get("returns") in dataclass_name_set})
@@ -351,8 +234,8 @@ def _assemble_py_import_result(acc, cls_ctx, enum_contexts, generated_converter_
         "rounding_imports": sorted(acc.rounding_names),
         "converter_imports": sorted(converter_imports),
         "enum_map_imports": sorted(enum_map_imports),
+        "needs_ffi": needs_ffi,
         "needs_json": needs_json,
-        "needs_ctypes": needs_ctypes,
         "needs_version": needs_version,
         "dataclass_imports": dataclass_imports,
         "runtime_enums": runtime_enums,
@@ -410,90 +293,6 @@ def _make_env() -> Environment:
         trim_blocks=True,
         lstrip_blocks=True,
     )
-
-
-def _generate_custom_attr_ffi(idl: IDL) -> list[dict]:
-    """Generate FFI function contexts for custom attribute functions.
-
-    For each handle type with custom_attrs=True, generates 13 function
-    declarations matching the C ABI macro expansion.
-    """
-    # Template: (suffix, argtypes, restype)
-    _CA_FUNCTIONS = [
-        ("set_custom_attr_string", "ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p", "ctypes.c_int"),
-        ("set_custom_attr_int", "ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int64", "ctypes.c_int"),
-        ("set_custom_attr_float", "ctypes.c_void_p, ctypes.c_char_p, ctypes.c_double", "ctypes.c_int"),
-        ("set_custom_attr_bool", "ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int", "ctypes.c_int"),
-        ("get_custom_attr_string", "ctypes.c_void_p, ctypes.c_char_p", "ctypes.c_char_p"),
-        ("get_custom_attr_int", "ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int64)", "ctypes.c_int"),
-        ("get_custom_attr_float", "ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)", "ctypes.c_int"),
-        ("get_custom_attr_bool", "ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)", "ctypes.c_int"),
-        ("has_custom_attr", "ctypes.c_void_p, ctypes.c_char_p", "ctypes.c_int"),
-        ("get_custom_attr_type", "ctypes.c_void_p, ctypes.c_char_p", "ctypes.c_uint32"),
-        ("remove_custom_attr", "ctypes.c_void_p, ctypes.c_char_p", "ctypes.c_int"),
-        ("custom_attrs_count", "ctypes.c_void_p", "ctypes.c_uint32"),
-        ("custom_attr_name_at", "ctypes.c_void_p, ctypes.c_uint32", "ctypes.c_char_p"),
-        ("set_custom_attr_point_f64", "ctypes.c_void_p, ctypes.c_char_p, fdl_point_f64_t", "ctypes.c_int"),
-        ("get_custom_attr_point_f64", "ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_point_f64_t)", "ctypes.c_int"),
-        ("set_custom_attr_dims_f64", "ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_f64_t", "ctypes.c_int"),
-        ("get_custom_attr_dims_f64", "ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_f64_t)", "ctypes.c_int"),
-        ("set_custom_attr_dims_i64", "ctypes.c_void_p, ctypes.c_char_p, fdl_dimensions_i64_t", "ctypes.c_int"),
-        ("get_custom_attr_dims_i64", "ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(fdl_dimensions_i64_t)", "ctypes.c_int"),
-    ]
-
-    contexts = []
-    for cls in idl.object_model.classes:
-        if not cls.custom_attrs:
-            continue
-        prefix = cls.c_handle.removesuffix("t")  # fdl_doc_t → fdl_doc_
-        for suffix, argtypes, restype in _CA_FUNCTIONS:
-            fn_name = f"{prefix}{suffix}"
-            contexts.append(
-                {
-                    "name": fn_name,
-                    "doc": f"Custom attr: {suffix} on {cls.name}",
-                    "argtypes_str": argtypes,
-                    "restype_str": restype,
-                }
-            )
-    return contexts
-
-
-def generate_ffi(idl: IDL, output_dir: Path) -> None:
-    """Generate low-level Python ctypes binding files (_enums, _structs, _functions)."""
-    output_dir.mkdir(parents=True, exist_ok=True)
-    env = _make_env()
-
-    # --- _enums.py ---
-    tmpl = env.get_template("python/enums.py.j2")
-    enums_src = tmpl.render(enums=idl.enums)
-    (output_dir / "_enums.py").write_text(encoding="utf-8", data=enums_src)
-
-    # --- _structs.py ---
-    tmpl = env.get_template("python/structs.py.j2")
-    struct_contexts = [_build_struct_context(vt, idl) for vt in idl.value_types]
-    structs_src = tmpl.render(value_types=struct_contexts)
-    (output_dir / "_structs.py").write_text(encoding="utf-8", data=structs_src)
-
-    # --- _functions.py ---
-    tmpl = env.get_template("python/ffi.py.j2")
-    fn_contexts = [_build_function_context(fn, idl) for fn in idl.functions]
-    # Add programmatically-generated custom attr FFI declarations
-    fn_contexts.extend(_generate_custom_attr_ffi(idl))
-    # Only import struct types that are actually referenced in function signatures
-    all_vt_names = {vt.name for vt in idl.value_types}
-    used_vt_names: set[str] = set()
-    for ctx in fn_contexts:
-        for token in (ctx["argtypes_str"] + " " + ctx["restype_str"]).split():
-            clean = token.strip("(),")
-            if clean in all_vt_names:
-                used_vt_names.add(clean)
-    vt_contexts = sorted([{"name": n} for n in used_vt_names], key=lambda x: x["name"])
-    functions_src = tmpl.render(functions=fn_contexts, value_types=vt_contexts)
-    (output_dir / "_functions.py").write_text(encoding="utf-8", data=functions_src)
-
-    print(f"Generated {len(idl.enums)} enums, {len(idl.value_types)} structs, {len(idl.functions)} functions")
-    print(f"Output: {output_dir}")
 
 
 def generate_facade(idl: IDL, output_dir: Path) -> None:

@@ -4,10 +4,11 @@
 Code generator: reads fdl_api.yaml and dispatches to language-specific generators.
 
 Usage:
-    python -m codegen.generate --target python-ffi      # low-level ctypes
     python -m codegen.generate --target python-facade    # idiomatic classes
-    python -m codegen.generate --target python           # alias for python-ffi
+    python -m codegen.generate --target python-models    # Pydantic models
     python -m codegen.generate --target cpp-raii         # C++ RAII header
+    python -m codegen.generate --target node-addon       # Node.js addon
+    python -m codegen.generate --target node-facade      # Node.js facade
 """
 
 from __future__ import annotations
@@ -24,8 +25,8 @@ def main() -> None:
     parser.add_argument("--idl", type=Path, help="Path to fdl_api.yaml")
     parser.add_argument(
         "--target",
-        choices=["python", "python-ffi", "python-facade", "python-models", "cpp-raii", "node-addon", "node-facade"],
-        default="python-ffi",
+        choices=["python-facade", "python-models", "cpp-raii", "node-addon", "node-facade"],
+        default="python-facade",
     )
     parser.add_argument("--schema", type=Path, help="Path to JSON Schema (for python-models)")
     parser.add_argument("--output", type=Path, help="Output directory")
@@ -41,12 +42,7 @@ def main() -> None:
 
     idl = parse_idl(idl_path)
 
-    if args.target in ("python", "python-ffi"):
-        from . import python_gen
-
-        output_dir = args.output or (repo_root / "bindings" / "python" / "fdl_ffi")
-        python_gen.generate_ffi(idl, output_dir)
-    elif args.target == "python-facade":
+    if args.target == "python-facade":
         from . import python_gen
 
         output_dir = args.output or (repo_root / "bindings" / "python" / "fdl")

@@ -6,10 +6,11 @@
 
 from __future__ import annotations
 
-import ctypes
 import threading
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+from fdl_ffi import ffi
 
 from .base import CollectionWrapper
 from .rounding import RoundStrategy
@@ -144,7 +145,6 @@ def get_dimensions_from_path(
         return DimensionsFloat(width=0.0, height=0.0)
 
     from fdl_ffi import get_lib
-    from fdl_ffi._structs import fdl_dimensions_f64_t, fdl_point_f64_t
 
     from .enum_maps import GEOMETRY_PATH_TO_C
 
@@ -152,11 +152,11 @@ def get_dimensions_from_path(
     if c_path is None:
         raise ValueError(f"Unsupported source path: {path}")
 
-    out_dims = fdl_dimensions_f64_t()
-    out_anchor = fdl_point_f64_t()
+    out_dims = ffi.new("fdl_dimensions_f64_t*")
+    out_anchor = ffi.new("fdl_point_f64_t*")
     rc = get_lib().{{ util.c_function }}(
         canvas._handle, framing._handle, c_path,
-        ctypes.byref(out_dims), ctypes.byref(out_anchor),
+        out_dims, out_anchor,
     )
     if rc == 1:  # path valid but optional data absent
         if required:
@@ -194,7 +194,6 @@ def get_anchor_from_path(canvas: Canvas, framing: FramingDecision, path: str) ->
         return PointFloat(x=0.0, y=0.0)
 
     from fdl_ffi import get_lib
-    from fdl_ffi._structs import fdl_dimensions_f64_t, fdl_point_f64_t
 
     from .enum_maps import GEOMETRY_PATH_TO_C
 
@@ -202,11 +201,11 @@ def get_anchor_from_path(canvas: Canvas, framing: FramingDecision, path: str) ->
     if c_path is None:
         raise ValueError(f"Unsupported source path for anchor point: {path}")
 
-    out_dims = fdl_dimensions_f64_t()
-    out_anchor = fdl_point_f64_t()
+    out_dims = ffi.new("fdl_dimensions_f64_t*")
+    out_anchor = ffi.new("fdl_point_f64_t*")
     rc = get_lib().{{ util.c_function }}(
         canvas._handle, framing._handle, c_path,
-        ctypes.byref(out_dims), ctypes.byref(out_anchor),
+        out_dims, out_anchor,
     )
     if rc == 1:  # absent -> return zeros
         return PointFloat(x=0.0, y=0.0)
@@ -377,16 +376,15 @@ def compute_framing_from_intent(
         Computed dimensions, anchor point, and optional protection values.
     """
     from fdl_ffi import get_lib
-    from fdl_ffi._structs import fdl_dimensions_f64_t, fdl_dimensions_i64_t
 
     from .converters import _to_c_round_strategy
 
     if rounding is None:
         rounding = get_rounding()
 
-    _c_canvas = fdl_dimensions_f64_t(width=canvas_dims.width, height=canvas_dims.height)
-    _c_working = fdl_dimensions_f64_t(width=working_dims.width, height=working_dims.height)
-    _c_ar = fdl_dimensions_i64_t(width=int(aspect_ratio.width), height=int(aspect_ratio.height))
+    _c_canvas = ffi.new("fdl_dimensions_f64_t*", {"width": canvas_dims.width, "height": canvas_dims.height})[0]
+    _c_working = ffi.new("fdl_dimensions_f64_t*", {"width": working_dims.width, "height": working_dims.height})[0]
+    _c_ar = ffi.new("fdl_dimensions_i64_t*", {"width": int(aspect_ratio.width), "height": int(aspect_ratio.height)})[0]
     _c_rs = _to_c_round_strategy(rounding)
 
     r = get_lib().fdl_compute_framing_from_intent(
@@ -442,9 +440,10 @@ class FramingFromIntentResult:
 
 def {{ ff.display_name }}({{ ff.param_sig }}) -> {{ ff.python_return }}:
     """{{ ff.doc }}"""
-    from fdl_ffi import get_lib
 {% if ff.needed_c_structs %}
-    from fdl_ffi._structs import {{ ff.needed_c_structs | join(", ") }}
+    from fdl_ffi import ffi, get_lib
+{% else %}
+    from fdl_ffi import get_lib
 {% endif %}
 {% if ff.needed_converters or ff.needed_enum_maps %}
 

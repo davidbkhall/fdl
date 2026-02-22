@@ -40,3 +40,8 @@ fdl = { workspace = true }
 fdl-imaging = { workspace = true }
 fdl-frameline-generator = { workspace = true }
 fdl-viewer = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "cffi>=2.0.0",
+]
