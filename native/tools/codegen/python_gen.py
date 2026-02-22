@@ -694,6 +694,9 @@ def _postprocess_models(filepath: Path) -> None:
     """
     text = filepath.read_text(encoding="utf-8")
 
+    # --- Remove timestamp comment (causes codegen drift check failures) ---
+    text = re.sub(r"#   timestamp:.*\n", "", text)
+
     # --- Rename classes ---
     for old_name, new_name in _MODEL_RENAMES.items():
         if old_name == new_name:
