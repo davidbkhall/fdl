@@ -100,7 +100,7 @@ jobs:
   # ---------------------------------------------------------------------------
   test:
     name: Tests (${{ matrix.os }})
-    # needs: lint  # TEMP: skip lint to debug viewer tests faster
+    needs: lint
     strategy:
       fail-fast: false
       matrix:
@@ -209,18 +209,17 @@ jobs:
         run: uv sync --extra dev
 
       # --- Run Python test suites ---
-      # TEMP: commented out to debug viewer test hang faster
-      # - name: Run fdl core tests
-      #   timeout-minutes: 15
-      #   run: uv run pytest native/bindings/python/tests/ -v -n auto --timeout=30 -p no:pytest-qt -p no:anyio -p no:typeguard
-      #
-      # - name: Run fdl-imaging tests
-      #   timeout-minutes: 15
-      #   run: uv run pytest packages/fdl_imaging/tests/ -v -n auto --timeout=30 -p no:pytest-qt -p no:anyio -p no:typeguard
-      #
-      # - name: Run fdl-frameline-generator tests
-      #   timeout-minutes: 15
-      #   run: uv run pytest packages/fdl_frameline_generator/tests/ -v --timeout=30 -p no:pytest-qt -p no:anyio -p no:typeguard
+      - name: Run fdl core tests
+        timeout-minutes: 15
+        run: uv run pytest native/bindings/python/tests/ -v -n auto --timeout=30 -p no:pytest-qt -p no:anyio -p no:typeguard
+
+      - name: Run fdl-imaging tests
+        timeout-minutes: 15
+        run: uv run pytest packages/fdl_imaging/tests/ -v -n auto --timeout=30 -p no:pytest-qt -p no:anyio -p no:typeguard
+
+      - name: Run fdl-frameline-generator tests
+        timeout-minutes: 15
+        run: uv run pytest packages/fdl_frameline_generator/tests/ -v --timeout=30 -p no:pytest-qt -p no:anyio -p no:typeguard
 
       - name: Install Qt dependencies (Linux)
         if: runner.os == 'Linux'
@@ -228,14 +227,14 @@ jobs:
 
       - name: Run fdl-viewer tests (Linux)
         if: runner.os == 'Linux'
-        timeout-minutes: 5
+        timeout-minutes: 15
         env:
           QT_QPA_PLATFORM: offscreen
         run: uv run pytest packages/fdl_viewer/tests/ -v --timeout=30 -p no:anyio -p no:typeguard
 
       - name: Run fdl-viewer tests (macOS/Windows)
         if: runner.os != 'Linux'
-        timeout-minutes: 5
+        timeout-minutes: 15
         run: uv run pytest packages/fdl_viewer/tests/ -v --timeout=30 -p no:anyio -p no:typeguard
 
   # ---------------------------------------------------------------------------
