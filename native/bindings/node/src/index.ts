@@ -76,29 +76,3 @@ export { TemplateResult } from "./canvas-template.js";
 
 // FFI availability check
 export { isAvailable } from "./ffi/index.js";
-
-// Data model interfaces (TypeScript types from JSON Schema)
-export type {
-  CanvasModel,
-  CanvasTemplateModel,
-  ClipIDModel,
-  ContextModel,
-  DimensionsFloatModel,
-  DimensionsIntModel,
-  FileSequenceModel,
-  FramingDecisionList,
-  FramingDecisionModel,
-  FramingIntentModel,
-  PointFloatModel,
-  RoundModel,
-  VersionModel,
-} from "./models/index.js";
-export {
-  AlignmentMethodHorizontal as ModelAlignmentMethodHorizontal,
-  AlignmentMethodVertical as ModelAlignmentMethodVertical,
-  Even as ModelEven,
-  FitMethod as ModelFitMethod,
-  FitSource as ModelFitSource,
-  Mode as ModelMode,
-  PreserveFromSourceCanvas as ModelPreserveFromSourceCanvas,
-} from "./models/index.js";

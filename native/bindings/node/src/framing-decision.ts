@@ -361,8 +361,4 @@ export class FramingDecision extends HandleWrapper {
     this._checkHandle();
     return caGetAll(this._addon, this._handle, FramingDecision._CA_PREFIX);
   }
-  /** Convert to a data model interface for serialization / interop. */
-  toModel(): import("./models/index.js").FramingDecisionModel {
-    return this.asDict() as import("./models/index.js").FramingDecisionModel;
-  }
 }

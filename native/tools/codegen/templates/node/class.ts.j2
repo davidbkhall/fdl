@@ -722,19 +722,4 @@ export class {{ cls.name }} extends {{ 'OwnedHandle' if cls.owns_handle else 'Ha
     return caGetAll(this._addon, this._handle, {{ cls.name }}._CA_PREFIX);
   }
 {% endif %}
-{% if cls.pydantic_model and cls.to_json_fn %}
-  /** Convert to a data model interface for serialization / interop. */
-  toModel(): import('./models/index.js').{{ cls.pydantic_model }} {
-    return this.asDict() as import('./models/index.js').{{ cls.pydantic_model }};
-  }
-
-{% if cls.owns_handle %}
-  /** Create a facade instance from a data model object. */
-  static fromModel(model: import('./models/index.js').{{ cls.pydantic_model }}): {{ cls.name }} {
-    const json = JSON.stringify(model);
-    return {{ cls.name }}.parse(Buffer.from(json, 'utf-8'));
-  }
-
-{% endif %}
-{% endif %}
 }
