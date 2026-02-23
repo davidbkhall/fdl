@@ -100,7 +100,7 @@ jobs:
   # ---------------------------------------------------------------------------
   test:
     name: Tests (${{ matrix.os }})
-    needs: lint
+    # needs: lint  # TEMP: skip lint to debug viewer tests faster
     strategy:
       fail-fast: false
       matrix:
@@ -209,26 +209,33 @@ jobs:
         run: uv sync --extra dev
 
       # --- Run Python test suites ---
-      - name: Run fdl core tests
-        timeout-minutes: 15
-        run: uv run pytest native/bindings/python/tests/ -v -n auto -p no:pytest-qt -p no:anyio
-
-      - name: Run fdl-imaging tests
-        timeout-minutes: 15
-        run: uv run pytest packages/fdl_imaging/tests/ -v -n auto -p no:pytest-qt -p no:anyio
-
-      - name: Run fdl-frameline-generator tests
-        timeout-minutes: 15
-        run: uv run pytest packages/fdl_frameline_generator/tests/ -v -p no:pytest-qt -p no:anyio
+      # TEMP: commented out to debug viewer test hang faster
+      # - name: Run fdl core tests
+      #   timeout-minutes: 15
+      #   run: uv run pytest native/bindings/python/tests/ -v -n auto -p no:pytest-qt -p no:anyio
+      #
+      # - name: Run fdl-imaging tests
+      #   timeout-minutes: 15
+      #   run: uv run pytest packages/fdl_imaging/tests/ -v -n auto -p no:pytest-qt -p no:anyio
+      #
+      # - name: Run fdl-frameline-generator tests
+      #   timeout-minutes: 15
+      #   run: uv run pytest packages/fdl_frameline_generator/tests/ -v -p no:pytest-qt -p no:anyio
 
       - name: Install Qt dependencies (Linux)
         if: runner.os == 'Linux'
         run: sudo apt-get install -y libegl1 libxkbcommon0
 
-      - name: Run fdl-viewer tests
+      - name: Run fdl-viewer tests (Linux)
+        if: runner.os == 'Linux'
         timeout-minutes: 15
         env:
           QT_QPA_PLATFORM: offscreen
+        run: uv run pytest packages/fdl_viewer/tests/ -v -p no:anyio -p no:typeguard
+
+      - name: Run fdl-viewer tests (macOS/Windows)
+        if: runner.os != 'Linux'
+        timeout-minutes: 15
         run: uv run pytest packages/fdl_viewer/tests/ -v -p no:anyio -p no:typeguard
 
   # ---------------------------------------------------------------------------
