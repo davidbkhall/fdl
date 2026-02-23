@@ -212,15 +212,15 @@ jobs:
       # TEMP: commented out to debug viewer test hang faster
       # - name: Run fdl core tests
       #   timeout-minutes: 15
-      #   run: uv run pytest native/bindings/python/tests/ -v -n auto -p no:pytest-qt -p no:anyio
+      #   run: uv run pytest native/bindings/python/tests/ -v -n auto --timeout=30 -p no:pytest-qt -p no:anyio -p no:typeguard
       #
       # - name: Run fdl-imaging tests
       #   timeout-minutes: 15
-      #   run: uv run pytest packages/fdl_imaging/tests/ -v -n auto -p no:pytest-qt -p no:anyio
+      #   run: uv run pytest packages/fdl_imaging/tests/ -v -n auto --timeout=30 -p no:pytest-qt -p no:anyio -p no:typeguard
       #
       # - name: Run fdl-frameline-generator tests
       #   timeout-minutes: 15
-      #   run: uv run pytest packages/fdl_frameline_generator/tests/ -v -p no:pytest-qt -p no:anyio
+      #   run: uv run pytest packages/fdl_frameline_generator/tests/ -v --timeout=30 -p no:pytest-qt -p no:anyio -p no:typeguard
 
       - name: Install Qt dependencies (Linux)
         if: runner.os == 'Linux'
@@ -228,15 +228,15 @@ jobs:
 
       - name: Run fdl-viewer tests (Linux)
         if: runner.os == 'Linux'
-        timeout-minutes: 15
+        timeout-minutes: 5
         env:
           QT_QPA_PLATFORM: offscreen
-        run: uv run pytest packages/fdl_viewer/tests/ -v -p no:anyio -p no:typeguard
+        run: uv run pytest packages/fdl_viewer/tests/ -v --timeout=30 -p no:anyio -p no:typeguard
 
       - name: Run fdl-viewer tests (macOS/Windows)
         if: runner.os != 'Linux'
-        timeout-minutes: 15
-        run: uv run pytest packages/fdl_viewer/tests/ -v -p no:anyio -p no:typeguard
+        timeout-minutes: 5
+        run: uv run pytest packages/fdl_viewer/tests/ -v --timeout=30 -p no:anyio -p no:typeguard
 
   # ---------------------------------------------------------------------------
   # Build Artifacts — wheels + FDL Viewer app (nightly + release)
