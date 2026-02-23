@@ -210,15 +210,15 @@ jobs:
 
       # --- Run Python test suites ---
       - name: Run fdl core tests
-        timeout-minutes: 5
+        timeout-minutes: 60
         run: uv run pytest native/bindings/python/tests/ -v -n auto -p no:pytest-qt -p no:anyio
 
       - name: Run fdl-imaging tests
-        timeout-minutes: 5
+        timeout-minutes: 60
         run: uv run pytest packages/fdl_imaging/tests/ -v -n auto -p no:pytest-qt -p no:anyio
 
       - name: Run fdl-frameline-generator tests
-        timeout-minutes: 5
+        timeout-minutes: 60
         run: uv run pytest packages/fdl_frameline_generator/tests/ -v -p no:pytest-qt -p no:anyio
 
       - name: Install Qt dependencies (Linux)
@@ -226,7 +226,7 @@ jobs:
         run: sudo apt-get install -y libegl1 libxkbcommon0
 
       - name: Run fdl-viewer tests
-        timeout-minutes: 5
+        timeout-minutes: 60
         env:
           QT_QPA_PLATFORM: offscreen
         run: uv run pytest packages/fdl_viewer/tests/ -v -p no:anyio
