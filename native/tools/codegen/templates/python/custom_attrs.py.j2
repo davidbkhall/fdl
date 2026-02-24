@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-import ctypes
+from fdl_ffi import ffi
 
 from .base import _decode_str
 from .fdl_types import DimensionsFloat, DimensionsInt, PointFloat
@@ -28,19 +28,13 @@ def _set(lib, handle, prefix: str, name: str, value: str | int | float | bool | 
     """
     _name = name.encode("utf-8")
     if isinstance(value, PointFloat):
-        from fdl_ffi import fdl_point_f64_t
-        c = fdl_point_f64_t()
-        c.x, c.y = float(value.x), float(value.y)
+        c = ffi.new("fdl_point_f64_t*", {"x": float(value.x), "y": float(value.y)})[0]
         rc = getattr(lib, f"{prefix}set_custom_attr_point_f64")(handle, _name, c)
     elif isinstance(value, DimensionsFloat):
-        from fdl_ffi import fdl_dimensions_f64_t
-        c = fdl_dimensions_f64_t()
-        c.width, c.height = float(value.width), float(value.height)
+        c = ffi.new("fdl_dimensions_f64_t*", {"width": float(value.width), "height": float(value.height)})[0]
         rc = getattr(lib, f"{prefix}set_custom_attr_dims_f64")(handle, _name, c)
     elif isinstance(value, DimensionsInt):
-        from fdl_ffi import fdl_dimensions_i64_t
-        c = fdl_dimensions_i64_t()
-        c.width, c.height = int(value.width), int(value.height)
+        c = ffi.new("fdl_dimensions_i64_t*", {"width": int(value.width), "height": int(value.height)})[0]
         rc = getattr(lib, f"{prefix}set_custom_attr_dims_i64")(handle, _name, c)
     elif isinstance(value, bool):
         rc = getattr(lib, f"{prefix}set_custom_attr_bool")(handle, _name, 1 if value else 0)
@@ -79,31 +73,28 @@ def _get(lib, handle, prefix: str, name: str) -> str | int | float | bool | Poin
         raw = getattr(lib, f"{prefix}get_custom_attr_string")(handle, _name)
         return _decode_str(raw)
     if attr_type == 2:
-        out = ctypes.c_int64()
-        getattr(lib, f"{prefix}get_custom_attr_int")(handle, _name, ctypes.byref(out))
-        return out.value
+        out = ffi.new("int64_t*")
+        getattr(lib, f"{prefix}get_custom_attr_int")(handle, _name, out)
+        return out[0]
     if attr_type == 3:
-        out = ctypes.c_double()
-        getattr(lib, f"{prefix}get_custom_attr_float")(handle, _name, ctypes.byref(out))
-        return out.value
+        out = ffi.new("double*")
+        getattr(lib, f"{prefix}get_custom_attr_float")(handle, _name, out)
+        return out[0]
     if attr_type == 4:
-        out = ctypes.c_int()
-        getattr(lib, f"{prefix}get_custom_attr_bool")(handle, _name, ctypes.byref(out))
-        return bool(out.value)
+        out = ffi.new("int*")
+        getattr(lib, f"{prefix}get_custom_attr_bool")(handle, _name, out)
+        return bool(out[0])
     if attr_type == 5:  # POINT_F64
-        from fdl_ffi import fdl_point_f64_t
-        out = fdl_point_f64_t()
-        getattr(lib, f"{prefix}get_custom_attr_point_f64")(handle, _name, ctypes.byref(out))
+        out = ffi.new("fdl_point_f64_t*")
+        getattr(lib, f"{prefix}get_custom_attr_point_f64")(handle, _name, out)
         return PointFloat(x=out.x, y=out.y)
     if attr_type == 6:  # DIMS_F64
-        from fdl_ffi import fdl_dimensions_f64_t
-        out = fdl_dimensions_f64_t()
-        getattr(lib, f"{prefix}get_custom_attr_dims_f64")(handle, _name, ctypes.byref(out))
+        out = ffi.new("fdl_dimensions_f64_t*")
+        getattr(lib, f"{prefix}get_custom_attr_dims_f64")(handle, _name, out)
         return DimensionsFloat(width=out.width, height=out.height)
     if attr_type == 7:  # DIMS_I64
-        from fdl_ffi import fdl_dimensions_i64_t
-        out = fdl_dimensions_i64_t()
-        getattr(lib, f"{prefix}get_custom_attr_dims_i64")(handle, _name, ctypes.byref(out))
+        out = ffi.new("fdl_dimensions_i64_t*")
+        getattr(lib, f"{prefix}get_custom_attr_dims_i64")(handle, _name, out)
         return DimensionsInt(width=out.width, height=out.height)
     return None
 
@@ -129,7 +120,7 @@ def _all(lib, handle, prefix: str) -> dict[str, str | int | float | bool | Point
     count = getattr(lib, f"{prefix}custom_attrs_count")(handle)
     for i in range(count):
         name_ptr = getattr(lib, f"{prefix}custom_attr_name_at")(handle, i)
-        if not name_ptr:
+        if name_ptr == ffi.NULL:
             continue
         name = _decode_str(name_ptr)
         value = _get(lib, handle, prefix, name)

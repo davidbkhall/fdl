@@ -44,11 +44,10 @@ def fdl_round(value: float, even: str, mode: str) -> int:
 
 def calculate_scale_factor(fit_norm: DimensionsFloat, target_norm: DimensionsFloat, fit_method: str) -> float:
     """Calculate scale factor based on fit method."""
-    from fdl_ffi import get_lib
-    from fdl_ffi._structs import fdl_dimensions_f64_t
+    from fdl_ffi import ffi, get_lib
 
     from .enum_maps import FIT_METHOD_TO_C
 
-    _c_fit_norm = fdl_dimensions_f64_t(width=fit_norm.width, height=fit_norm.height)
-    _c_target_norm = fdl_dimensions_f64_t(width=target_norm.width, height=target_norm.height)
+    _c_fit_norm = ffi.new("fdl_dimensions_f64_t*", {"width": fit_norm.width, "height": fit_norm.height})[0]
+    _c_target_norm = ffi.new("fdl_dimensions_f64_t*", {"width": target_norm.width, "height": target_norm.height})[0]
     return float(get_lib().fdl_calculate_scale_factor(_c_fit_norm, _c_target_norm, FIT_METHOD_TO_C[fit_method]))

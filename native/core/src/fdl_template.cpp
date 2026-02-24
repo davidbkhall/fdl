@@ -152,6 +152,7 @@ std::string safe_copy(const char* s) {
  * @param scale_factor          Computed scale factor (stored as custom attribute).
  * @param content_translation   Content translation shift (stored as custom attribute).
  * @param scaled_bounding_box   Scaled bounding box before output sizing (stored as custom attribute).
+ * @param target_squeeze        Resolved target anamorphic squeeze (0 already replaced with input squeeze).
  * @return Template result with output FDL and metadata, or error string on failure.
  */
 fdl_template_result_t build_template_output_document(
@@ -165,12 +166,12 @@ fdl_template_result_t build_template_output_document(
     const fdl_geometry_t& geometry,
     double scale_factor,
     fdl_point_f64_t content_translation,
-    fdl_dimensions_f64_t scaled_bounding_box) {
+    fdl_dimensions_f64_t scaled_bounding_box,
+    double target_squeeze) {
 
     fdl_template_result_t result = {};
 
     // Re-read template config from handle (lightweight JSON lookups)
-    double const target_squeeze = fdl_canvas_template_get_target_anamorphic_squeeze(tmpl);
     fdl_dimensions_i64_t const target_dims_i = fdl_canvas_template_get_target_dimensions(tmpl);
     fdl_geometry_path_t const fit_source = fdl_canvas_template_get_fit_source(tmpl);
     fdl_fit_method_t const fit_method = fdl_canvas_template_get_fit_method(tmpl);
@@ -203,27 +204,34 @@ fdl_template_result_t build_template_output_document(
         canvas_label = label_str;
     }
 
-    // Build new FDL document
+    // Build new FDL document, preserving the source's default_framing_intent
+    fdl_doc_t* source_doc = source_canvas->owner;
+    std::string const src_default_fi = safe_copy(fdl_doc_get_default_framing_intent(source_doc));
     fdl_doc_t* out_doc = fdl_doc_create_with_header(
         "00000000-0000-0000-0000-000000000000", // placeholder UUID
         fdl::constants::kDefaultVersionMajor,
         0,
         (context_creator != nullptr) ? context_creator : "",
-        source_fi_id_s.c_str());
+        src_default_fi.c_str());
 
     if (out_doc == nullptr) {
         result.error = fdl_strdup("Failed to create output document");
         return result;
     }
 
-    // Add default framing intent
-    fdl_doc_add_framing_intent(
-        out_doc,
-        source_fi_id_s.c_str(),
-        "Default",
-        fdl::constants::kDefaultAspectRatio,
-        fdl::constants::kDefaultAspectRatio,
-        0.0);
+    // Copy all framing intents from source document
+    uint32_t const fi_count = fdl_doc_framing_intents_count(source_doc);
+    for (uint32_t i = 0; i < fi_count; ++i) {
+        auto* fi = fdl_doc_framing_intent_at(source_doc, i);
+        auto ar = fdl_framing_intent_get_aspect_ratio(fi);
+        fdl_doc_add_framing_intent(
+            out_doc,
+            fdl_framing_intent_get_id(fi),
+            fdl_framing_intent_get_label(fi),
+            ar.width,
+            ar.height,
+            fdl_framing_intent_get_protection(fi));
+    }
 
     // Add context with source canvas and new canvas
     auto* out_ctx = fdl_doc_add_context(out_doc, label_str.c_str(), context_creator);
@@ -540,7 +548,8 @@ fdl_template_result_t apply_canvas_template(
         geometry,
         scale_factor,
         content_translation,
-        scaled_bounding_box);
+        scaled_bounding_box,
+        target_squeeze);
 }
 
 } // namespace fdl::detail

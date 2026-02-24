@@ -27,9 +27,9 @@ raw
 {% if prop.converter == "string" -%}
 _encode_str(value)
 {%- elif prop.converter == "float" -%}
-ctypes.c_double(value)
+float(value)
 {%- elif prop.converter == "int" -%}
-ctypes.c_int(value)
+int(value)
 {%- elif prop.converter == "bool" -%}
 int(value)
 {%- elif prop.converter == "dims_i64" -%}

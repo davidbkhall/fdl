@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-import ctypes
+from fdl_ffi import ffi
 import json
 
 from .fdl_types import DimensionsFloat, DimensionsInt, PointFloat
@@ -53,6 +53,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .canvas import Canvas
     from .framing_decision import FramingDecision
+    from .models import CanvasTemplateModel
 
 
 @dataclass
@@ -118,7 +119,7 @@ class CanvasTemplate(HandleWrapper):
             2,
             0,
             b"_",
-            None,
+            ffi.NULL,
         )
         _backing = FDL._from_handle(_doc_h, lib)
         handle = lib.fdl_doc_add_canvas_template(
@@ -249,9 +250,35 @@ class CanvasTemplate(HandleWrapper):
         json_ptr = self._lib.fdl_canvas_template_to_json(self._handle, 0)
         if not json_ptr:
             raise RuntimeError("fdl_canvas_template_to_json returned NULL")
-        result = json.loads(ctypes.string_at(json_ptr))
+        result = json.loads(ffi.string(json_ptr))
         self._lib.fdl_free(json_ptr)
         return result
+
+    def to_model(self) -> CanvasTemplateModel:
+        """Convert to a Pydantic ``CanvasTemplateModel`` instance.
+
+        Returns a pure-data Pydantic model suitable for serialization,
+        API responses, and interoperability with web frameworks.
+        """
+        from .models import CanvasTemplateModel
+
+        return CanvasTemplateModel.model_validate(self.as_dict())
+
+    @classmethod
+    def from_model(cls, model: CanvasTemplateModel) -> CanvasTemplate:
+        """Create a standalone ``CanvasTemplate`` facade from a Pydantic model.
+
+        Note: Creates a temporary backing document. The returned object
+        is self-contained but not attached to any parent FDL document.
+        """
+        d = model.model_dump(exclude_none=True)
+        if "target_dimensions" in d:
+            d["target_dimensions"] = DimensionsInt(**d["target_dimensions"])
+        if "round" in d:
+            d["round"] = RoundStrategy(**d["round"])
+        if "maximum_dimensions" in d:
+            d["maximum_dimensions"] = DimensionsInt(**d["maximum_dimensions"])
+        return cls(**d)
 
     def apply(
         self,
@@ -272,19 +299,19 @@ class CanvasTemplate(HandleWrapper):
             source_framing._handle,
             new_canvas_id.encode("utf-8"),
             new_fd_name.encode("utf-8"),
-            source_context_label.encode("utf-8") if source_context_label else None,
-            context_creator.encode("utf-8") if context_creator else None,
+            source_context_label.encode("utf-8") if source_context_label else ffi.NULL,
+            context_creator.encode("utf-8") if context_creator else ffi.NULL,
         )
         if result.error:
-            msg = ctypes.string_at(result.error).decode("utf-8")
+            msg = ffi.string(result.error).decode("utf-8")
             self._lib.fdl_free(result.error)
             raise ValueError(msg)
         _fdl = FDL._from_handle(result.output_fdl, self._lib)
-        _context_label = ctypes.string_at(result.context_label).decode("utf-8")
+        _context_label = ffi.string(result.context_label).decode("utf-8")
         self._lib.fdl_free(result.context_label)
-        _canvas_id = ctypes.string_at(result.canvas_id).decode("utf-8")
+        _canvas_id = ffi.string(result.canvas_id).decode("utf-8")
         self._lib.fdl_free(result.canvas_id)
-        _framing_decision_id = ctypes.string_at(result.framing_decision_id).decode("utf-8")
+        _framing_decision_id = ffi.string(result.framing_decision_id).decode("utf-8")
         self._lib.fdl_free(result.framing_decision_id)
         return TemplateResult(
             fdl=_fdl,

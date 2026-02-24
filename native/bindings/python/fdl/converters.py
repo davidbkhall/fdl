@@ -32,12 +32,15 @@ def _dims_i64(c_struct) -> DimensionsInt:
 
 def _to_c_dims_i64(val: DimensionsInt):
     """Convert DimensionsInt to C fdl_dimensions_i64_t struct."""
-    from fdl_ffi import fdl_dimensions_i64_t
+    from fdl_ffi import ffi
 
-    c = fdl_dimensions_i64_t()
-    c.width = int(val.width)
-    c.height = int(val.height)
-    return c
+    return ffi.new(
+        "fdl_dimensions_i64_t*",
+        {
+            "width": int(val.width),
+            "height": int(val.height),
+        },
+    )[0]
 
 
 def _dims_f64(c_struct) -> DimensionsFloat:
@@ -50,12 +53,15 @@ def _dims_f64(c_struct) -> DimensionsFloat:
 
 def _to_c_dims_f64(val: DimensionsFloat):
     """Convert DimensionsFloat to C fdl_dimensions_f64_t struct."""
-    from fdl_ffi import fdl_dimensions_f64_t
+    from fdl_ffi import ffi
 
-    c = fdl_dimensions_f64_t()
-    c.width = float(val.width)
-    c.height = float(val.height)
-    return c
+    return ffi.new(
+        "fdl_dimensions_f64_t*",
+        {
+            "width": float(val.width),
+            "height": float(val.height),
+        },
+    )[0]
 
 
 def _point_f64(c_struct) -> PointFloat:
@@ -68,12 +74,15 @@ def _point_f64(c_struct) -> PointFloat:
 
 def _to_c_point_f64(val: PointFloat):
     """Convert PointFloat to C fdl_point_f64_t struct."""
-    from fdl_ffi import fdl_point_f64_t
+    from fdl_ffi import ffi
 
-    c = fdl_point_f64_t()
-    c.x = float(val.x)
-    c.y = float(val.y)
-    return c
+    return ffi.new(
+        "fdl_point_f64_t*",
+        {
+            "x": float(val.x),
+            "y": float(val.y),
+        },
+    )[0]
 
 
 def _rect(c_struct) -> Rect:
@@ -88,14 +97,17 @@ def _rect(c_struct) -> Rect:
 
 def _to_c_rect(val: Rect):
     """Convert Rect to C fdl_rect_t struct."""
-    from fdl_ffi import fdl_rect_t
+    from fdl_ffi import ffi
 
-    c = fdl_rect_t()
-    c.x = float(val.x)
-    c.y = float(val.y)
-    c.width = float(val.width)
-    c.height = float(val.height)
-    return c
+    return ffi.new(
+        "fdl_rect_t*",
+        {
+            "x": float(val.x),
+            "y": float(val.y),
+            "width": float(val.width),
+            "height": float(val.height),
+        },
+    )[0]
 
 
 def _round_strategy(c_struct) -> RoundStrategy:
@@ -110,10 +122,13 @@ def _round_strategy(c_struct) -> RoundStrategy:
 
 def _to_c_round_strategy(val: RoundStrategy):
     """Convert RoundStrategy to C fdl_round_strategy_t struct."""
-    from fdl_ffi import fdl_round_strategy_t
+    from fdl_ffi import ffi
     from .enum_maps import ROUNDING_EVEN_TO_C, ROUNDING_MODE_TO_C
 
-    c = fdl_round_strategy_t()
-    c.even = ROUNDING_EVEN_TO_C[val.even]
-    c.mode = ROUNDING_MODE_TO_C[val.mode]
-    return c
+    return ffi.new(
+        "fdl_round_strategy_t*",
+        {
+            "even": ROUNDING_EVEN_TO_C[val.even],
+            "mode": ROUNDING_MODE_TO_C[val.mode],
+        },
+    )[0]
