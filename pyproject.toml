@@ -16,7 +16,9 @@ dev = [
     "pytest-xdist>=3.0",
     "pytest-qt>=4.0",
     "pytest-cov>=4.0",
+    "pytest-timeout>=2.0",
     "mktestdocs>=0.2.0",
+    "datamodel-code-generator[http]>=0.25",
 ]
 docs = [
     "mkdocs-material>=9.0",
@@ -39,3 +41,8 @@ fdl = { workspace = true }
 fdl-imaging = { workspace = true }
 fdl-frameline-generator = { workspace = true }
 fdl-viewer = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "cffi>=2.0.0",
+]

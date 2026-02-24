@@ -10,10 +10,11 @@ Value-type converters are now auto-generated in _converters.py.
 
 from __future__ import annotations
 
-import ctypes
 import threading
 import warnings
 from typing import Generic, TypeVar
+
+from fdl_ffi import ffi
 
 T = TypeVar("T")
 
@@ -177,12 +178,12 @@ class CollectionWrapper(Generic[T]):
         """Find item by ID (or label for Context). Returns None if not found."""
         if self._find_by_id_fn is not None:
             raw = self._find_by_id_fn(self._parent_handle, id_str.encode("utf-8"))
-            if raw:
+            if raw != ffi.NULL:
                 return self._item_cls._from_handle(raw, self._lib, self._doc_ref)
             return None
         if self._find_by_label_fn is not None:
             raw = self._find_by_label_fn(self._parent_handle, id_str.encode("utf-8"))
-            if raw:
+            if raw != ffi.NULL:
                 return self._item_cls._from_handle(raw, self._lib, self._doc_ref)
             return None
         # Fallback: linear scan
@@ -209,21 +210,16 @@ def _decode_str(raw) -> str | None:
     """Decode a C const char* to Python str. Returns None if NULL."""
     if raw is None:
         return None
-    if isinstance(raw, bytes):
-        return raw.decode("utf-8")
-    if isinstance(raw, int) and raw == 0:
+    if raw == ffi.NULL:
         return None
-    # c_char_p auto-converts to bytes; c_void_p stays int
-    if isinstance(raw, int):
-        return ctypes.string_at(raw).decode("utf-8")
-    return str(raw)
+    return ffi.string(raw).decode("utf-8")
 
 
 def _decode_str_free(raw, lib) -> str | None:
     """Decode a caller-owned C char* and free it. Returns None if NULL."""
-    if raw is None or (isinstance(raw, int) and raw == 0):
+    if raw is None or raw == ffi.NULL:
         return None
-    result = ctypes.string_at(raw).decode("utf-8")
+    result = ffi.string(raw).decode("utf-8")
     lib.fdl_free(raw)
     return result
 

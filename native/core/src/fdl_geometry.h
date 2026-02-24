@@ -49,13 +49,14 @@ fdl_geometry_t geometry_round(fdl_geometry_t geo, fdl_round_strategy_t strategy)
  * @brief Apply offset to all anchors, clamping to canvas bounds.
  *
  * Returns clamped geometry; theoretical (unclamped) anchors written to output pointers.
+ * If any output pointer is null, returns the geometry unmodified.
  *
  * @param geo        Input geometry.
  * @param offset     Offset to add to all anchors.
- * @param theo_eff   [out] Theoretical effective anchor (may be negative).
- * @param theo_prot  [out] Theoretical protection anchor.
- * @param theo_fram  [out] Theoretical framing anchor.
- * @return Geometry with clamped anchors.
+ * @param theo_eff   [out] Theoretical effective anchor (may be negative). Must not be null.
+ * @param theo_prot  [out] Theoretical protection anchor. Must not be null.
+ * @param theo_fram  [out] Theoretical framing anchor. Must not be null.
+ * @return Geometry with clamped anchors, or unmodified @p geo if any output pointer is null.
  */
 fdl_geometry_t geometry_apply_offset(
     fdl_geometry_t geo,

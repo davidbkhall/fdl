@@ -14,7 +14,19 @@ import re
 from .adapters import NodeAdapter
 from .fdl_idl import IDL, EnumType, FreeFunctionDef, ValueType, VTMethod, VTOperator
 from .ir import IRClass, IRCollection, IRMethod, IRProperty
-from .shared_context import camel_to_upper_snake
+from .shared_context import (
+    ENUM_SHORT_TO_CLASS as _ENUM_SHORT_TO_TS,
+    build_converter_lookup,
+    build_enum_context_lookups,
+    build_enum_facade_map,
+    build_enum_info,
+    build_enum_to_c_maps,
+    build_expand_map,
+    find_builder_method,
+    is_lifecycle_method,
+    resolve_cross_eq_class,
+    vt_field_names_for_type as _vt_field_names_for_type,
+)
 
 _node = NodeAdapter()
 
@@ -50,25 +62,6 @@ def class_to_module(class_name: str) -> str:
 # TypeScript type resolution for value type methods
 # -----------------------------------------------------------------------
 
-_ENUM_SHORT_NAMES = {
-    "rounding_even",
-    "rounding_mode",
-    "fit_method",
-    "geometry_path",
-    "halign",
-    "valign",
-}
-
-# IDL enum short name → TypeScript enum class
-_ENUM_SHORT_TO_TS: dict[str, str] = {
-    "rounding_even": "RoundingEven",
-    "rounding_mode": "RoundingMode",
-    "fit_method": "FitMethod",
-    "geometry_path": "GeometryPath",
-    "halign": "HAlign",
-    "valign": "VAlign",
-}
-
 
 def _resolve_vt_ts_type(idl_type: str, idl: IDL, *, for_self_class: str = "") -> str:
     """Resolve an IDL type used in value type methods to a TypeScript type."""
@@ -86,14 +79,6 @@ def _resolve_vt_ts_type(idl_type: str, idl: IDL, *, for_self_class: str = "") ->
     if idl_type in _ENUM_SHORT_TO_TS:
         return _ENUM_SHORT_TO_TS[idl_type]
     return idl_type
-
-
-def _vt_field_names_for_type(idl_type: str, idl: IDL) -> list[str]:
-    """Get field names for a value type by IDL type name."""
-    for vt in idl.value_types:
-        if vt.name == idl_type:
-            return [f.name for f in vt.fields]
-    return []
 
 
 # -----------------------------------------------------------------------
@@ -171,18 +156,7 @@ def _pure_method_body(
     return [f"throw new Error('Not implemented: {name}');"]
 
 
-def _build_enum_to_c_maps(idl: IDL) -> dict[str, str]:
-    """Build a lookup from IDL enum name / short name → TO_C map name."""
-    enum_to_c_maps: dict[str, str] = {}
-    for e in idl.enums:
-        if e.facade_class:
-            map_name = camel_to_upper_snake(e.facade_class)
-            enum_to_c_maps[e.name] = f"{map_name}_TO_C"
-    # Also map short names used in VT method params and free functions
-    for short_name, ts_class in _ENUM_SHORT_TO_TS.items():
-        map_name = camel_to_upper_snake(ts_class)
-        enum_to_c_maps[short_name] = f"{map_name}_TO_C"
-    return enum_to_c_maps
+_build_enum_to_c_maps = build_enum_to_c_maps
 
 
 def _build_addon_args(
@@ -435,7 +409,7 @@ def build_node_value_type_context(vt: ValueType, idl: IDL) -> dict:
     ts_class = vt.facade_class
     defaults_override = vt.facade_defaults or {}
 
-    enum_facade_map = {e.name: e.facade_class for e in idl.enums if e.facade_class}
+    enum_facade_map = build_enum_facade_map(idl)
 
     fields = []
     enum_imports: set[str] = set()
@@ -479,13 +453,7 @@ def build_node_value_type_context(vt: ValueType, idl: IDL) -> dict:
     else:
         eq_parts = [f"this.{f['name']} === other.{f['name']}" for f in fields]
 
-    # Cross-type equality sibling
-    cross_eq_class = None
-    if vt.cross_eq:
-        for other_vt in idl.value_types:
-            if other_vt.name == vt.cross_eq:
-                cross_eq_class = other_vt.facade_class
-                break
+    cross_eq_class = resolve_cross_eq_class(vt, idl)
 
     method_contexts = [build_node_vt_method_context(m, vt, idl) for m in vt.methods]
     operator_contexts = [build_node_vt_operator_context(o, vt, idl) for o in vt.operators]
@@ -519,13 +487,7 @@ def build_node_value_type_context(vt: ValueType, idl: IDL) -> dict:
 
 def build_node_converter_context(vt: ValueType, idl: IDL) -> dict:
     """Build template context for TypeScript converter functions."""
-    enum_info: dict[str, dict] = {}
-    for e in idl.enums:
-        if e.facade_class:
-            enum_info[e.name] = {
-                "facade_class": e.facade_class,
-                "map_name": camel_to_upper_snake(e.facade_class),
-            }
+    enum_info = build_enum_info(idl)
 
     defaults_override = vt.facade_defaults or {}
     fields = []
@@ -722,11 +684,7 @@ def _build_node_property_context(
     enum_contexts: list[dict],
 ) -> dict:
     """Build template context for one facade class property."""
-    type_key_to_from_c: dict[str, str] = {}
-    type_key_to_to_c: dict[str, str] = {}
-    for ectx in enum_contexts:
-        type_key_to_from_c[ectx["idl_name"]] = f"{ectx['map_name']}_FROM_C"
-        type_key_to_to_c[ectx["idl_name"]] = f"{ectx['map_name']}_TO_C"
+    type_key_to_from_c, type_key_to_to_c = build_enum_context_lookups(enum_contexts)
 
     ts_name = snake_to_camel(prop.name)
 
@@ -785,23 +743,9 @@ def _build_node_builder_context(
     enum_contexts: list[dict],
 ) -> dict:
     """Build template context for a builder method (addContext, addCanvas, etc.)."""
-    type_key_to_to_c: dict[str, str] = {}
-    for ectx in enum_contexts:
-        type_key_to_to_c[ectx["idl_name"]] = f"{ectx['map_name']}_TO_C"
-
-    # Build expand map from IDL value types
-    expand_map: dict[str, list[dict]] = {}
-    for vt in idl.value_types:
-        if vt.facade_class:
-            fields = []
-            for f in vt.fields:
-                fields.append({"name": f.name})
-            expand_map[vt.name] = fields
-
-    converter_lookup: dict[str, str] = {}
-    for vt in idl.value_types:
-        if vt.facade_converter:
-            converter_lookup[vt.name] = vt.facade_converter
+    _, type_key_to_to_c = build_enum_context_lookups(enum_contexts)
+    expand_map = build_expand_map(idl)
+    converter_lookup = build_converter_lookup(idl)
 
     params = []
     addon_args: list[str] = []
@@ -893,14 +837,8 @@ def _build_node_lifecycle_context(
         }
 
     # Generic lifecycle method (compound_setter, static_factory, class_factory, instance, validate_json)
-    type_key_to_to_c: dict[str, str] = {}
-    for ectx in enum_contexts:
-        type_key_to_to_c[ectx["idl_name"]] = f"{ectx['map_name']}_TO_C"
-
-    converter_lookup: dict[str, str] = {}
-    for vt in idl.value_types:
-        if vt.facade_converter:
-            converter_lookup[vt.name] = vt.facade_converter
+    _, type_key_to_to_c = build_enum_context_lookups(enum_contexts)
+    converter_lookup = build_converter_lookup(idl)
 
     params = []
     addon_args: list[str] = []
@@ -1042,16 +980,7 @@ def build_node_facade_class_context(
 
     lifecycle = []
     for method in ir_cls.methods:
-        if method.kind in (
-            "class_factory",
-            "static_factory",
-            "alias",
-            "compound_setter",
-            "composite_property",
-            "instance_getter",
-            "instance_getter_optional",
-            "validate_json",
-        ) or (method.kind == "instance" and method.name not in _skip_instance_names and (method.params or method.error_handling)):
+        if is_lifecycle_method(method, skip_instance_names=_skip_instance_names):
             lifecycle.append(_build_node_lifecycle_context(method, ir_cls, idl, enum_contexts))
 
     # Custom attributes
@@ -1125,6 +1054,7 @@ def build_node_facade_class_context(
         "identity_attr": snake_to_camel(ir_cls.identity_attr) if ir_cls.identity_attr else None,
         "custom_attrs": custom_attrs,
         "ca_prefix": ca_prefix,
+        "pydantic_model": ir_cls.pydantic_model,
         "properties": properties,
         "collections": collections,
         "to_json_fn": to_json_fn,
@@ -1147,22 +1077,7 @@ def _build_node_init_context(
     if not init:
         return None
 
-    # Find the builder method (on self for depth 0, on parent otherwise)
-    if init.depth == 0:
-        builder_ir_method = None
-        for m in ir_cls.methods:
-            if m.name == init.builder_method:
-                builder_ir_method = m
-                break
-    else:
-        parent_ir = ir_class_by_name.get(ir_cls.parent)
-        if not parent_ir:
-            return None
-        builder_ir_method = None
-        for m in parent_ir.methods:
-            if m.name == init.builder_method:
-                builder_ir_method = m
-                break
+    builder_ir_method = find_builder_method(ir_cls, init, ir_class_by_name)
     if not builder_ir_method:
         return None
 

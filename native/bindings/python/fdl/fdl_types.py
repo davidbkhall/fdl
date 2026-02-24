@@ -47,17 +47,15 @@ class DimensionsInt:
         return f"DimensionsInt(width={self.width!r}, height={self.height!r})"
 
     def is_zero(self) -> bool:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_dimensions_i64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_dimensions_i64_t(width=self.width, height=self.height)
+        _c = ffi.new("fdl_dimensions_i64_t*", {"width": self.width, "height": self.height})[0]
         return bool(get_lib().fdl_dimensions_i64_is_zero(_c))
 
     def normalize(self, squeeze: float) -> DimensionsFloat:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_dimensions_i64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_dimensions_i64_t(width=self.width, height=self.height)
+        _c = ffi.new("fdl_dimensions_i64_t*", {"width": self.width, "height": self.height})[0]
         _r = get_lib().fdl_dimensions_i64_normalize(_c, float(squeeze))
         return DimensionsFloat(width=_r.width, height=_r.height)
 
@@ -73,20 +71,18 @@ class DimensionsInt:
         return f"{w:.2f} x {h:.2f}"
 
     def __gt__(self, other: DimensionsInt) -> bool:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_dimensions_i64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_dimensions_i64_t(width=self.width, height=self.height)
-        _c_other = fdl_dimensions_i64_t(width=other.width, height=other.height)
+        _c = ffi.new("fdl_dimensions_i64_t*", {"width": self.width, "height": self.height})[0]
+        _c_other = ffi.new("fdl_dimensions_i64_t*", {"width": other.width, "height": other.height})[0]
         _r = get_lib().fdl_dimensions_i64_gt(_c, _c_other)
         return bool(_r)
 
     def __lt__(self, other: DimensionsInt) -> bool:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_dimensions_i64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_dimensions_i64_t(width=self.width, height=self.height)
-        _c_other = fdl_dimensions_i64_t(width=other.width, height=other.height)
+        _c = ffi.new("fdl_dimensions_i64_t*", {"width": self.width, "height": self.height})[0]
+        _c_other = ffi.new("fdl_dimensions_i64_t*", {"width": other.width, "height": other.height})[0]
         _r = get_lib().fdl_dimensions_i64_lt(_c, _c_other)
         return bool(_r)
 
@@ -124,56 +120,48 @@ class DimensionsFloat:
         return f"DimensionsFloat(width={self.width!r}, height={self.height!r})"
 
     def is_zero(self) -> bool:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_dimensions_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
+        _c = ffi.new("fdl_dimensions_f64_t*", {"width": self.width, "height": self.height})[0]
         return bool(get_lib().fdl_dimensions_is_zero(_c))
 
     def normalize(self, squeeze: float) -> DimensionsFloat:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_dimensions_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
+        _c = ffi.new("fdl_dimensions_f64_t*", {"width": self.width, "height": self.height})[0]
         _r = get_lib().fdl_dimensions_normalize(_c, float(squeeze))
         return DimensionsFloat(width=_r.width, height=_r.height)
 
     def scale(self, scale_factor: float, target_squeeze: float) -> DimensionsFloat:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_dimensions_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
+        _c = ffi.new("fdl_dimensions_f64_t*", {"width": self.width, "height": self.height})[0]
         _r = get_lib().fdl_dimensions_scale(_c, float(scale_factor), float(target_squeeze))
         return DimensionsFloat(width=_r.width, height=_r.height)
 
     def normalize_and_scale(self, input_squeeze: float, scale_factor: float, target_squeeze: float) -> DimensionsFloat:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_dimensions_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
+        _c = ffi.new("fdl_dimensions_f64_t*", {"width": self.width, "height": self.height})[0]
         _r = get_lib().fdl_dimensions_normalize_and_scale(_c, float(input_squeeze), float(scale_factor), float(target_squeeze))
         return DimensionsFloat(width=_r.width, height=_r.height)
 
     def round(self, even: str, mode: str) -> DimensionsFloat:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_dimensions_f64_t
+        from fdl_ffi import ffi, get_lib
 
         from .enum_maps import ROUNDING_EVEN_TO_C, ROUNDING_MODE_TO_C
 
-        _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
+        _c = ffi.new("fdl_dimensions_f64_t*", {"width": self.width, "height": self.height})[0]
         _r = get_lib().fdl_round_dimensions(_c, ROUNDING_EVEN_TO_C[even], ROUNDING_MODE_TO_C[mode])
         return DimensionsFloat(width=_r.width, height=_r.height)
 
     def clamp_to_dims(self, clamp_dims: DimensionsFloat) -> tuple[DimensionsFloat, PointFloat]:
-        import ctypes
+        from fdl_ffi import ffi, get_lib
 
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_dimensions_f64_t, fdl_point_f64_t
-
-        _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
-        _c_clamp_dims = fdl_dimensions_f64_t(width=clamp_dims.width, height=clamp_dims.height)
-        _out_delta = fdl_point_f64_t()
-        _r = get_lib().fdl_dimensions_clamp_to_dims(_c, _c_clamp_dims, ctypes.byref(_out_delta))
+        _c = ffi.new("fdl_dimensions_f64_t*", {"width": self.width, "height": self.height})[0]
+        _c_clamp_dims = ffi.new("fdl_dimensions_f64_t*", {"width": clamp_dims.width, "height": clamp_dims.height})[0]
+        _out_delta = ffi.new("fdl_point_f64_t*")
+        _r = get_lib().fdl_dimensions_clamp_to_dims(_c, _c_clamp_dims, _out_delta)
         return DimensionsFloat(width=_r.width, height=_r.height), PointFloat(x=_out_delta.x, y=_out_delta.y)
 
     def duplicate(self) -> DimensionsFloat:
@@ -202,29 +190,26 @@ class DimensionsFloat:
         self.height = self.height * factor
 
     def __sub__(self, other: DimensionsFloat) -> DimensionsFloat:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_dimensions_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
-        _c_other = fdl_dimensions_f64_t(width=other.width, height=other.height)
+        _c = ffi.new("fdl_dimensions_f64_t*", {"width": self.width, "height": self.height})[0]
+        _c_other = ffi.new("fdl_dimensions_f64_t*", {"width": other.width, "height": other.height})[0]
         _r = get_lib().fdl_dimensions_sub(_c, _c_other)
         return DimensionsFloat(width=_r.width, height=_r.height)
 
     def __lt__(self, other: DimensionsFloat) -> bool:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_dimensions_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
-        _c_other = fdl_dimensions_f64_t(width=other.width, height=other.height)
+        _c = ffi.new("fdl_dimensions_f64_t*", {"width": self.width, "height": self.height})[0]
+        _c_other = ffi.new("fdl_dimensions_f64_t*", {"width": other.width, "height": other.height})[0]
         _r = get_lib().fdl_dimensions_f64_lt(_c, _c_other)
         return bool(_r)
 
     def __gt__(self, other: DimensionsFloat) -> bool:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_dimensions_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_dimensions_f64_t(width=self.width, height=self.height)
-        _c_other = fdl_dimensions_f64_t(width=other.width, height=other.height)
+        _c = ffi.new("fdl_dimensions_f64_t*", {"width": self.width, "height": self.height})[0]
+        _c_other = ffi.new("fdl_dimensions_f64_t*", {"width": other.width, "height": other.height})[0]
         _r = get_lib().fdl_dimensions_f64_gt(_c, _c_other)
         return bool(_r)
 
@@ -258,41 +243,36 @@ class PointFloat:
         return f"PointFloat(x={self.x!r}, y={self.y!r})"
 
     def is_zero(self) -> bool:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_point_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_point_f64_t(x=self.x, y=self.y)
+        _c = ffi.new("fdl_point_f64_t*", {"x": self.x, "y": self.y})[0]
         return bool(get_lib().fdl_point_is_zero(_c))
 
     def normalize(self, squeeze: float) -> PointFloat:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_point_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_point_f64_t(x=self.x, y=self.y)
+        _c = ffi.new("fdl_point_f64_t*", {"x": self.x, "y": self.y})[0]
         _r = get_lib().fdl_point_normalize(_c, float(squeeze))
         return PointFloat(x=_r.x, y=_r.y)
 
     def scale(self, scale_factor: float, target_squeeze: float) -> PointFloat:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_point_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_point_f64_t(x=self.x, y=self.y)
+        _c = ffi.new("fdl_point_f64_t*", {"x": self.x, "y": self.y})[0]
         _r = get_lib().fdl_point_scale(_c, float(scale_factor), float(target_squeeze))
         return PointFloat(x=_r.x, y=_r.y)
 
     def normalize_and_scale(self, input_squeeze: float, scale_factor: float, target_squeeze: float) -> PointFloat:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_point_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_point_f64_t(x=self.x, y=self.y)
+        _c = ffi.new("fdl_point_f64_t*", {"x": self.x, "y": self.y})[0]
         _r = get_lib().fdl_point_normalize_and_scale(_c, float(input_squeeze), float(scale_factor), float(target_squeeze))
         return PointFloat(x=_r.x, y=_r.y)
 
     def clamp(self, min_val: float | None = None, max_val: float | None = None) -> PointFloat:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_point_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_point_f64_t(x=self.x, y=self.y)
+        _c = ffi.new("fdl_point_f64_t*", {"x": self.x, "y": self.y})[0]
         _min_val_val = float(min_val) if min_val is not None else 0.0
         _min_val_has = 1 if min_val is not None else 0
         _max_val_val = float(max_val) if max_val is not None else 0.0
@@ -301,12 +281,11 @@ class PointFloat:
         return PointFloat(x=_r.x, y=_r.y)
 
     def round(self, even: str, mode: str) -> PointFloat:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_point_f64_t
+        from fdl_ffi import ffi, get_lib
 
         from .enum_maps import ROUNDING_EVEN_TO_C, ROUNDING_MODE_TO_C
 
-        _c = fdl_point_f64_t(x=self.x, y=self.y)
+        _c = ffi.new("fdl_point_f64_t*", {"x": self.x, "y": self.y})[0]
         _r = get_lib().fdl_round_point(_c, ROUNDING_EVEN_TO_C[even], ROUNDING_MODE_TO_C[mode])
         return PointFloat(x=_r.x, y=_r.y)
 
@@ -317,11 +296,10 @@ class PointFloat:
         return f"({self.x:.2f}, {self.y:.2f})"
 
     def __add__(self, other: PointFloat) -> PointFloat:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_point_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_point_f64_t(x=self.x, y=self.y)
-        _c_other = fdl_point_f64_t(x=other.x, y=other.y)
+        _c = ffi.new("fdl_point_f64_t*", {"x": self.x, "y": self.y})[0]
+        _c_other = ffi.new("fdl_point_f64_t*", {"x": other.x, "y": other.y})[0]
         _r = get_lib().fdl_point_add(_c, _c_other)
         return PointFloat(x=_r.x, y=_r.y)
 
@@ -331,19 +309,17 @@ class PointFloat:
         return self
 
     def __sub__(self, other: PointFloat) -> PointFloat:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_point_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_point_f64_t(x=self.x, y=self.y)
-        _c_other = fdl_point_f64_t(x=other.x, y=other.y)
+        _c = ffi.new("fdl_point_f64_t*", {"x": self.x, "y": self.y})[0]
+        _c_other = ffi.new("fdl_point_f64_t*", {"x": other.x, "y": other.y})[0]
         _r = get_lib().fdl_point_sub(_c, _c_other)
         return PointFloat(x=_r.x, y=_r.y)
 
     def __mul__(self, other: PointFloat | float) -> PointFloat:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_point_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_point_f64_t(x=self.x, y=self.y)
+        _c = ffi.new("fdl_point_f64_t*", {"x": self.x, "y": self.y})[0]
         if isinstance(other, int | float):
             _r = get_lib().fdl_point_mul_scalar(_c, float(other))
         elif isinstance(other, PointFloat):
@@ -353,20 +329,18 @@ class PointFloat:
         return PointFloat(x=_r.x, y=_r.y)
 
     def __lt__(self, other: PointFloat) -> bool:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_point_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_point_f64_t(x=self.x, y=self.y)
-        _c_other = fdl_point_f64_t(x=other.x, y=other.y)
+        _c = ffi.new("fdl_point_f64_t*", {"x": self.x, "y": self.y})[0]
+        _c_other = ffi.new("fdl_point_f64_t*", {"x": other.x, "y": other.y})[0]
         _r = get_lib().fdl_point_f64_lt(_c, _c_other)
         return bool(_r)
 
     def __gt__(self, other: PointFloat) -> bool:
-        from fdl_ffi import get_lib
-        from fdl_ffi._structs import fdl_point_f64_t
+        from fdl_ffi import ffi, get_lib
 
-        _c = fdl_point_f64_t(x=self.x, y=self.y)
-        _c_other = fdl_point_f64_t(x=other.x, y=other.y)
+        _c = ffi.new("fdl_point_f64_t*", {"x": self.x, "y": self.y})[0]
+        _c_other = ffi.new("fdl_point_f64_t*", {"x": other.x, "y": other.y})[0]
         _r = get_lib().fdl_point_f64_gt(_c, _c_other)
         return bool(_r)
 

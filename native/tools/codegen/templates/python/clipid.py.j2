@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-import ctypes
+from fdl_ffi import ffi
 from dataclasses import dataclass
 {% for wrapper in wrappers %}
 
@@ -114,16 +114,16 @@ class {{ wrapper.class_name }}:
 {% else %}
         _{{ field.name }}: {{ field.python_type }} | None = None
         if c_struct.{{ field.c_has_flag }}:
-            _{{ field.name }} = ctypes.string_at(c_struct.{{ field.name }}).decode("utf-8") if c_struct.{{ field.name }} else None
+            _{{ field.name }} = ffi.string(c_struct.{{ field.name }}).decode("utf-8") if c_struct.{{ field.name }} else None
 {% endif %}
 {% elif field.is_string %}
-        _{{ field.name }} = ctypes.string_at(c_struct.{{ field.name }}).decode("utf-8") if c_struct.{{ field.name }} else ""
+        _{{ field.name }} = ffi.string(c_struct.{{ field.name }}).decode("utf-8") if c_struct.{{ field.name }} else ""
 {% elif field.is_int %}
         _{{ field.name }} = int(c_struct.{{ field.name }})
 {% endif %}
 {% endfor %}
 {% if wrapper.free_fn %}
-        lib.{{ wrapper.free_fn }}(ctypes.byref(c_struct))
+        lib.{{ wrapper.free_fn }}(ffi.addressof(c_struct))
 {% endif %}
         return cls(
 {% for field in wrapper.fields %}

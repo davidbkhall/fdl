@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-import ctypes
+from fdl_ffi import ffi
 import json
 
 from .fdl_types import DimensionsFloat, DimensionsInt, PointFloat, Rect
@@ -42,6 +42,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .canvas import Canvas
     from .framing_intent import FramingIntent
+    from .models import FramingDecisionModel
 
 
 class FramingDecision(HandleWrapper):
@@ -68,10 +69,10 @@ class FramingDecision(HandleWrapper):
             2,
             0,
             b"_",
-            None,
+            ffi.NULL,
         )
         _backing = FDL._from_handle(_doc_h, lib)
-        _ctx_h = lib.fdl_doc_add_context(_doc_h, b"_", None)
+        _ctx_h = lib.fdl_doc_add_context(_doc_h, b"_", ffi.NULL)
         _canvas_h = lib.fdl_context_add_canvas(_ctx_h, b"_", b"_", b"_", 1, 1, 1.0)
         handle = lib.fdl_canvas_add_framing_decision(
             _canvas_h,
@@ -176,9 +177,37 @@ class FramingDecision(HandleWrapper):
         json_ptr = self._lib.fdl_framing_decision_to_json(self._handle, 0)
         if not json_ptr:
             raise RuntimeError("fdl_framing_decision_to_json returned NULL")
-        result = json.loads(ctypes.string_at(json_ptr))
+        result = json.loads(ffi.string(json_ptr))
         self._lib.fdl_free(json_ptr)
         return result
+
+    def to_model(self) -> FramingDecisionModel:
+        """Convert to a Pydantic ``FramingDecisionModel`` instance.
+
+        Returns a pure-data Pydantic model suitable for serialization,
+        API responses, and interoperability with web frameworks.
+        """
+        from .models import FramingDecisionModel
+
+        return FramingDecisionModel.model_validate(self.as_dict())
+
+    @classmethod
+    def from_model(cls, model: FramingDecisionModel) -> FramingDecision:
+        """Create a standalone ``FramingDecision`` facade from a Pydantic model.
+
+        Note: Creates a temporary backing document. The returned object
+        is self-contained but not attached to any parent FDL document.
+        """
+        d = model.model_dump(exclude_none=True)
+        if "dimensions" in d:
+            d["dimensions"] = DimensionsFloat(**d["dimensions"])
+        if "anchor_point" in d:
+            d["anchor_point"] = PointFloat(**d["anchor_point"])
+        if "protection_dimensions" in d:
+            d["protection_dimensions"] = DimensionsFloat(**d["protection_dimensions"])
+        if "protection_anchor_point" in d:
+            d["protection_anchor_point"] = PointFloat(**d["protection_anchor_point"])
+        return cls(**d)
 
     def get_rect(self) -> Rect:
         """Get framing rect as (anchor_x, anchor_y, width, height)."""
@@ -189,10 +218,8 @@ class FramingDecision(HandleWrapper):
     def get_protection_rect(self) -> Rect | None:
         """Get protection rect or None if not defined."""
         self._check_handle()
-        from fdl_ffi._structs import fdl_rect_t
-
-        out = fdl_rect_t()
-        if not self._lib.fdl_framing_decision_get_protection_rect(self._handle, ctypes.byref(out)):
+        out = ffi.new("fdl_rect_t*")
+        if not self._lib.fdl_framing_decision_get_protection_rect(self._handle, out):
             return None
         return _rect(out)
 

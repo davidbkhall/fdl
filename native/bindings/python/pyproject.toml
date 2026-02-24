@@ -1,10 +1,10 @@
 [project]
 name = "fdl"
 version = "0.1.0"
-description = "Python ctypes bindings and wrapper for libfdl_core"
+description = "Python CFFI bindings and wrapper for libfdl_core"
 license = "Apache-2.0"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = ["cffi>=1.16", "pydantic>=2.0,<3"]
 
 [project.optional-dependencies]
 dev = [
@@ -25,7 +25,7 @@ build-backend = "setuptools.build_meta"
 include = ["fdl_ffi*", "fdl*"]
 
 [tool.setuptools.package-data]
-fdl_ffi = ["libfdl_core.dylib", "libfdl_core.so", "fdl_core.dll"]
+fdl_ffi = ["libfdl_core.dylib", "libfdl_core.so", "fdl_core.dll", "fdl_core_decl.h"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

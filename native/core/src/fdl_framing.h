@@ -17,10 +17,13 @@ namespace fdl::detail {
 /**
  * Compute a framing decision from a framing intent.
  *
+ * Returns a zeroed result if @p aspect_ratio.height or @p working_dims.height
+ * is zero (guards against division by zero).
+ *
  * @param canvas_dims   Full canvas dimensions (for anchor centering).
  * @param working_dims  Effective dimensions if available, else canvas dims.
  * @param squeeze       Anamorphic squeeze factor.
- * @param aspect_ratio  Target aspect ratio as integer width:height.
+ * @param aspect_ratio  Target aspect ratio as integer width:height (height must be > 0).
  * @param protection    Protection factor (0.0 for no protection).
  * @param rounding      Rounding strategy.
  * @return Computed framing dimensions, anchors, and optional protection.

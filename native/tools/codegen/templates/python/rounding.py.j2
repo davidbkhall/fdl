@@ -54,9 +54,10 @@ class {{ round_strategy.python_class }}:
 
 def {{ ff.display_name }}({{ ff.param_sig }}) -> {{ ff.python_return }}:
     """{{ ff.doc }}"""
-    from fdl_ffi import get_lib
 {% if ff.needed_c_structs %}
-    from fdl_ffi._structs import {{ ff.needed_c_structs | join(", ") }}
+    from fdl_ffi import ffi, get_lib
+{% else %}
+    from fdl_ffi import get_lib
 {% endif %}
 {% if ff.needed_converters or ff.needed_enum_maps %}
 

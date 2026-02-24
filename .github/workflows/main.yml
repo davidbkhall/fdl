@@ -63,7 +63,7 @@ jobs:
         run: sudo apt-get install -y cmake
 
       - name: Install codegen dependencies
-        run: uv pip install pyyaml jinja2 ruff --system
+        run: uv pip install pyyaml jinja2 ruff "datamodel-code-generator[http]>=0.25" --system
 
       - name: Run codegen (with drift check)
         run: python scripts/run_codegen.py --check
@@ -181,7 +181,7 @@ jobs:
 
       # --- Codegen ---
       - name: Install codegen dependencies
-        run: uv pip install pyyaml jinja2 --system
+        run: uv pip install pyyaml jinja2 "datamodel-code-generator[http]>=0.25" --system
 
       - name: Run codegen
         run: python scripts/run_codegen.py
@@ -210,13 +210,16 @@ jobs:
 
       # --- Run Python test suites ---
       - name: Run fdl core tests
-        run: uv run pytest native/bindings/python/tests/ -v -n auto -p no:pytest-qt
+        timeout-minutes: 15
+        run: uv run pytest native/bindings/python/tests/ -v -n auto --timeout=120 -p no:pytest-qt -p no:anyio -p no:typeguard
 
       - name: Run fdl-imaging tests
-        run: uv run pytest packages/fdl_imaging/tests/ -v -n auto -p no:pytest-qt
+        timeout-minutes: 15
+        run: uv run pytest packages/fdl_imaging/tests/ -v -n auto --timeout=120 -p no:pytest-qt -p no:anyio -p no:typeguard
 
       - name: Run fdl-frameline-generator tests
-        run: uv run pytest packages/fdl_frameline_generator/tests/ -v -p no:pytest-qt
+        timeout-minutes: 15
+        run: uv run pytest packages/fdl_frameline_generator/tests/ -v --timeout=120 -p no:pytest-qt -p no:anyio -p no:typeguard
 
       - name: Install Qt dependencies (Linux)
         if: runner.os == 'Linux'
@@ -224,13 +227,15 @@ jobs:
 
       - name: Run fdl-viewer tests (Linux)
         if: runner.os == 'Linux'
+        timeout-minutes: 15
         env:
           QT_QPA_PLATFORM: offscreen
-        run: uv run pytest packages/fdl_viewer/tests/ -v
+        run: uv run pytest packages/fdl_viewer/tests/ -v --timeout=30 -p no:anyio -p no:typeguard
 
       - name: Run fdl-viewer tests (macOS/Windows)
         if: runner.os != 'Linux'
-        run: uv run pytest packages/fdl_viewer/tests/ -v
+        timeout-minutes: 15
+        run: uv run pytest packages/fdl_viewer/tests/ -v --timeout=30 -p no:anyio -p no:typeguard
 
   # ---------------------------------------------------------------------------
   # Build Artifacts — wheels + FDL Viewer app (nightly + release)
@@ -335,7 +340,7 @@ jobs:
 
       # --- Codegen ---
       - name: Install codegen dependencies
-        run: uv pip install pyyaml jinja2 --system
+        run: uv pip install pyyaml jinja2 "datamodel-code-generator[http]>=0.25" --system
 
       - name: Run codegen
         run: python scripts/run_codegen.py
@@ -455,7 +460,7 @@ jobs:
             quay.io/pypa/manylinux_2_28_x86_64 bash -c '
               cd /workspace
               export PATH=/opt/python/cp312-cp312/bin:$PATH
-              pip install cmake pyyaml jinja2 build setuptools wheel auditwheel
+              pip install cmake pyyaml jinja2 "datamodel-code-generator[http]>=0.25" build setuptools wheel auditwheel
               python scripts/run_codegen.py
               rm -rf native/core/build
               python scripts/build_native.py --no-tests
@@ -547,7 +552,7 @@ jobs:
         run: brew install cmake || true
 
       - name: Install codegen dependencies
-        run: uv pip install pyyaml jinja2 --system
+        run: uv pip install pyyaml jinja2 "datamodel-code-generator[http]>=0.25" --system
 
       - name: Run codegen
         run: python scripts/run_codegen.py

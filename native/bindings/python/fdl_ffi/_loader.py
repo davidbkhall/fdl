@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2024-present American Society Of Cinematographers
 # SPDX-License-Identifier: Apache-2.0
 """
-Platform-aware loader for libfdl_core shared library.
+Platform-aware locator for libfdl_core shared library.
 
 Search order:
   1. FDL_CORE_LIB_PATH env var (explicit path)
@@ -51,16 +51,19 @@ def _candidate_paths() -> list[Path]:
     return paths
 
 
-def load_library() -> ctypes.CDLL:
-    """Load libfdl_core, raising OSError if not found."""
+def find_library() -> Path:
+    """Find libfdl_core, raising OSError if not found."""
     # Try explicit paths first
     for path in _candidate_paths():
         if path.exists():
-            return ctypes.CDLL(str(path))
+            return path
 
-    # Fall back to system search
+    # Fall back to system search — try loading with ctypes to resolve system paths
     try:
-        return ctypes.CDLL(_lib_name())
+        loaded = ctypes.CDLL(_lib_name())
+        # If ctypes can find it, CFFI's dlopen will too using the same name
+        del loaded
+        return Path(_lib_name())  # Return the bare name for CFFI dlopen
     except OSError:
         pass
 

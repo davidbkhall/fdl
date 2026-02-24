@@ -17,6 +17,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "fdl_tl_cache.h"
+
 /** @brief Alias for ordered JSON type. */
 using ojson = jsoncons::ojson;
 
@@ -69,9 +71,9 @@ const char* get_string(const ojson* node, const char* key) {
     if (node == nullptr || !node->contains(key) || !(*node)[key].is_string()) {
         return nullptr;
     }
-    static thread_local std::unordered_map<StringBufKey, std::string, StringBufKeyHash> bufs;
+    static thread_local fdl::detail::TlStringCache<StringBufKey, StringBufKeyHash> cache; // NOLINT
     const StringBufKey bk{reinterpret_cast<uintptr_t>(node), key};
-    auto& buf = bufs[bk];
+    auto& buf = cache.get(bk);
     buf = (*node)[key].as<std::string>();
     return buf.c_str();
 }
@@ -91,45 +93,40 @@ double get_double(const ojson* node, const char* key, double default_val) {
 }
 
 /**
- * @brief Get floating-point dimensions from a JSON node.
- * @param node  Pointer to the JSON node to read from.
- * @param key   Field name of the dimensions object.
- * @return Dimensions with width/height, or {0,0} if absent.
+ * @brief Get dimensions from a JSON node, parameterized by return type and JSON value type.
+ *
+ * Eliminates duplication between get_dims_f64 and get_dims_i64, which differ
+ * only in the return struct type and the as<> cast target.
+ *
+ * @tparam DimsT   Return type (fdl_dimensions_f64_t or fdl_dimensions_i64_t).
+ * @tparam ValueT  JSON value type to extract (double or int64_t).
+ * @param node     Pointer to the JSON node to read from.
+ * @param key      Field name of the dimensions object.
+ * @return Dimensions with width/height, or zero-initialized if absent.
  */
-fdl_dimensions_f64_t get_dims_f64(const ojson* node, const char* key) {
-    fdl_dimensions_f64_t result = {0.0, 0.0};
+template<typename DimsT, typename ValueT> DimsT get_dims(const ojson* node, const char* key) {
+    DimsT result = {};
     if (node == nullptr || !node->contains(key) || !(*node)[key].is_object()) {
         return result;
     }
     const auto& obj = (*node)[key];
     if (obj.contains("width")) {
-        result.width = obj["width"].as<double>();
+        result.width = obj["width"].as<ValueT>();
     }
     if (obj.contains("height")) {
-        result.height = obj["height"].as<double>();
+        result.height = obj["height"].as<ValueT>();
     }
     return result;
 }
 
-/**
- * @brief Get integer dimensions from a JSON node.
- * @param node  Pointer to the JSON node to read from.
- * @param key   Field name of the dimensions object.
- * @return Dimensions with width/height, or {0,0} if absent.
- */
+/** @brief Get floating-point dimensions from a JSON node. */
+fdl_dimensions_f64_t get_dims_f64(const ojson* node, const char* key) {
+    return get_dims<fdl_dimensions_f64_t, double>(node, key);
+}
+
+/** @brief Get integer dimensions from a JSON node. */
 fdl_dimensions_i64_t get_dims_i64(const ojson* node, const char* key) {
-    fdl_dimensions_i64_t result = {0, 0};
-    if (node == nullptr || !node->contains(key) || !(*node)[key].is_object()) {
-        return result;
-    }
-    const auto& obj = (*node)[key];
-    if (obj.contains("width")) {
-        result.width = obj["width"].as<int64_t>();
-    }
-    if (obj.contains("height")) {
-        result.height = obj["height"].as<int64_t>();
-    }
-    return result;
+    return get_dims<fdl_dimensions_i64_t, int64_t>(node, key);
 }
 
 /**

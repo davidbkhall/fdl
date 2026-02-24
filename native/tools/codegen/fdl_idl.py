@@ -234,6 +234,7 @@ class ObjectClass:
     factory: str | None = None
     destructor: str | None = None
     custom_attrs: bool = False
+    pydantic_model: str | None = None
     properties: list[PropertyMapping] = field(default_factory=list)
     collections: list[CollectionPattern] = field(default_factory=list)
     methods: list[MethodMapping] = field(default_factory=list)
@@ -590,6 +591,7 @@ def _parse_object_class(name: str, raw: dict) -> ObjectClass:
         c_handle=raw["c_handle"],
         owns_handle=raw.get("owns_handle", False),
         parent=raw.get("parent"),
+        pydantic_model=raw.get("pydantic_model"),
         factory=raw.get("factory"),
         destructor=raw.get("destructor"),
         custom_attrs=raw.get("custom_attrs", False),
@@ -691,6 +693,194 @@ _HANDLE_PARAM_NAMES: dict[str, str] = {
 }
 
 
+def _synthesize_property_fns(
+    prop: PropertyMapping,
+    handle: str,
+    param_name: str,
+    const_ptr: str,
+    mut_ptr: str,
+    object_model: ObjectModel,
+    vt_names: set[str],
+    enum_names: set[str],
+) -> list[Function]:
+    """Synthesize C ABI getter/setter/has/remover functions for a single property."""
+    vtype = prop.value_type
+
+    # Determine C return type for getter
+    if vtype in _PROP_TYPE_TO_C:
+        c_ret = _PROP_TYPE_TO_C[vtype]["getter_ret"]
+        c_set_param = _PROP_TYPE_TO_C[vtype]["setter_param"]
+        # String getters on document-owned handles return borrowed ptrs.
+        # Sub-object handles (ClipID, FileSequence) don't carry this.
+        ownership = "valid_until_doc_freed" if vtype == "string" and handle not in ("fdl_clip_id_t", "fdl_file_sequence_t") else None
+    elif vtype == "handle_ref":
+        # Handle reference getter returns mutable pointer to child handle
+        child_handle = prop.handle_class  # e.g. "ClipID"
+        child_cls = next((c for c in object_model.classes if c.name == child_handle), None)
+        if child_cls:
+            c_ret = f"{child_cls.c_handle}*"
+        else:
+            return []
+        c_set_param = "const char*"  # handle_ref setters take JSON
+        ownership = None
+    elif vtype in vt_names:
+        c_ret = vtype
+        c_set_param = vtype
+        ownership = None
+    elif vtype in enum_names:
+        c_ret = vtype
+        c_set_param = vtype
+        ownership = None
+    else:
+        return []  # unknown type, skip
+
+    result: list[Function] = []
+
+    # Getter
+    if prop.getter:
+        getter_handle_param = mut_ptr if vtype == "handle_ref" else const_ptr
+        result.append(
+            Function(
+                name=prop.getter,
+                returns=c_ret,
+                params=[FunctionParam(name=param_name, c_type=getter_handle_param)],
+                category="accessor",
+                ownership=ownership,
+            )
+        )
+
+    # Has-check
+    if prop.has_fn:
+        result.append(
+            Function(
+                name=prop.has_fn,
+                returns="int",
+                params=[FunctionParam(name=param_name, c_type=const_ptr)],
+                category="accessor",
+            )
+        )
+
+    # Setter (simple property setters only — compound setters are explicit)
+    if prop.setter and vtype != "handle_ref":
+        result.append(
+            Function(
+                name=prop.setter,
+                returns="void",
+                params=[
+                    FunctionParam(name=param_name, c_type=mut_ptr),
+                    FunctionParam(name=prop.name, c_type=c_set_param),
+                ],
+                category="setter",
+            )
+        )
+    elif prop.setter and vtype == "handle_ref":
+        # handle_ref setters take JSON string + length, return error string
+        result.append(
+            Function(
+                name=prop.setter,
+                returns="const char*",
+                params=[
+                    FunctionParam(name=param_name, c_type=mut_ptr),
+                    FunctionParam(name="json_str", c_type="const char*"),
+                    FunctionParam(name="json_len", c_type="size_t"),
+                ],
+                category="setter",
+                ownership="caller_frees",
+                nullable=True,
+            )
+        )
+
+    # Remover
+    if prop.remover:
+        result.append(
+            Function(
+                name=prop.remover,
+                returns="void",
+                params=[FunctionParam(name=param_name, c_type=mut_ptr)],
+                category="setter",
+            )
+        )
+
+    return result
+
+
+def _synthesize_collection_fns(
+    coll: CollectionPattern,
+    owns_handle: bool,
+    param_name: str,
+    const_ptr: str,
+    mut_ptr: str,
+    object_model: ObjectModel,
+) -> list[Function]:
+    """Synthesize C ABI count/at/find functions for a single collection."""
+    item_cls = next((c for c in object_model.classes if c.name == coll.item_class), None)
+    if not item_cls:
+        return []
+    item_ptr = f"{item_cls.c_handle}*"
+
+    result: list[Function] = []
+
+    # Count
+    if coll.count_fn:
+        result.append(
+            Function(
+                name=coll.count_fn,
+                returns="uint32_t",
+                params=[FunctionParam(name=param_name, c_type=const_ptr if not owns_handle else mut_ptr)],
+                category="collection",
+            )
+        )
+
+    # At (indexed access)
+    if coll.at_fn:
+        result.append(
+            Function(
+                name=coll.at_fn,
+                returns=item_ptr,
+                params=[
+                    FunctionParam(name=param_name, c_type=mut_ptr),
+                    FunctionParam(name="index", c_type="uint32_t"),
+                ],
+                category="collection",
+                ownership="valid_until_doc_freed",
+            )
+        )
+
+    # Find by ID
+    if coll.find_by_id_fn:
+        result.append(
+            Function(
+                name=coll.find_by_id_fn,
+                returns=item_ptr,
+                params=[
+                    FunctionParam(name=param_name, c_type=mut_ptr),
+                    FunctionParam(name="id", c_type="const char*"),
+                ],
+                category="collection",
+                ownership="valid_until_doc_freed",
+                nullable=True,
+            )
+        )
+
+    # Find by label
+    if coll.find_by_label_fn:
+        result.append(
+            Function(
+                name=coll.find_by_label_fn,
+                returns=item_ptr,
+                params=[
+                    FunctionParam(name=param_name, c_type=mut_ptr),
+                    FunctionParam(name="label", c_type="const char*"),
+                ],
+                category="collection",
+                ownership="valid_until_doc_freed",
+                nullable=True,
+            )
+        )
+
+    return result
+
+
 def _synthesize_functions(
     object_model: ObjectModel,
     value_types: list[ValueType],
@@ -703,7 +893,6 @@ def _synthesize_functions(
     signature. This eliminates the need to maintain these entries manually in
     the functions section of the YAML.
     """
-    # Build lookup sets for value types and enum types
     vt_names = {vt.name for vt in value_types}
     enum_names = {e.name for e in enums}
 
@@ -716,189 +905,81 @@ def _synthesize_functions(
             synth.append(func)
 
     for cls in object_model.classes:
-        handle = cls.c_handle  # e.g. "fdl_canvas_t"
+        handle = cls.c_handle
         param_name = _HANDLE_PARAM_NAMES.get(handle, "h")
         const_ptr = f"const {handle}*"
         mut_ptr = f"{handle}*"
 
-        # --- Properties ---
         for prop in cls.properties:
-            vtype = prop.value_type
+            for f in _synthesize_property_fns(prop, handle, param_name, const_ptr, mut_ptr, object_model, vt_names, enum_names):
+                _add(f)
 
-            # Determine C return type for getter
-            if vtype in _PROP_TYPE_TO_C:
-                c_ret = _PROP_TYPE_TO_C[vtype]["getter_ret"]
-                c_set_param = _PROP_TYPE_TO_C[vtype]["setter_param"]
-                # String getters on document-owned handles return borrowed ptrs.
-                # Sub-object handles (ClipID, FileSequence) don't carry this.
-                ownership = (
-                    "valid_until_doc_freed" if vtype == "string" and handle not in ("fdl_clip_id_t", "fdl_file_sequence_t") else None
-                )
-            elif vtype == "handle_ref":
-                # Handle reference getter returns mutable pointer to child handle
-                child_handle = prop.handle_class  # e.g. "ClipID"
-                # Find the child class to get its c_handle
-                child_cls = next((c for c in object_model.classes if c.name == child_handle), None)
-                if child_cls:
-                    c_ret = f"{child_cls.c_handle}*"
-                else:
-                    continue
-                c_set_param = "const char*"  # handle_ref setters take JSON
-                ownership = None
-            elif vtype in vt_names:
-                c_ret = vtype
-                c_set_param = vtype
-                ownership = None
-            elif vtype in enum_names:
-                c_ret = vtype
-                c_set_param = vtype
-                ownership = None
-            else:
-                continue  # unknown type, skip
-
-            # Getter
-            if prop.getter:
-                # For handle_ref, the getter takes a mutable handle
-                getter_handle_param = mut_ptr if vtype == "handle_ref" else const_ptr
-                _add(
-                    Function(
-                        name=prop.getter,
-                        returns=c_ret,
-                        params=[FunctionParam(name=param_name, c_type=getter_handle_param)],
-                        category="accessor",
-                        ownership=ownership,
-                    )
-                )
-
-            # Has-check
-            if prop.has_fn:
-                _add(
-                    Function(
-                        name=prop.has_fn,
-                        returns="int",
-                        params=[FunctionParam(name=param_name, c_type=const_ptr)],
-                        category="accessor",
-                    )
-                )
-
-            # Setter (simple property setters only — compound setters are explicit)
-            if prop.setter and vtype != "handle_ref":
-                _add(
-                    Function(
-                        name=prop.setter,
-                        returns="void",
-                        params=[
-                            FunctionParam(name=param_name, c_type=mut_ptr),
-                            FunctionParam(name=prop.name, c_type=c_set_param),
-                        ],
-                        category="setter",
-                    )
-                )
-            elif prop.setter and vtype == "handle_ref":
-                # handle_ref setters take JSON string + length, return error string
-                _add(
-                    Function(
-                        name=prop.setter,
-                        returns="const char*",
-                        params=[
-                            FunctionParam(name=param_name, c_type=mut_ptr),
-                            FunctionParam(name="json_str", c_type="const char*"),
-                            FunctionParam(name="json_len", c_type="size_t"),
-                        ],
-                        category="setter",
-                        ownership="caller_frees",
-                        nullable=True,
-                    )
-                )
-
-            # Remover
-            if prop.remover:
-                _add(
-                    Function(
-                        name=prop.remover,
-                        returns="void",
-                        params=[FunctionParam(name=param_name, c_type=mut_ptr)],
-                        category="setter",
-                    )
-                )
-
-        # --- Collections ---
         for coll in cls.collections:
-            # Find the item class to get its c_handle
-            item_cls = next((c for c in object_model.classes if c.name == coll.item_class), None)
-            if not item_cls:
-                continue
-            item_ptr = f"{item_cls.c_handle}*"
-
-            # Count
-            if coll.count_fn:
-                _add(
-                    Function(
-                        name=coll.count_fn,
-                        returns="uint32_t",
-                        params=[FunctionParam(name=param_name, c_type=const_ptr if not cls.owns_handle else mut_ptr)],
-                        category="collection",
-                    )
-                )
-
-            # At (indexed access)
-            if coll.at_fn:
-                _add(
-                    Function(
-                        name=coll.at_fn,
-                        returns=item_ptr,
-                        params=[
-                            FunctionParam(name=param_name, c_type=mut_ptr),
-                            FunctionParam(name="index", c_type="uint32_t"),
-                        ],
-                        category="collection",
-                        ownership="valid_until_doc_freed",
-                    )
-                )
-
-            # Find by ID
-            if coll.find_by_id_fn:
-                _add(
-                    Function(
-                        name=coll.find_by_id_fn,
-                        returns=item_ptr,
-                        params=[
-                            FunctionParam(name=param_name, c_type=mut_ptr),
-                            FunctionParam(name="id", c_type="const char*"),
-                        ],
-                        category="collection",
-                        ownership="valid_until_doc_freed",
-                        nullable=True,
-                    )
-                )
-
-            # Find by label
-            if coll.find_by_label_fn:
-                _add(
-                    Function(
-                        name=coll.find_by_label_fn,
-                        returns=item_ptr,
-                        params=[
-                            FunctionParam(name=param_name, c_type=mut_ptr),
-                            FunctionParam(name="label", c_type="const char*"),
-                        ],
-                        category="collection",
-                        ownership="valid_until_doc_freed",
-                        nullable=True,
-                    )
-                )
+            for f in _synthesize_collection_fns(coll, cls.owns_handle, param_name, const_ptr, mut_ptr, object_model):
+                _add(f)
 
     return synth
 
 
-def parse_idl(path: Path) -> IDL:
+def _merge_header_overlay(
+    header_path: Path,
+    metadata: dict,
+) -> list[Function]:
+    """Build Function list from C header signatures + YAML metadata overlay."""
+    from .c_header_parser import parse_c_header
+
+    parsed = parse_c_header(header_path)
+    functions: list[Function] = []
+
+    for pf in parsed.values():
+        # Skip custom attribute functions (handled by _generate_custom_attr_functions)
+        if "custom_attr" in pf.name:
+            continue
+
+        overlay = metadata.get(pf.name, {})
+        overlay_params = overlay.get("params", {})
+
+        params = []
+        for pp in pf.params:
+            pm = overlay_params.get(pp.name, {})
+            params.append(
+                FunctionParam(
+                    name=pp.name,
+                    c_type=pp.c_type,
+                    direction=pm.get("direction"),
+                    nullable=pm.get("nullable", False),
+                )
+            )
+
+        functions.append(
+            Function(
+                name=pf.name,
+                returns=pf.return_type,
+                params=params,
+                doc=overlay.get("doc", pf.doc),
+                ownership=overlay.get("ownership"),
+                nullable=overlay.get("nullable", False),
+                category=overlay.get("category"),
+            )
+        )
+
+    return functions
+
+
+def parse_idl(path: Path, header_path: Path | None = None) -> IDL:
     with path.open(encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
     value_types = [_parse_value_type(name, vt) for name, vt in data.get("value_types", {}).items()]
     enums = [_parse_enum(name, e) for name, e in data.get("enums", {}).items()]
     opaque_types = data.get("opaque_types", [])
-    functions = [_parse_function(f) for f in data.get("functions", [])]
+
+    # Two modes: new function_metadata overlay (with C header parsing) or legacy functions list
+    if "function_metadata" in data and header_path is not None and header_path.exists():
+        functions = _merge_header_overlay(header_path, data["function_metadata"])
+    else:
+        functions = [_parse_function(f) for f in data.get("functions", [])]
+
     object_model = _parse_object_model(data.get("object_model"))
     auxiliary_types = _parse_auxiliary_types(data.get("auxiliary_types"))
 
@@ -932,12 +1013,28 @@ def parse_idl(path: Path) -> IDL:
         )
 
     # Synthesize accessor/collection functions from object_model.
-    # Explicit entries in YAML take precedence over synthesized ones.
-    explicit_names = {f.name for f in functions}
+    # When using header-parsed functions, synthesized metadata (ownership,
+    # nullable) takes precedence over the bare header signatures.
+    fn_by_name = {f.name: f for f in functions}
     synthesized = _synthesize_functions(object_model, value_types, enums)
     for sf in synthesized:
-        if sf.name not in explicit_names:
+        existing = fn_by_name.get(sf.name)
+        if existing is None:
             functions.append(sf)
+        else:
+            # Merge synthesized metadata into header-parsed function
+            if sf.ownership and not existing.ownership:
+                existing.ownership = sf.ownership
+            if sf.nullable and not existing.nullable:
+                existing.nullable = sf.nullable
+            for sp in sf.params:
+                for ep in existing.params:
+                    if ep.name == sp.name:
+                        if sp.direction and not ep.direction:
+                            ep.direction = sp.direction
+                        if sp.nullable and not ep.nullable:
+                            ep.nullable = sp.nullable
+                        break
 
     # Sort for stable output regardless of YAML entry order or synthesis order.
     functions.sort(key=lambda f: f.name)
@@ -981,6 +1078,7 @@ def build_ir(idl: IDL) -> IR:
             destructor=cls.destructor,
             identity_attr=_IDENTITY_ATTRS.get(cls.name),
             custom_attrs=cls.custom_attrs,
+            pydantic_model=cls.pydantic_model,
         )
 
         for prop in cls.properties:

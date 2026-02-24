@@ -152,6 +152,11 @@ fdl_geometry_t geometry_apply_offset(
     fdl_point_f64_t* theo_prot,
     fdl_point_f64_t* theo_fram) {
 
+    // All output pointers are required — return geometry unmodified if any is null.
+    if (theo_eff == nullptr || theo_prot == nullptr || theo_fram == nullptr) {
+        return geo;
+    }
+
     // Calculate theoretical anchor positions (may be negative)
     *theo_eff = fdl_point_add(geo.effective_anchor, offset);
     *theo_prot = fdl_point_add(geo.protection_anchor, offset);

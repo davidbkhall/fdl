@@ -22,6 +22,11 @@ from ._custom_attrs import (
     _set as _ca_set,
 )
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .models import FileSequenceModel
+
 
 class FileSequence(HandleWrapper):
     """FileSequence facade wrapping a C fdl_file_sequence_t handle."""
@@ -61,6 +66,26 @@ class FileSequence(HandleWrapper):
         v = self.max
         d["max"] = v
         return d
+
+    def to_model(self) -> FileSequenceModel:
+        """Convert to a Pydantic ``FileSequenceModel`` instance.
+
+        Returns a pure-data Pydantic model suitable for serialization,
+        API responses, and interoperability with web frameworks.
+        """
+        from .models import FileSequenceModel
+
+        return FileSequenceModel.model_validate(self.as_dict())
+
+    @classmethod
+    def from_model(cls, model: FileSequenceModel) -> FileSequence:
+        """Create a standalone ``FileSequence`` facade from a Pydantic model.
+
+        Note: Creates a temporary backing document. The returned object
+        is self-contained but not attached to any parent FDL document.
+        """
+        d = model.model_dump(exclude_none=True)
+        return cls(**d)
 
     _CA_PREFIX = "fdl_file_sequence_"
 

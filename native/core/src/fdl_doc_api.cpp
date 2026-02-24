@@ -15,6 +15,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "fdl_tl_cache.h"
+
 namespace {
 
 /** @brief Thread-local buffer cache key for document-level strings.
@@ -65,9 +67,9 @@ const char* get_doc_string(const fdl_doc_t* doc, const char* key) {
     if (!data.contains(key) || !data[key].is_string()) {
         return nullptr;
     }
-    static thread_local std::unordered_map<DocStringBufKey, std::string, DocStringBufKeyHash> bufs;
+    static thread_local fdl::detail::TlStringCache<DocStringBufKey, DocStringBufKeyHash> cache; // NOLINT
     DocStringBufKey const bk{reinterpret_cast<uintptr_t>(doc), key};
-    auto& buf = bufs[bk];
+    auto& buf = cache.get(bk);
     buf = data[key].as<std::string>();
     return buf.empty() ? nullptr : buf.c_str();
 }

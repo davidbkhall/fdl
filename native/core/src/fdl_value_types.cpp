@@ -5,21 +5,17 @@
  * @brief Value-type operations: dimensions arithmetic, point arithmetic, floating-point comparison.
  */
 #include "fdl/fdl_core.h"
+#include "fdl_constants.h"
 
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
 
 // ---------------------------------------------------------------------------
-// Floating-point comparison constants
+// Floating-point comparison
 // ---------------------------------------------------------------------------
 
 namespace {
-
-/** @brief Relative tolerance for floating-point comparison (matches Python math.isclose). */
-constexpr double kRelTol = 1e-9;
-/** @brief Absolute tolerance for floating-point comparison (matches Python math.isclose). */
-constexpr double kAbsTol = 1e-6;
 
 /**
  * @brief Test whether two doubles are approximately equal.
@@ -33,17 +29,17 @@ constexpr double kAbsTol = 1e-6;
  */
 bool fp_close(double a, double b) {
     double const diff = std::abs(a - b);
-    double const tol = std::max(kRelTol * std::max(std::abs(a), std::abs(b)), kAbsTol);
+    double const tol = std::max(fdl::constants::kRelTol * std::max(std::abs(a), std::abs(b)), fdl::constants::kAbsTol);
     return diff <= tol;
 }
 
 } // namespace
 
 double fdl_fp_rel_tol(void) {
-    return kRelTol;
+    return fdl::constants::kRelTol;
 }
 double fdl_fp_abs_tol(void) {
-    return kAbsTol;
+    return fdl::constants::kAbsTol;
 }
 
 // ---------------------------------------------------------------------------
