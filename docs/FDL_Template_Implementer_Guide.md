@@ -25,7 +25,7 @@ All language bindings (Python, C++ RAII) call through to the C library above.
 2. [Data Structures](#2-data-structures)
 3. [Pipeline Overview](#3-pipeline-overview)
 4. [Phase-by-Phase Breakdown](#4-phase-by-phase-breakdown)
-5. [Edge Cases & Special Handling](#5-edge-cases--special-handling)
+5. [Edge Cases & Special Handling](#5-edge-cases-special-handling)
 6. [Output Generation](#6-output-generation)
 7. [Complete Formula Reference](#7-complete-formula-reference)
 8. [Summary](#8-summary)

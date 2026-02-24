@@ -39,6 +39,18 @@ jobs:
           mkdir -p docs/api
           cp -r native/core/docs/api/html/* docs/api/
 
+      # -- TypeDoc (Node.js/TypeScript API reference) --
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build TypeDoc docs
+        working-directory: native/bindings/node
+        run: |
+          npm install --ignore-scripts
+          npx typedoc
+
       # -- MkDocs (Python user guide) --
       - name: Install uv
         uses: astral-sh/setup-uv@v6
