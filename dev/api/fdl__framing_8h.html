@@ -147,12 +147,13 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Compute a framing decision from a framing intent. </p>
+<p>Returns a zeroed result if <code>aspect_ratio.height</code> or <code>working_dims.height</code> is zero (guards against division by zero).</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">canvas_dims</td><td>Full canvas dimensions (for anchor centering). </td></tr>
     <tr><td class="paramname">working_dims</td><td>Effective dimensions if available, else canvas dims. </td></tr>
     <tr><td class="paramname">squeeze</td><td>Anamorphic squeeze factor. </td></tr>
-    <tr><td class="paramname">aspect_ratio</td><td>Target aspect ratio as integer width:height. </td></tr>
+    <tr><td class="paramname">aspect_ratio</td><td>Target aspect ratio as integer width:height (height must be &gt; 0). </td></tr>
     <tr><td class="paramname">protection</td><td>Protection factor (0.0 for no protection). </td></tr>
     <tr><td class="paramname">rounding</td><td>Rounding strategy. </td></tr>
   </table>

@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -949,6 +949,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#fdl.FramingIntent.from_model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        from_model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fdl.FramingIntent.get_custom_attr" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -986,6 +997,17 @@
     <span class="md-ellipsis">
       
         set_custom_attr
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fdl.FramingIntent.to_model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_model
       
     </span>
   </a>
@@ -1093,6 +1115,34 @@
           </ul>
         </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../node-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Node.js/TypeScript (TypeDoc)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1221,6 +1271,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#fdl.FramingIntent.from_model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        from_model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fdl.FramingIntent.get_custom_attr" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1258,6 +1319,17 @@
     <span class="md-ellipsis">
       
         set_custom_attr
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fdl.FramingIntent.to_model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_model
       
     </span>
   </a>
@@ -1365,6 +1437,30 @@ creative intent.</p>
     <div class="doc doc-contents ">
 
         <p>Return the number of custom attributes on this object.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="fdl.FramingIntent.from_model" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">from_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Create a standalone <code>FramingIntent</code> facade from a Pydantic model.</p>
+<p>Note: Creates a temporary backing document. The returned object
+is self-contained but not attached to any parent FDL document.</p>
 
 
     </div>
@@ -1656,6 +1752,26 @@ creative intent.</p>
           </tr>
       </tbody>
     </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="fdl.FramingIntent.to_model" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">to_model</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Convert to a Pydantic <code>FramingIntentModel</code> instance.</p>
+<p>Returns a pure-data Pydantic model suitable for serialization,
+API responses, and interoperability with web frameworks.</p>
 
 
     </div>

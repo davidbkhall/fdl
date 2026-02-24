@@ -293,18 +293,18 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Apply offset to all anchors, clamping to canvas bounds. </p>
-<p>Returns clamped geometry; theoretical (unclamped) anchors written to output pointers.</p>
+<p>Returns clamped geometry; theoretical (unclamped) anchors written to output pointers. If any output pointer is null, returns the geometry unmodified.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">geo</td><td>Input geometry. </td></tr>
     <tr><td class="paramname">offset</td><td>Offset to add to all anchors. </td></tr>
-    <tr><td class="paramname">theo_eff</td><td>[out] Theoretical effective anchor (may be negative). </td></tr>
-    <tr><td class="paramname">theo_prot</td><td>[out] Theoretical protection anchor. </td></tr>
-    <tr><td class="paramname">theo_fram</td><td>[out] Theoretical framing anchor. </td></tr>
+    <tr><td class="paramname">theo_eff</td><td>[out] Theoretical effective anchor (may be negative). Must not be null. </td></tr>
+    <tr><td class="paramname">theo_prot</td><td>[out] Theoretical protection anchor. Must not be null. </td></tr>
+    <tr><td class="paramname">theo_fram</td><td>[out] Theoretical framing anchor. Must not be null. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Geometry with clamped anchors. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Geometry with clamped anchors, or unmodified <code>geo</code> if any output pointer is null. </dd></dl>
 
 </div>
 </div>

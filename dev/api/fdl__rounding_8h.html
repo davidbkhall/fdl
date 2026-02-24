@@ -84,12 +84,16 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;cmath&gt;</code><br />
 <code>#include &lt;cstdint&gt;</code><br />
+<code>#include &lt;limits&gt;</code><br />
 <code>#include &quot;<a class="el" href="fdl__constants_8h_source.html">fdl_constants.h</a>&quot;</code><br />
 </div>
 <p><a href="fdl__rounding_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ab27ce39ee5b49f3f7c6cfec32aebf936" id="r_ab27ce39ee5b49f3f7c6cfec32aebf936"><td class="memItemLeft" align="right" valign="top">int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="fdl__rounding_8h.html#ab27ce39ee5b49f3f7c6cfec32aebf936">fdl::detail::safe_to_int64</a> (double value)</td></tr>
+<tr class="memdesc:ab27ce39ee5b49f3f7c6cfec32aebf936"><td class="mdescLeft">&#160;</td><td class="mdescRight">Safely cast a double to int64_t, clamping to [INT64_MIN, INT64_MAX].  <br /></td></tr>
+<tr class="separator:ab27ce39ee5b49f3f7c6cfec32aebf936"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc56a7604bbd7f9ae35c5bff576da200" id="r_abc56a7604bbd7f9ae35c5bff576da200"><td class="memItemLeft" align="right" valign="top">int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="fdl__rounding_8h.html#abc56a7604bbd7f9ae35c5bff576da200">fdl::detail::bankers_round</a> (double value)</td></tr>
 <tr class="memdesc:abc56a7604bbd7f9ae35c5bff576da200"><td class="mdescLeft">&#160;</td><td class="mdescRight">Banker's rounding (half-to-even), matching Python's built-in round().  <br /></td></tr>
 <tr class="separator:abc56a7604bbd7f9ae35c5bff576da200"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -98,6 +102,42 @@ Functions</h2></td></tr>
 <div class="textblock"><p>Banker's rounding (half-to-even) implementation. </p>
 <p>Provides the core rounding primitive that matches Python's built-in round() behavior, ensuring consistent results across the C++ and Python implementations. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
+<a id="ab27ce39ee5b49f3f7c6cfec32aebf936" name="ab27ce39ee5b49f3f7c6cfec32aebf936"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab27ce39ee5b49f3f7c6cfec32aebf936">&#9670;&#160;</a></span>safe_to_int64()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int64_t fdl::detail::safe_to_int64 </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Safely cast a double to int64_t, clamping to [INT64_MIN, INT64_MAX]. </p>
+<p>Prevents undefined behavior from casting doubles that exceed the representable range of int64_t.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">value</td><td>The floating-point value to convert. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The integer value, clamped to int64_t bounds. </dd></dl>
+
+</div>
+</div>
 <a id="abc56a7604bbd7f9ae35c5bff576da200" name="abc56a7604bbd7f9ae35c5bff576da200"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abc56a7604bbd7f9ae35c5bff576da200">&#9670;&#160;</a></span>bankers_round()</h2>
 
